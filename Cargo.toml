@@ -1,0 +1,9 @@
+[workspace]
+
+members = [
+    "core",
+    "finder",
+    "parser",
+    "check-engines",
+    "pin-dependencies",
+]
