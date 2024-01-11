@@ -104,7 +104,6 @@ pub enum PackageLock {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]
-
 pub struct YarnLock {
     #[serde(rename = "type")]
     pub lock_type: String,
@@ -112,9 +111,7 @@ pub struct YarnLock {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct LockFileObject {
-    // Define the fields of LockFileObject as needed
-}
+pub struct LockFileObject;
 
 #[derive(Debug, Deserialize)]
 pub struct PnpmLockV5 {

@@ -2,8 +2,11 @@
 name = "check-engines"
 version = "0.1.0"
 edition = "2021"
+authors.workspace = true
 
 [dependencies]
 finder = { path = "../finder" }
 parser = { path = "../parser" }
 
+[lints]
+workspace = true

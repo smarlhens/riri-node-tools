@@ -17,7 +17,7 @@ impl<'a> Default for FindUpOptions<'a> {
 
 fn find_up_multiple<T: AsRef<Path>>(
     file_names: &[T],
-    options: FindUpOptions,
+    options: &FindUpOptions,
 ) -> std::io::Result<Vec<PathBuf>> {
     let cwd_buf = std::env::current_dir().unwrap();
     let cwd = if options.cwd.eq(Path::new(".")) {
@@ -41,7 +41,7 @@ fn find_up_multiple<T: AsRef<Path>>(
                 }
             }
 
-            if matches.len() > 0 {
+            if !matches.is_empty() {
                 return Ok(matches);
             }
 
@@ -56,14 +56,14 @@ fn get_file_path(path_str: &str) -> Result<PathBuf, Error> {
     if !path.exists() {
         return Err(Error::new(
             ErrorKind::NotFound,
-            format!("{:?} file not found!", path_str),
+            format!("{path_str:?} file not found!"),
         ));
     }
 
     Ok(path.to_path_buf())
 }
 
-fn find_most_recently_modified(files: Vec<PathBuf>) -> Option<PathBuf> {
+fn find_most_recently_modified(files: &Vec<PathBuf>) -> Option<PathBuf> {
     if files.is_empty() {
         return None;
     }
@@ -87,7 +87,7 @@ fn find_most_recently_modified(files: Vec<PathBuf>) -> Option<PathBuf> {
 
 pub fn get_package() -> Result<PathBuf, Error> {
     match get_file_path("package.json") {
-        Ok(path) => Ok(PathBuf::from(path)),
+        Ok(path) => Ok(path),
         Err(_) => Err(Error::new(ErrorKind::NotFound, "Package not found!")),
     }
 }
@@ -96,8 +96,8 @@ pub fn get_most_recently_modified_lock() -> Result<LockFileResult, Error> {
     let lock_file_names = vec!["package-lock.json", "yarn.lock", "pnpm-lock.yml"];
     let options = FindUpOptions::default();
 
-    if let Ok(matches) = find_up_multiple(&lock_file_names, options) {
-        if let Some(most_recent_file) = find_most_recently_modified(matches) {
+    if let Ok(matches) = find_up_multiple(&lock_file_names, &options) {
+        if let Some(most_recent_file) = find_most_recently_modified(&matches) {
             let package_manager = match most_recent_file.file_name().and_then(|s| s.to_str()) {
                 Some("package-lock.json") => PackageManager::Npm,
                 Some("yarn.lock") => PackageManager::Yarn,

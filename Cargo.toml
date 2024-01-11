@@ -1,9 +1,24 @@
 [workspace]
+resolver = "2"
 
 members = [
-    "core",
-    "finder",
-    "parser",
-    "check-engines",
-    "pin-dependencies",
+    "crates/core",
+    "crates/finder",
+    "crates/parser",
+    "crates/check-engines",
+    "crates/pin-dependencies",
 ]
+
+[workspace.package]
+authors = ["Samuel MARLHENS <samuel.marlhens@proton.me>"]
+
+[workspace.lints.clippy]
+pedantic = "deny"
+dbg_macro = "deny"
+empty_structs_with_brackets = "deny"
+float_cmp_const = "deny"
+if_then_some_else_none = "deny"
+same_name_method = "deny"
+tests_outside_test_module = "deny"
+unseparated_literal_suffix = "deny"
+unwrap_used = "deny"

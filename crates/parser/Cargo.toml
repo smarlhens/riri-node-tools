@@ -2,7 +2,11 @@
 name = "parser"
 version = "0.1.0"
 edition = "2021"
+authors.workspace = true
 
 [dependencies]
 serde_json = "1.0.111"
 core = { path = "../core" }
+
+[lints]
+workspace = true

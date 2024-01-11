@@ -1,6 +1,3 @@
-use finder;
-use parser;
-
 fn main() {
     let package = finder::get_package().unwrap();
     let package_lock = finder::get_most_recently_modified_lock().unwrap();
