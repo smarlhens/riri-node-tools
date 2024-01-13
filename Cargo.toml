@@ -11,6 +11,7 @@ members = [
 
 [workspace.package]
 authors = ["Samuel MARLHENS <samuel.marlhens@proton.me>"]
+license-file = "LICENSE"
 
 [workspace.lints.clippy]
 pedantic = "deny"
