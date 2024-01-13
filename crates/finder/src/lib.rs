@@ -3,14 +3,14 @@ use std::io::{Error, ErrorKind};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-struct FindUpOptions<'a> {
-    pub cwd: &'a Path,
+struct FindUpOptions {
+    pub cwd: PathBuf,
 }
 
-impl<'a> Default for FindUpOptions<'a> {
+impl Default for FindUpOptions {
     fn default() -> Self {
         Self {
-            cwd: Path::new("."),
+            cwd: PathBuf::from("."),
         }
     }
 }
@@ -20,16 +20,16 @@ fn find_up_multiple<T: AsRef<Path>>(
     options: &FindUpOptions,
 ) -> std::io::Result<Vec<PathBuf>> {
     let cwd_buf = std::env::current_dir().unwrap();
-    let cwd = if options.cwd.eq(Path::new(".")) {
-        Path::new(&cwd_buf)
+    let cwd = if options.cwd == Path::new(".") {
+        cwd_buf
     } else {
-        options.cwd
+        options.cwd.clone()
     };
 
     let mut matches = Vec::new();
     let mut target_dir = Some(cwd);
-    while let Some(dir) = target_dir {
-        for entry in std::fs::read_dir(dir)? {
+    while let Some(dir) = target_dir.clone() {
+        for entry in std::fs::read_dir(&dir)? {
             let entry = entry?;
             let path = entry.path();
 
@@ -45,7 +45,7 @@ fn find_up_multiple<T: AsRef<Path>>(
                 return Ok(matches);
             }
 
-            target_dir = dir.parent();
+            target_dir = dir.parent().map(Path::to_path_buf);
         }
     }
     Ok(matches)
@@ -92,16 +92,20 @@ pub fn get_package() -> Result<PathBuf, Error> {
     }
 }
 
+const NPM_LOCK_FILE: &str = "package-lock.json";
+const YARN_LOCK_FILE: &str = "yarn.lock";
+const PNPM_LOCK_FILE: &str = "pnpm-lock.yaml";
+
 pub fn get_most_recently_modified_lock() -> Result<LockFileResult, Error> {
-    let lock_file_names = vec!["package-lock.json", "yarn.lock", "pnpm-lock.yml"];
+    let lock_file_names = vec![NPM_LOCK_FILE, YARN_LOCK_FILE, PNPM_LOCK_FILE];
     let options = FindUpOptions::default();
 
     if let Ok(matches) = find_up_multiple(&lock_file_names, &options) {
         if let Some(most_recent_file) = find_most_recently_modified(&matches) {
             let package_manager = match most_recent_file.file_name().and_then(|s| s.to_str()) {
-                Some("package-lock.json") => PackageManager::Npm,
-                Some("yarn.lock") => PackageManager::Yarn,
-                Some("pnpm-lock.yml") => PackageManager::Pnpm,
+                Some(NPM_LOCK_FILE) => PackageManager::Npm,
+                Some(YARN_LOCK_FILE) => PackageManager::Yarn,
+                Some(PNPM_LOCK_FILE) => PackageManager::Pnpm,
                 _ => {
                     return Err(Error::new(
                         ErrorKind::InvalidData,
