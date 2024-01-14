@@ -6,6 +6,10 @@ authors.workspace = true
 license-file.workspace = true
 
 [dependencies]
+core = { path = "../core" }
+finder = { path = "../finder" }
+parser = { path = "../parser" }
+semver = "1.0.21"
 
 [lints]
 workspace = true

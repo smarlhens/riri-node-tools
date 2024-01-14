@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -15,22 +15,18 @@ pub struct LockFileResult {
     pub package_manager: PackageManager,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Package {
-    name: String,
-}
-
 pub type Dependencies = HashMap<String, String>;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct PackageJson {
+    pub name: String,
     pub dependencies: Option<Dependencies>,
     pub dev_dependencies: Option<Dependencies>,
     pub optional_dependencies: Option<Dependencies>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct VersionedDependency {
     pub version: String,
 }
@@ -43,15 +39,16 @@ pub struct ResolvedDependency {
     pub link: bool,
 }
 
-type NpmLockDependencies = HashMap<String, VersionedDependencyOrResolved>;
-type NpmLockPackages = HashMap<String, VersionedDependencyOrResolved>;
-
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
 pub enum VersionedDependencyOrResolved {
     Versioned(VersionedDependency),
     Resolved(ResolvedDependency),
 }
+
+pub type LockDependencies = HashMap<String, VersionedDependencyOrResolved>;
+type NpmLockDependencies = LockDependencies;
+type NpmLockPackages = LockDependencies;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]
@@ -96,9 +93,9 @@ pub struct FirstLevelDependency {
     pub dependencies: Option<HashMap<String, String>>,
 }
 
-pub type YarnLock = HashMap<String, FirstLevelDependency>;
+pub type YarnLockV2 = HashMap<String, FirstLevelDependency>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct PnpmImporterV5 {
     pub dependencies: Option<HashMap<String, String>>,
@@ -113,7 +110,7 @@ pub struct PnpmLockV5 {
     pub importers: HashMap<String, PnpmImporterV5>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct PnpmImporterV6 {
     pub dependencies: Option<HashMap<String, VersionedDependency>>,
@@ -139,6 +136,6 @@ pub enum PnpmLock {
 #[serde(untagged)]
 pub enum PackageManagerLock {
     Npm(NpmLock),
-    Yarn(YarnLock),
+    Yarn(YarnLockV2),
     Pnpm(PnpmLock),
 }
