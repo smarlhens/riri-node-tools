@@ -47,12 +47,12 @@ fn parse_yarn_lock(path: &PathBuf) -> Result<YarnLockV2, Box<dyn Error>> {
     let mut contents = String::new();
     File::open(path)?.read_to_string(&mut contents)?;
 
-    match () {
-        () if is_yarn_lock_v1.is_match(&contents) => {
-            Err("Yarn lock v1 parsing is not implemented yet.".into())
-        }
-        () if is_yarn_lock_v2.is_match(&contents) => Ok(serde_yaml::from_str(&contents)?),
-        () => Err("Yarn lock file version parsing is not implemented yet.".into()),
+    if is_yarn_lock_v1.is_match(&contents) {
+        Err("Yarn lock v1 parsing is not implemented yet.".into())
+    } else if is_yarn_lock_v2.is_match(&contents) {
+        Ok(serde_yaml::from_str(&contents)?)
+    } else {
+        Err("Yarn lock file version parsing is not implemented yet.".into())
     }
 }
 

@@ -26,29 +26,58 @@ pub struct PackageJson {
     pub optional_dependencies: Option<Dependencies>,
 }
 
+#[derive(Debug, Deserialize, Clone, PartialEq, Eq, Hash)]
+pub enum Engine {
+    Node,
+    Npm,
+    Yarn,
+}
+
+pub type ObjectEngines = HashMap<Engine, String>;
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct LockDependency {
+    pub version: String,
+    #[serde(default)]
+    pub engines: Option<ObjectEngines>,
+}
+
+pub type LockDependencies = HashMap<String, LockDependency>;
+
+#[derive(Debug, Deserialize, Clone)]
+#[serde(untagged)]
+pub enum NpmLockEngines {
+    Object(ObjectEngines),
+    Array(Vec<String>),
+}
+
 #[derive(Debug, Deserialize, Clone)]
 pub struct VersionedDependency {
     pub version: String,
+    #[serde(default)]
+    pub engines: Option<NpmLockEngines>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct ResolvedDependency {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub resolved: Option<String>,
     pub link: bool,
+    #[serde(default)]
+    pub engines: Option<NpmLockEngines>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum VersionedDependencyOrResolved {
     Versioned(VersionedDependency),
     Resolved(ResolvedDependency),
 }
 
-pub type LockDependencies = HashMap<String, VersionedDependencyOrResolved>;
-type NpmLockDependencies = LockDependencies;
-type NpmLockPackages = LockDependencies;
+pub type NpmDependencies = HashMap<String, VersionedDependencyOrResolved>;
+type NpmLockDependencies = NpmDependencies;
+type NpmLockPackages = NpmDependencies;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "camelCase"))]
@@ -113,9 +142,9 @@ pub struct PnpmLockV5 {
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct PnpmImporterV6 {
-    pub dependencies: Option<HashMap<String, VersionedDependency>>,
-    pub optional_dependencies: Option<HashMap<String, VersionedDependency>>,
-    pub dev_dependencies: Option<HashMap<String, VersionedDependency>>,
+    pub dependencies: Option<HashMap<String, LockDependency>>,
+    pub optional_dependencies: Option<HashMap<String, LockDependency>>,
+    pub dev_dependencies: Option<HashMap<String, LockDependency>>,
 }
 
 #[derive(Debug, Deserialize)]
