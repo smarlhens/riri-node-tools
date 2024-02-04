@@ -1,4 +1,4 @@
-use core::{LockFileResult, PackageManager};
+use definitely_typed::{LockFileResult, PackageManager};
 use std::io::{Error, ErrorKind};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;

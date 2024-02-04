@@ -1,10 +1,16 @@
-use core::{
+use clap::Parser;
+use comfy_table::{presets, Table};
+use console::style;
+use definitely_typed::{
     Engine, LockDependencies, LockDependency, NpmDependencies, NpmLock, NpmLockEngines,
     ObjectEngines, PackageJson, PackageManagerLock, PnpmLock, VersionedDependencyOrResolved,
     YarnLockV2,
 };
 use semver::Version;
 use std::collections::HashMap;
+use std::io::Error;
+use std::string::ToString;
+use tracing::{debug, error, info, Level};
 
 type ResolveDependencyKey = fn(name: &str, version: &str) -> String;
 
@@ -44,6 +50,7 @@ fn convert_npm_engines_to_object_engines(engines: Option<NpmLockEngines>) -> Opt
     }
 }
 
+#[tracing::instrument]
 fn convert_npm_to_lock_dependencies(npm_dependencies: NpmDependencies) -> LockDependencies {
     let mut lock_dependencies = LockDependencies::new();
 
@@ -59,7 +66,7 @@ fn convert_npm_to_lock_dependencies(npm_dependencies: NpmDependencies) -> LockDe
             },
             VersionedDependencyOrResolved::Resolved(resolved_dependency) => {
                 if let Some(resolved_key) = &resolved_dependency.resolved {
-                    println!(
+                    debug!(
                         "Dependency {} resolved using {}.",
                         dependency_name, resolved_key
                     );
@@ -74,11 +81,11 @@ fn convert_npm_to_lock_dependencies(npm_dependencies: NpmDependencies) -> LockDe
                                 ),
                             }
                         } else {
-                            println!("Dependency {} version is undefined.", resolved_key);
+                            debug!("Dependency {} version is undefined.", resolved_key);
                             continue;
                         }
                     } else {
-                        println!("Dependency {} is unresolved in dependencies.", resolved_key);
+                        debug!("Dependency {} is unresolved in dependencies.", resolved_key);
                         continue;
                     }
                 } else {
@@ -93,6 +100,7 @@ fn convert_npm_to_lock_dependencies(npm_dependencies: NpmDependencies) -> LockDe
     lock_dependencies
 }
 
+#[tracing::instrument]
 fn npm_resolver(npm_lock: NpmLock) -> DependencyVersionResolver {
     let resolve_dependency: ResolveDependencyKey = |name, _| name.to_string();
     let resolve_package: ResolveDependencyKey = |name, _| format!("node_modules/{}", name);
@@ -215,14 +223,15 @@ fn pnpm_resolver(pnpm_lock: PnpmLock) -> DependencyVersionResolver {
 #[derive(Debug)]
 struct VersionToPin {
     dependency: String,
-    version: String,
-    pinned_version: String,
+    package_version: String,
+    locked_version: String,
 }
 
+#[tracing::instrument(skip_all)]
 fn compute_versions_to_pin(
     package_json: &PackageJson,
     resolver: &DependencyVersionResolver,
-) -> Vec<VersionToPin> {
+) -> Result<Vec<VersionToPin>, Error> {
     let mut result = Vec::new();
     let is_file_dependency = |name: &str| name.starts_with("file");
     let dependencies_per_type = vec![
@@ -234,7 +243,7 @@ fn compute_versions_to_pin(
     for dependencies in dependencies_per_type.into_iter().flatten() {
         for (dependency_name, version) in dependencies {
             if is_file_dependency(dependency_name) {
-                println!(
+                debug!(
                     "Dependency {} is using a local path as version.",
                     dependency_name
                 );
@@ -244,21 +253,21 @@ fn compute_versions_to_pin(
             let dependency_key = (resolver.resolve_dependency_key)(dependency_name, version);
             if let Some(locked_dependency) = resolver.locked_dependencies.get(&dependency_key) {
                 if Version::parse(version).is_err() && &locked_dependency.version != version {
-                    println!(
+                    debug!(
                         "Dependency {} version is not pinned: {} -> {}.",
                         dependency_name, version, locked_dependency.version
                     );
 
                     result.push(VersionToPin {
                         dependency: dependency_name.clone(),
-                        version: version.clone(),
-                        pinned_version: locked_dependency.version.clone(),
+                        package_version: version.clone(),
+                        locked_version: locked_dependency.version.clone(),
                     });
                 } else {
-                    println!("Dependency {} version is already pinned.", dependency_name);
+                    debug!("Dependency {} version is already pinned.", dependency_name);
                 }
             } else {
-                println!(
+                debug!(
                     "Dependency {} is unresolved in dependencies.",
                     dependency_name
                 );
@@ -266,19 +275,87 @@ fn compute_versions_to_pin(
         }
     }
 
-    result
+    Ok(result)
+}
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    #[arg(short, long, default_value_t = false)]
+    quiet: bool,
+    #[arg(short, long, default_value_t = false)]
+    debug: bool,
+}
+
+macro_rules! trace_fn {
+    ($index:expr, $total:expr, $icon:expr, $title:expr, $result:expr) => {{
+        let prefix = style(format!("[{}/{}]", $index, $total,))
+            .bold()
+            .dim()
+            .to_string();
+        info!("{} [STARTED] {} {}...", prefix, $icon, $title);
+        let result = $result;
+        match &result {
+            Ok(_) => {
+                info!("{} [SUCCESS] {} {}!", prefix, $icon, $title);
+            }
+            Err(err) => {
+                error!("{} [ERROR] {} {}: {}", prefix, $icon, $title, err);
+            }
+        }
+        result
+    }};
 }
 
 fn main() {
-    let package = finder::get_package().unwrap();
-    let package_lock = finder::get_most_recently_modified_lock().unwrap();
-    let parsed_package = parser::parse_package(&package).unwrap();
+    let args = Args::parse();
 
-    println!("Package content: {:?}", parsed_package);
+    let format = tracing_subscriber::fmt::format()
+        .with_level(true)
+        .with_target(true)
+        .with_timer(tracing_subscriber::fmt::time::time())
+        .compact();
 
-    let parsed_lock_package = parser::parse_lock(&package_lock).unwrap();
+    let mut tracing_max_level = Level::INFO;
+    if args.quiet {
+        tracing_max_level = Level::ERROR
+    }
 
-    println!("Lock content: {:?}", parsed_lock_package);
+    if args.debug {
+        tracing_max_level = Level::DEBUG
+    }
+
+    tracing_subscriber::fmt()
+        .with_max_level(tracing_max_level)
+        .event_format(format)
+        .init();
+
+    let total_steps = 6;
+    let package = trace_fn!(1, 5, "📦", "Resolving package.json", finder::get_package()).unwrap();
+    let package_lock = trace_fn!(
+        2,
+        total_steps,
+        "🔒",
+        "Resolving lock file",
+        finder::get_most_recently_modified_lock()
+    )
+    .unwrap();
+    let parsed_package = trace_fn!(
+        3,
+        total_steps,
+        "📦",
+        "Parsing package.json",
+        parser::parse_package(&package)
+    )
+    .unwrap();
+    let parsed_lock_package = trace_fn!(
+        4,
+        total_steps,
+        "🔒",
+        "Parsing lock file",
+        parser::parse_lock(&package_lock)
+    )
+    .unwrap();
 
     let resolver = match parsed_lock_package {
         PackageManagerLock::Npm(npm_lock) => npm_resolver(npm_lock),
@@ -286,7 +363,38 @@ fn main() {
         PackageManagerLock::Pnpm(pnpm_lock) => pnpm_resolver(pnpm_lock),
     };
 
-    let versions_to_pin = compute_versions_to_pin(&parsed_package, &resolver);
+    let versions_to_pin = trace_fn!(
+        5,
+        total_steps,
+        "⚙️",
+        "Computing dependency versions to pin",
+        compute_versions_to_pin(&parsed_package, &resolver)
+    )
+    .unwrap();
 
-    println!("Versions to pin: {:?}", versions_to_pin);
+    if args.quiet {
+        return;
+    }
+
+    let mut table = Table::new();
+    table.load_preset(presets::NOTHING);
+    for version_to_pin in versions_to_pin {
+        table.add_row(vec![
+            version_to_pin.dependency + ":",
+            version_to_pin.package_version,
+            "→".to_string(),
+            version_to_pin.locked_version,
+        ]);
+    }
+
+    for row in table.lines() {
+        info!(
+            "{} [RESULTS] {}",
+            style(format!("[{}/{}]", 6, total_steps))
+                .bold()
+                .dim()
+                .to_string(),
+            row.trim()
+        );
+    }
 }

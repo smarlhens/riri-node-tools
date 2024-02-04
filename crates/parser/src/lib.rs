@@ -1,4 +1,4 @@
-use core::{
+use definitely_typed::{
     LockFileResult, NpmLock, PackageJson, PackageManager, PackageManagerLock, PnpmLock, YarnLockV2,
 };
 use regex::Regex;
