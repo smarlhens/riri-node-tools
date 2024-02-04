@@ -1,12 +1,12 @@
 [package]
-name = "core"
+name = "definitely-typed"
 version = "0.1.0"
 edition = "2021"
 authors.workspace = true
 license-file.workspace = true
 
 [dependencies]
-serde = { version = "1.0.195", features = ["derive"] }
+serde = { version = "1.0.196", features = ["derive"] }
 
 [lints]
 workspace = true

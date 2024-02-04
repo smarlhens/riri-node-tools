@@ -2,7 +2,7 @@
 resolver = "2"
 
 members = [
-    "crates/core",
+    "crates/definitely-typed",
     "crates/finder",
     "crates/parser",
     "crates/check-engines",
