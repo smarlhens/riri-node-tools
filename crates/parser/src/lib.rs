@@ -1,23 +1,26 @@
 use definitely_typed::{
     LockFileResult, NpmLock, PackageJson, PackageManager, PackageManagerLock, PnpmLock, YarnLockV2,
 };
+use detect_indent::{detect_indent, Indent};
 use regex::Regex;
-use serde_json::Value as JsonValue;
+use serde_json::{Value as JsonValue, Value};
 use serde_yaml::Value as YamlValue;
 use std::error::Error;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
-pub fn parse_package(path: &PathBuf) -> Result<PackageJson, Box<dyn Error>> {
+pub fn parse_package(path: &PathBuf) -> Result<(PackageJson, Value, Indent), Box<dyn Error>> {
     let mut file = File::open(path)?;
 
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
 
-    let package: PackageJson = serde_json::from_str(&contents)?;
+    let indent = detect_indent(&contents);
+    let package = serde_json::from_str(&contents)?;
+    let raw = serde_json::from_str(&contents)?;
 
-    Ok(package)
+    Ok((package, raw, indent))
 }
 
 fn parse_npm_lock(path: &PathBuf) -> Result<NpmLock, Box<dyn Error>> {
