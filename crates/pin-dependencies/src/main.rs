@@ -1,4 +1,5 @@
 use clap::Parser;
+use clap_verbosity_flag::Verbosity;
 use comfy_table::{presets, Table};
 use console::style;
 use definitely_typed::{
@@ -16,7 +17,8 @@ use std::fs::OpenOptions;
 use std::io::{Error, Write};
 use std::path::PathBuf;
 use std::string::ToString;
-use tracing::{debug, error, info, Level};
+use tracing::{debug, error, info};
+use tracing_log::AsTrace;
 
 type ResolveDependencyKey = fn(name: &str, version: &str) -> String;
 
@@ -287,10 +289,8 @@ fn compute_versions_to_pin(
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[arg(short, long, default_value_t = false)]
-    quiet: bool,
-    #[arg(short, long, default_value_t = false)]
-    debug: bool,
+    #[command(flatten)]
+    verbose: Verbosity,
     #[arg(short, long, default_value_t = false)]
     update: bool,
 }
@@ -348,13 +348,22 @@ fn write_json_to_file(path: &PathBuf, indent: &Indent, content: Value) -> std::i
 
 fn generate_update_command_from_args(args: Args) -> String {
     let mut argv = vec!["npd"];
+    let mut hint = "-".to_string();
 
-    if args.quiet {
+    if args.verbose.is_silent() {
         argv.push("-q")
-    }
+    } else {
+        let level_value: i8 = match args.verbose.log_level() {
+            None => -1,
+            Some(log::Level::Error) => 0,
+            Some(log::Level::Warn) => 1,
+            Some(log::Level::Info) => 2,
+            Some(log::Level::Debug) => 3,
+            Some(log::Level::Trace) => 4,
+        };
 
-    if args.debug {
-        argv.push("-d")
+        hint.extend(("v".repeat(level_value as usize)).chars());
+        argv.push(hint.as_str())
     }
 
     argv.push("-u");
@@ -370,17 +379,8 @@ fn main() {
         .with_timer(tracing_subscriber::fmt::time::time())
         .compact();
 
-    let mut tracing_max_level = Level::INFO;
-    if args.quiet {
-        tracing_max_level = Level::ERROR
-    }
-
-    if args.debug {
-        tracing_max_level = Level::DEBUG
-    }
-
     tracing_subscriber::fmt()
-        .with_max_level(tracing_max_level)
+        .with_max_level(args.verbose.log_level_filter().as_trace())
         .event_format(format)
         .init();
 
@@ -433,7 +433,7 @@ fn main() {
     )
     .unwrap();
 
-    if args.quiet {
+    if args.verbose.is_silent() {
         return;
     }
 
