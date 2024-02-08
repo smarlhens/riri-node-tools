@@ -7,7 +7,6 @@
 ## TODO
 
 - [ ] dynamic display mode
-- [ ] writing to file + detect file indent + show hint on option
-- [ ] npm alias
+- [ ] binary alias (npd / npm-pin-dependencies)
 - [ ] convert to node using wasm
 - [ ] benchmark vs TS/JS

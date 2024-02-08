@@ -6,9 +6,15 @@ use definitely_typed::{
     ObjectEngines, PackageJson, PackageManagerLock, PnpmLock, VersionedDependencyOrResolved,
     YarnLockV2,
 };
+use detect_indent::Indent;
 use semver::Version;
+use serde::ser::Serialize;
+use serde_json::ser::PrettyFormatter;
+use serde_json::Value;
 use std::collections::HashMap;
-use std::io::Error;
+use std::fs::OpenOptions;
+use std::io::{Error, Write};
+use std::path::PathBuf;
 use std::string::ToString;
 use tracing::{debug, error, info, Level};
 
@@ -220,7 +226,7 @@ fn pnpm_resolver(pnpm_lock: PnpmLock) -> DependencyVersionResolver {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct VersionToPin {
     dependency: String,
     package_version: String,
@@ -278,13 +284,15 @@ fn compute_versions_to_pin(
     Ok(result)
 }
 
-#[derive(Parser, Debug)]
+#[derive(Debug, Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
     #[arg(short, long, default_value_t = false)]
     quiet: bool,
     #[arg(short, long, default_value_t = false)]
     debug: bool,
+    #[arg(short, long, default_value_t = false)]
+    update: bool,
 }
 
 macro_rules! trace_fn {
@@ -305,6 +313,52 @@ macro_rules! trace_fn {
         }
         result
     }};
+}
+
+fn write_pinned_versions(package_json: &mut Value, versions_to_pin: Vec<VersionToPin>) {
+    fn update_dependencies(dependencies: Option<&mut Value>, versions_to_pin: &Vec<VersionToPin>) {
+        if let Some(dep_map) = dependencies {
+            for version_to_pin in versions_to_pin {
+                if let Some(locked_version) = dep_map.get_mut(&version_to_pin.dependency) {
+                    *locked_version = Value::String(version_to_pin.clone().locked_version);
+                }
+            }
+        }
+    }
+
+    update_dependencies(package_json.get_mut("dependencies"), &versions_to_pin);
+    update_dependencies(package_json.get_mut("dev_dependencies"), &versions_to_pin);
+    update_dependencies(
+        package_json.get_mut("optional_dependencies"),
+        &versions_to_pin,
+    );
+}
+
+fn write_json_to_file(path: &PathBuf, indent: &Indent, content: Value) -> std::io::Result<()> {
+    let mut buf = Vec::new();
+    let formatter = PrettyFormatter::with_indent(indent.indent().as_bytes());
+    let mut ser = serde_json::Serializer::with_formatter(&mut buf, formatter);
+    content.serialize(&mut ser).unwrap();
+    buf.push(b'\n');
+
+    let mut file = OpenOptions::new().write(true).truncate(true).open(path)?;
+    let _ = file.write_all(buf.as_ref());
+    Ok(())
+}
+
+fn generate_update_command_from_args(args: Args) -> String {
+    let mut argv = vec!["npd"];
+
+    if args.quiet {
+        argv.push("-q")
+    }
+
+    if args.debug {
+        argv.push("-d")
+    }
+
+    argv.push("-u");
+    argv.join(" ")
 }
 
 fn main() {
@@ -330,8 +384,15 @@ fn main() {
         .event_format(format)
         .init();
 
-    let total_steps = 6;
-    let package = trace_fn!(1, 5, "📦", "Resolving package.json", finder::get_package()).unwrap();
+    let total_steps = if args.update { 7 } else { 6 };
+    let package = trace_fn!(
+        1,
+        total_steps,
+        "📦",
+        "Resolving package.json",
+        finder::get_package()
+    )
+    .unwrap();
     let package_lock = trace_fn!(
         2,
         total_steps,
@@ -340,7 +401,7 @@ fn main() {
         finder::get_most_recently_modified_lock()
     )
     .unwrap();
-    let parsed_package = trace_fn!(
+    let (parsed_package, mut raw_package, indent) = trace_fn!(
         3,
         total_steps,
         "📦",
@@ -378,7 +439,7 @@ fn main() {
 
     let mut table = Table::new();
     table.load_preset(presets::NOTHING);
-    for version_to_pin in versions_to_pin {
+    for version_to_pin in versions_to_pin.clone().into_iter() {
         table.add_row(vec![
             version_to_pin.dependency + ":",
             version_to_pin.package_version,
@@ -386,6 +447,32 @@ fn main() {
             version_to_pin.locked_version,
         ]);
     }
+
+    if table.is_empty() {
+        info!(
+            "{} [RESULTS] {}{}",
+            style(format!("[{}/{}]", 6, total_steps))
+                .bold()
+                .dim()
+                .to_string(),
+            "All dependency versions are already pinned ",
+            style(":)").green().to_string()
+        );
+        return;
+    }
+
+    info!(
+        "{} [RESULTS] {}",
+        style(format!("[{}/{}]", 6, total_steps))
+            .bold()
+            .dim()
+            .to_string(),
+        if args.update {
+            "Dependency versions pinned"
+        } else {
+            "Dependency versions that can be pinned"
+        }
+    );
 
     for row in table.lines() {
         info!(
@@ -397,4 +484,28 @@ fn main() {
             row.trim()
         );
     }
+
+    if !args.update {
+        info!(
+            "{} [RESULTS] {}",
+            style(format!("[{}/{}]", 6, total_steps))
+                .bold()
+                .dim()
+                .to_string(),
+            format!(
+                "Run {} to upgrade package.json.",
+                style(generate_update_command_from_args(args)).bold().cyan()
+            )
+        );
+        return;
+    }
+
+    let _ = write_pinned_versions(&mut raw_package, versions_to_pin);
+    let _ = trace_fn!(
+        7,
+        total_steps,
+        "💾",
+        "Updating package.json",
+        write_json_to_file(&package, &indent, raw_package)
+    );
 }

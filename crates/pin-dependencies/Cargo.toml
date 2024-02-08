@@ -15,6 +15,9 @@ parser = { path = "../parser" }
 semver = "1.0.21"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
+serde_json = "1.0.113"
+detect-indent = "0.1.0"
+serde = "1.0.196"
 
 [lints]
 workspace = true

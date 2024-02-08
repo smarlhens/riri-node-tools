@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -17,12 +17,18 @@ pub struct LockFileResult {
 
 pub type Dependencies = HashMap<String, String>;
 
-#[derive(Debug, Deserialize, Clone)]
-#[serde(rename_all(deserialize = "camelCase"))]
+#[derive(Debug, Deserialize, Clone, Serialize)]
+#[serde(rename_all(deserialize = "camelCase", serialize = "camelCase"))]
 pub struct PackageJson {
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub dependencies: Option<Dependencies>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub dev_dependencies: Option<Dependencies>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub optional_dependencies: Option<Dependencies>,
 }
 
