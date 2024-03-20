@@ -1,4 +1,4 @@
-use definitely_typed::{
+use crate::types::{
     LockFileResult, NpmLock, PackageJson, PackageManager, PackageManagerLock, PnpmLock, YarnLockV2,
 };
 use detect_indent::{detect_indent, Indent};
@@ -44,8 +44,10 @@ fn parse_npm_lock(path: &PathBuf) -> Result<NpmLock, Box<dyn Error>> {
 }
 
 fn parse_yarn_lock(path: &PathBuf) -> Result<YarnLockV2, Box<dyn Error>> {
-    let is_yarn_lock_v1 = Regex::new(r"# yarn lockfile v1").unwrap();
-    let is_yarn_lock_v2 = Regex::new(r"__metadata:\s*version: (\d)[\r\n]").unwrap();
+    let is_yarn_lock_v1 = Regex::new(r"# yarn lockfile v1")
+        .expect("Failed to create regex pattern for identifying yarn lockfile v1");
+    let is_yarn_lock_v2 = Regex::new(r"__metadata:\s*version: (\d)[\r\n]")
+        .expect("Failed to create regex pattern for identifying yarn lockfile v2");
 
     let mut contents = String::new();
     File::open(path)?.read_to_string(&mut contents)?;

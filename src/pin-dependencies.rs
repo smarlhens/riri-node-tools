@@ -1,11 +1,11 @@
+mod finder;
+mod parser;
+mod types;
+
 use clap::Parser;
+use clap_verbosity_flag::Verbosity;
 use comfy_table::{presets, Table};
 use console::style;
-use definitely_typed::{
-    Engine, LockDependencies, LockDependency, NpmDependencies, NpmLock, NpmLockEngines,
-    ObjectEngines, PackageJson, PackageManagerLock, PnpmLock, VersionedDependencyOrResolved,
-    YarnLockV2,
-};
 use detect_indent::Indent;
 use semver::Version;
 use serde::ser::Serialize;
@@ -16,9 +16,15 @@ use std::fs::OpenOptions;
 use std::io::{Error, Write};
 use std::path::PathBuf;
 use std::string::ToString;
-use tracing::{debug, error, info, Level};
+use tracing::{debug, error, info};
+use tracing_log::AsTrace;
+use types::{
+    Engine, LockDependency, NpmDependencies, NpmLock, NpmLockEngines, ObjectEngines, PackageJson,
+    PackageManagerLock, PnpmLock, VersionedDependencyOrResolved, YarnLockV2,
+};
 
 type ResolveDependencyKey = fn(name: &str, version: &str) -> String;
+type LockDependencies = HashMap<String, LockDependency>;
 
 #[derive(Debug)]
 pub struct DependencyVersionResolver {
@@ -33,7 +39,7 @@ fn convert_array_to_object_engines(engines: Vec<String>) -> ObjectEngines {
         let lowercase_engine_str = engine_str.to_lowercase();
 
         for engine_enum in [Engine::Node, Engine::Npm, Engine::Yarn] {
-            let engine_str_lowercase = format!("{:?}", engine_enum).to_lowercase();
+            let engine_str_lowercase = format!("{engine_enum:?}").to_lowercase();
             if lowercase_engine_str.contains(&engine_str_lowercase) {
                 let value = engine_str.trim_start_matches(&engine_str_lowercase).trim();
 
@@ -109,7 +115,7 @@ fn convert_npm_to_lock_dependencies(npm_dependencies: NpmDependencies) -> LockDe
 #[tracing::instrument]
 fn npm_resolver(npm_lock: NpmLock) -> DependencyVersionResolver {
     let resolve_dependency: ResolveDependencyKey = |name, _| name.to_string();
-    let resolve_package: ResolveDependencyKey = |name, _| format!("node_modules/{}", name);
+    let resolve_package: ResolveDependencyKey = |name, _| format!("node_modules/{name}");
 
     match npm_lock {
         NpmLock::Version1(lock) => DependencyVersionResolver {
@@ -154,46 +160,42 @@ fn transform_yarn_v2_to_lock_dependencies(yarn_lock: YarnLockV2) -> LockDependen
 fn yarn_resolver(yarn_lock_file: YarnLockV2) -> DependencyVersionResolver {
     DependencyVersionResolver {
         locked_dependencies: transform_yarn_v2_to_lock_dependencies(yarn_lock_file),
-        resolve_dependency_key: |name, version| format!("{}@npm:{}", name, version),
+        resolve_dependency_key: |name, version| format!("{name}@npm:{version}"),
     }
 }
 
 fn transform_pnpm_v5_to_lock_dependencies(
     dependencies: Option<HashMap<String, String>>,
 ) -> LockDependencies {
-    dependencies
-        .map(|deps| {
-            deps.into_iter()
-                .map(|(key, version)| {
-                    (
-                        key,
-                        LockDependency {
-                            version,
-                            engines: None,
-                        },
-                    )
-                })
-                .collect()
-        })
-        .unwrap_or_else(HashMap::new)
+    dependencies.map_or_else(HashMap::new, |deps| {
+        deps.into_iter()
+            .map(|(key, version)| {
+                (
+                    key,
+                    LockDependency {
+                        version,
+                        engines: None,
+                    },
+                )
+            })
+            .collect()
+    })
 }
 
 fn transform_pnpm_v6_to_lock_dependencies(
     dependencies: Option<HashMap<String, LockDependency>>,
 ) -> LockDependencies {
-    dependencies
-        .map(|deps| {
-            deps.into_iter()
-                .map(|(key, dependency)| (key, dependency))
-                .collect()
-        })
-        .unwrap_or_else(HashMap::new)
+    dependencies.map_or_else(HashMap::new, |deps| deps.into_iter().collect())
 }
 
 fn pnpm_resolver(pnpm_lock: PnpmLock) -> DependencyVersionResolver {
     let locked_dependencies: LockDependencies = match pnpm_lock {
         PnpmLock::Version6(lock) => {
-            let importer = lock.importers.get(".").cloned().unwrap();
+            let importer = lock
+                .importers
+                .get(".")
+                .cloned()
+                .expect("Expect Pnpm to have resolved dependencies in current directory.");
             let dependencies = transform_pnpm_v6_to_lock_dependencies(importer.dependencies);
             let dev_dependencies =
                 transform_pnpm_v6_to_lock_dependencies(importer.dev_dependencies);
@@ -206,7 +208,11 @@ fn pnpm_resolver(pnpm_lock: PnpmLock) -> DependencyVersionResolver {
                 .collect()
         }
         PnpmLock::Version5(lock) => {
-            let importer = lock.importers.get(".").cloned().unwrap();
+            let importer = lock
+                .importers
+                .get(".")
+                .cloned()
+                .expect("Expect Pnpm to have resolved dependencies in current directory.");
             let dependencies = transform_pnpm_v5_to_lock_dependencies(importer.dependencies);
             let dev_dependencies =
                 transform_pnpm_v5_to_lock_dependencies(importer.dev_dependencies);
@@ -287,10 +293,8 @@ fn compute_versions_to_pin(
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[arg(short, long, default_value_t = false)]
-    quiet: bool,
-    #[arg(short, long, default_value_t = false)]
-    debug: bool,
+    #[command(flatten)]
+    verbose: Verbosity,
     #[arg(short, long, default_value_t = false)]
     update: bool,
 }
@@ -315,7 +319,7 @@ macro_rules! trace_fn {
     }};
 }
 
-fn write_pinned_versions(package_json: &mut Value, versions_to_pin: Vec<VersionToPin>) {
+fn write_pinned_versions(package_json: &mut Value, versions_to_pin: &Vec<VersionToPin>) {
     fn update_dependencies(dependencies: Option<&mut Value>, versions_to_pin: &Vec<VersionToPin>) {
         if let Some(dep_map) = dependencies {
             for version_to_pin in versions_to_pin {
@@ -326,19 +330,21 @@ fn write_pinned_versions(package_json: &mut Value, versions_to_pin: Vec<VersionT
         }
     }
 
-    update_dependencies(package_json.get_mut("dependencies"), &versions_to_pin);
-    update_dependencies(package_json.get_mut("dev_dependencies"), &versions_to_pin);
+    update_dependencies(package_json.get_mut("dependencies"), versions_to_pin);
+    update_dependencies(package_json.get_mut("dev_dependencies"), versions_to_pin);
     update_dependencies(
         package_json.get_mut("optional_dependencies"),
-        &versions_to_pin,
+        versions_to_pin,
     );
 }
 
-fn write_json_to_file(path: &PathBuf, indent: &Indent, content: Value) -> std::io::Result<()> {
+fn write_json_to_file(path: &PathBuf, indent: &Indent, content: &Value) -> std::io::Result<()> {
     let mut buf = Vec::new();
     let formatter = PrettyFormatter::with_indent(indent.indent().as_bytes());
     let mut ser = serde_json::Serializer::with_formatter(&mut buf, formatter);
-    content.serialize(&mut ser).unwrap();
+    content
+        .serialize(&mut ser)
+        .expect("Failed to serialize JSON content");
     buf.push(b'\n');
 
     let mut file = OpenOptions::new().write(true).truncate(true).open(path)?;
@@ -346,21 +352,32 @@ fn write_json_to_file(path: &PathBuf, indent: &Indent, content: Value) -> std::i
     Ok(())
 }
 
-fn generate_update_command_from_args(args: Args) -> String {
-    let mut argv = vec!["npd"];
+fn generate_update_command_from_args(args: &Args) -> String {
+    let mut update_command = vec!["npd"];
+    let mut hint = "-".to_string();
 
-    if args.quiet {
-        argv.push("-q")
+    if args.verbose.is_silent() {
+        update_command.push("-q");
+    } else {
+        let level_value: i8 = match args.verbose.log_level() {
+            None => -1,
+            Some(log::Level::Error) => 0,
+            Some(log::Level::Warn) => 1,
+            Some(log::Level::Info) => 2,
+            Some(log::Level::Debug) => 3,
+            Some(log::Level::Trace) => 4,
+        };
+
+        #[allow(clippy::cast_sign_loss)]
+        hint.push_str(&("v".repeat(level_value as usize)));
+        update_command.push(hint.as_str());
     }
 
-    if args.debug {
-        argv.push("-d")
-    }
-
-    argv.push("-u");
-    argv.join(" ")
+    update_command.push("-u");
+    update_command.join(" ")
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() {
     let args = Args::parse();
 
@@ -370,17 +387,8 @@ fn main() {
         .with_timer(tracing_subscriber::fmt::time::time())
         .compact();
 
-    let mut tracing_max_level = Level::INFO;
-    if args.quiet {
-        tracing_max_level = Level::ERROR
-    }
-
-    if args.debug {
-        tracing_max_level = Level::DEBUG
-    }
-
     tracing_subscriber::fmt()
-        .with_max_level(tracing_max_level)
+        .with_max_level(args.verbose.log_level_filter().as_trace())
         .event_format(format)
         .init();
 
@@ -392,7 +400,7 @@ fn main() {
         "Resolving package.json",
         finder::get_package()
     )
-    .unwrap();
+    .expect("Unable to get package.json file in the current directory");
     let package_lock = trace_fn!(
         2,
         total_steps,
@@ -400,7 +408,7 @@ fn main() {
         "Resolving lock file",
         finder::get_most_recently_modified_lock()
     )
-    .unwrap();
+    .expect("Unable to get the most recently modified lock file in the current directory");
     let (parsed_package, mut raw_package, indent) = trace_fn!(
         3,
         total_steps,
@@ -408,7 +416,7 @@ fn main() {
         "Parsing package.json",
         parser::parse_package(&package)
     )
-    .unwrap();
+    .expect("Unable to parse package.json file");
     let parsed_lock_package = trace_fn!(
         4,
         total_steps,
@@ -416,7 +424,7 @@ fn main() {
         "Parsing lock file",
         parser::parse_lock(&package_lock)
     )
-    .unwrap();
+    .expect("Unable to parse lock file");
 
     let resolver = match parsed_lock_package {
         PackageManagerLock::Npm(npm_lock) => npm_resolver(npm_lock),
@@ -433,13 +441,13 @@ fn main() {
     )
     .unwrap();
 
-    if args.quiet {
+    if args.verbose.is_silent() {
         return;
     }
 
     let mut table = Table::new();
     table.load_preset(presets::NOTHING);
-    for version_to_pin in versions_to_pin.clone().into_iter() {
+    for version_to_pin in versions_to_pin.clone() {
         table.add_row(vec![
             version_to_pin.dependency + ":",
             version_to_pin.package_version,
@@ -448,13 +456,15 @@ fn main() {
         ]);
     }
 
+    let total_steps_str = style(format!("[{}/{}]", 6, total_steps))
+        .bold()
+        .dim()
+        .to_string();
+
     if table.is_empty() {
         info!(
             "{} [RESULTS] {}{}",
-            style(format!("[{}/{}]", 6, total_steps))
-                .bold()
-                .dim()
-                .to_string(),
+            total_steps_str,
             "All dependency versions are already pinned ",
             style(":)").green().to_string()
         );
@@ -463,10 +473,7 @@ fn main() {
 
     info!(
         "{} [RESULTS] {}",
-        style(format!("[{}/{}]", 6, total_steps))
-            .bold()
-            .dim()
-            .to_string(),
+        total_steps_str,
         if args.update {
             "Dependency versions pinned"
         } else {
@@ -475,37 +482,30 @@ fn main() {
     );
 
     for row in table.lines() {
-        info!(
-            "{} [RESULTS] {}",
-            style(format!("[{}/{}]", 6, total_steps))
-                .bold()
-                .dim()
-                .to_string(),
-            row.trim()
-        );
+        info!("{} [RESULTS] {}", total_steps_str, row.trim());
     }
 
     if !args.update {
         info!(
             "{} [RESULTS] {}",
-            style(format!("[{}/{}]", 6, total_steps))
-                .bold()
-                .dim()
-                .to_string(),
+            total_steps_str,
             format!(
                 "Run {} to upgrade package.json.",
-                style(generate_update_command_from_args(args)).bold().cyan()
+                style(generate_update_command_from_args(&args))
+                    .bold()
+                    .cyan()
             )
         );
         return;
     }
 
-    let _ = write_pinned_versions(&mut raw_package, versions_to_pin);
-    let _ = trace_fn!(
+    write_pinned_versions(&mut raw_package, &versions_to_pin);
+    trace_fn!(
         7,
         total_steps,
         "💾",
         "Updating package.json",
-        write_json_to_file(&package, &indent, raw_package)
-    );
+        write_json_to_file(&package, &indent, &raw_package)
+    )
+    .expect("Failed to update package.json content");
 }
