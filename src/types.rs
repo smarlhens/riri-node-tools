@@ -48,8 +48,6 @@ pub struct LockDependency {
     pub engines: Option<ObjectEngines>,
 }
 
-pub type LockDependencies = HashMap<String, LockDependency>;
-
 #[derive(Debug, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum NpmLockEngines {

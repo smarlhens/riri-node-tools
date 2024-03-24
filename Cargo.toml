@@ -1,19 +1,35 @@
-[workspace]
-resolver = "2"
-
-members = [
-    "crates/definitely-typed",
-    "crates/finder",
-    "crates/parser",
-    "crates/check-engines",
-    "crates/pin-dependencies",
-]
-
-[workspace.package]
+[package]
+name = "riri-node-tools"
+version = "0.1.0"
+edition = "2021"
 authors = ["Samuel MARLHENS <samuel.marlhens@proton.me>"]
 license-file = "LICENSE"
 
-[workspace.lints.clippy]
+[[bin]]
+name = "pin-dependencies"
+path = "src/pin-dependencies.rs"
+
+[[bin]]
+name = "check-engines"
+path = "src/check-engines.rs"
+
+[dependencies]
+clap = { version = "4.5.3", features = ["derive"] }
+clap-verbosity-flag = "2.2.0"
+comfy-table = "7.1.0"
+console = "0.15.8"
+detect-indent = "0.1.0"
+semver = "1.0.22"
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = { version = "1.0.114", features = ["preserve_order"] }
+tracing = "0.1.40"
+tracing-log = "0.2.0"
+tracing-subscriber = "0.3.18"
+log = "0.4.21"
+serde_yaml = "0.9.33"
+regex = "1.10.4"
+
+[lints.clippy]
 pedantic = "deny"
 dbg_macro = "deny"
 empty_structs_with_brackets = "deny"
