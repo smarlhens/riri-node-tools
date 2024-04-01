@@ -14,7 +14,7 @@ name = "check-engines"
 path = "src/check-engines.rs"
 
 [dependencies]
-clap = { version = "4.5.3", features = ["derive"] }
+clap = { version = "4.5.4", features = ["derive"] }
 clap-verbosity-flag = "2.2.0"
 comfy-table = "7.1.0"
 console = "0.15.8"
