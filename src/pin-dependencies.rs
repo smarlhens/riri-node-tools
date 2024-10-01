@@ -22,6 +22,9 @@ use types::{
     Engine, LockDependency, NpmDependencies, NpmLock, NpmLockEngines, ObjectEngines, PackageJson,
     PackageManagerLock, PnpmLock, VersionedDependencyOrResolved, YarnLockV2,
 };
+use indicatif::{ProgressBar, ProgressStyle};
+use std::thread;
+use std::time::Duration;
 
 type ResolveDependencyKey = fn(name: &str, version: &str) -> String;
 type LockDependencies = HashMap<String, LockDependency>;
@@ -377,135 +380,206 @@ fn generate_update_command_from_args(args: &Args) -> String {
     update_command.join(" ")
 }
 
+mod custom_progress_bar {
+    use indicatif::{ProgressBar, ProgressStyle};
+    use std::thread;
+    use std::sync::{Arc, Mutex};
+    use std::time::Duration;
+
+    pub struct CustomProgressBar {
+        progress_bar: Arc<Mutex<ProgressBar>>,
+    }
+
+    impl CustomProgressBar {
+        pub fn new(message: String) -> CustomProgressBar {
+            let progress_bar = ProgressBar::new_spinner();
+            progress_bar.set_style(
+                ProgressStyle::default_spinner()
+                    .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧"])
+                    .template("{spinner:.green} {msg}")
+                    .expect("Failed to create progress bar style")
+            );
+            progress_bar.set_message(message);
+            CustomProgressBar { progress_bar: Arc::new(Mutex::new(progress_bar)) }
+        }
+
+        pub fn update_success(&self, message: String) {
+            println!("{message}");
+            let pb = self.progress_bar.lock().expect("Failed to lock progress bar thread");
+            pb.finish_and_clear();
+        }
+
+        pub fn update_error(&self, message: String) {
+            println!("{message}");
+            let pb = self.progress_bar.lock().expect("Failed to lock progress bar thread");
+            pb.abandon();
+        }
+
+        pub fn update_message(&self, message: String) {
+            let pb = self.progress_bar.lock().expect("Failed to lock progress bar thread");
+            pb.set_message(message);
+        }
+
+        pub fn start(&self) {
+            let progress_bar = Arc::clone(&self.progress_bar);
+            thread::spawn(move || {
+                loop {
+                    thread::sleep(Duration::from_millis(100));
+                    progress_bar.lock().expect("Failed to lock progress bar thread").tick();
+                }
+            });
+        }
+    }
+}
+
+use custom_progress_bar::CustomProgressBar;
+
 #[allow(clippy::too_many_lines)]
 fn main() {
-    let args = Args::parse();
+    // let args = Args::parse();
+    //
+    // let format = tracing_subscriber::fmt::format()
+    //     .with_level(true)
+    //     .with_target(true)
+    //     .with_timer(tracing_subscriber::fmt::time::time())
+    //     .compact();
+    //
+    // tracing_subscriber::fmt()
+    //     .with_max_level(args.verbose.log_level_filter().as_trace())
+    //     .event_format(format)
+    //     .init();
+    //
+    // let total_steps = if args.update { 7 } else { 6 };
+    // let package = trace_fn!(
+    //     1,
+    //     total_steps,
+    //     "📦",
+    //     "Resolving package.json",
+    //     finder::get_package()
+    // )
+    // .expect("Unable to get package.json file in the current directory");
+    // let package_lock = trace_fn!(
+    //     2,
+    //     total_steps,
+    //     "🔒",
+    //     "Resolving lock file",
+    //     finder::get_most_recently_modified_lock()
+    // )
+    // .expect("Unable to get the most recently modified lock file in the current directory");
+    // let (parsed_package, mut raw_package, indent) = trace_fn!(
+    //     3,
+    //     total_steps,
+    //     "📦",
+    //     "Parsing package.json",
+    //     parser::parse_package(&package)
+    // )
+    // .expect("Unable to parse package.json file");
+    // let parsed_lock_package = trace_fn!(
+    //     4,
+    //     total_steps,
+    //     "🔒",
+    //     "Parsing lock file",
+    //     parser::parse_lock(&package_lock)
+    // )
+    // .expect("Unable to parse lock file");
+    //
+    // let resolver = match parsed_lock_package {
+    //     PackageManagerLock::Npm(npm_lock) => npm_resolver(npm_lock),
+    //     PackageManagerLock::Yarn(yarn_lock) => yarn_resolver(yarn_lock),
+    //     PackageManagerLock::Pnpm(pnpm_lock) => pnpm_resolver(pnpm_lock),
+    // };
+    //
+    // let versions_to_pin = trace_fn!(
+    //     5,
+    //     total_steps,
+    //     "⚙️",
+    //     "Computing dependency versions to pin",
+    //     compute_versions_to_pin(&parsed_package, &resolver)
+    // )
+    // .expect("Failed to compute dependency version to pin");
+    //
+    // if args.verbose.is_silent() {
+    //     return;
+    // }
+    //
+    // let mut table = Table::new();
+    // table.load_preset(presets::NOTHING);
+    // for version_to_pin in versions_to_pin.clone() {
+    //     table.add_row(vec![
+    //         version_to_pin.dependency + ":",
+    //         version_to_pin.package_version,
+    //         "→".to_string(),
+    //         version_to_pin.locked_version,
+    //     ]);
+    // }
+    //
+    // let total_steps_str = style(format!("[{}/{}]", 6, total_steps))
+    //     .bold()
+    //     .dim()
+    //     .to_string();
+    //
+    // if table.is_empty() {
+    //     info!(
+    //         "{} [RESULTS] {}{}",
+    //         total_steps_str,
+    //         "All dependency versions are already pinned ",
+    //         style(":)").green().to_string()
+    //     );
+    //     return;
+    // }
+    //
+    // info!(
+    //     "{} [RESULTS] {}",
+    //     total_steps_str,
+    //     if args.update {
+    //         "Dependency versions pinned"
+    //     } else {
+    //         "Dependency versions that can be pinned"
+    //     }
+    // );
+    //
+    // for row in table.lines() {
+    //     info!("{} [RESULTS] {}", total_steps_str, row.trim());
+    // }
+    //
+    // if !args.update {
+    //     info!(
+    //         "{} [RESULTS] {}",
+    //         total_steps_str,
+    //         format!(
+    //             "Run {} to upgrade package.json.",
+    //             style(generate_update_command_from_args(&args))
+    //                 .bold()
+    //                 .cyan()
+    //         )
+    //     );
+    //     return;
+    // }
+    //
+    // write_pinned_versions(&mut raw_package, &versions_to_pin);
+    // trace_fn!(
+    //     7,
+    //     total_steps,
+    //     "💾",
+    //     "Updating package.json",
+    //     write_json_to_file(&package, &indent, &raw_package)
+    // )
+    // .expect("Failed to update package.json content");
 
-    let format = tracing_subscriber::fmt::format()
-        .with_level(true)
-        .with_target(true)
-        .with_timer(tracing_subscriber::fmt::time::time())
-        .compact();
+    let num_steps = 5;
+    for i in 0..num_steps {
+        let pb = CustomProgressBar::new(format!("Processing step {}", i + 1).to_string());
+        pb.start();
+        pb.update_message(format!("Processing step {}", i));
+        thread::sleep(Duration::from_millis(1000));
+        let success = i % 2 == 0;
 
-    tracing_subscriber::fmt()
-        .with_max_level(args.verbose.log_level_filter().as_trace())
-        .event_format(format)
-        .init();
-
-    let total_steps = if args.update { 7 } else { 6 };
-    let package = trace_fn!(
-        1,
-        total_steps,
-        "📦",
-        "Resolving package.json",
-        finder::get_package()
-    )
-    .expect("Unable to get package.json file in the current directory");
-    let package_lock = trace_fn!(
-        2,
-        total_steps,
-        "🔒",
-        "Resolving lock file",
-        finder::get_most_recently_modified_lock()
-    )
-    .expect("Unable to get the most recently modified lock file in the current directory");
-    let (parsed_package, mut raw_package, indent) = trace_fn!(
-        3,
-        total_steps,
-        "📦",
-        "Parsing package.json",
-        parser::parse_package(&package)
-    )
-    .expect("Unable to parse package.json file");
-    let parsed_lock_package = trace_fn!(
-        4,
-        total_steps,
-        "🔒",
-        "Parsing lock file",
-        parser::parse_lock(&package_lock)
-    )
-    .expect("Unable to parse lock file");
-
-    let resolver = match parsed_lock_package {
-        PackageManagerLock::Npm(npm_lock) => npm_resolver(npm_lock),
-        PackageManagerLock::Yarn(yarn_lock) => yarn_resolver(yarn_lock),
-        PackageManagerLock::Pnpm(pnpm_lock) => pnpm_resolver(pnpm_lock),
-    };
-
-    let versions_to_pin = trace_fn!(
-        5,
-        total_steps,
-        "⚙️",
-        "Computing dependency versions to pin",
-        compute_versions_to_pin(&parsed_package, &resolver)
-    )
-    .unwrap();
-
-    if args.verbose.is_silent() {
-        return;
-    }
-
-    let mut table = Table::new();
-    table.load_preset(presets::NOTHING);
-    for version_to_pin in versions_to_pin.clone() {
-        table.add_row(vec![
-            version_to_pin.dependency + ":",
-            version_to_pin.package_version,
-            "→".to_string(),
-            version_to_pin.locked_version,
-        ]);
-    }
-
-    let total_steps_str = style(format!("[{}/{}]", 6, total_steps))
-        .bold()
-        .dim()
-        .to_string();
-
-    if table.is_empty() {
-        info!(
-            "{} [RESULTS] {}{}",
-            total_steps_str,
-            "All dependency versions are already pinned ",
-            style(":)").green().to_string()
-        );
-        return;
-    }
-
-    info!(
-        "{} [RESULTS] {}",
-        total_steps_str,
-        if args.update {
-            "Dependency versions pinned"
+        if success {
+            pb.update_success(format!("✅ Step {} completed successfully", i + 1));
         } else {
-            "Dependency versions that can be pinned"
+            pb.update_error(format!("❌ Error occurred during step {}", i + 1));
         }
-    );
-
-    for row in table.lines() {
-        info!("{} [RESULTS] {}", total_steps_str, row.trim());
     }
 
-    if !args.update {
-        info!(
-            "{} [RESULTS] {}",
-            total_steps_str,
-            format!(
-                "Run {} to upgrade package.json.",
-                style(generate_update_command_from_args(&args))
-                    .bold()
-                    .cyan()
-            )
-        );
-        return;
-    }
-
-    write_pinned_versions(&mut raw_package, &versions_to_pin);
-    trace_fn!(
-        7,
-        total_steps,
-        "💾",
-        "Updating package.json",
-        write_json_to_file(&package, &indent, &raw_package)
-    )
-    .expect("Failed to update package.json content");
+    println!("✅ All steps completed successfully");
 }
