@@ -368,9 +368,11 @@ fn generate_update_command_from_args(args: &Args) -> String {
             Some(log::Level::Trace) => 4,
         };
 
-        #[allow(clippy::cast_sign_loss)]
-        hint.push_str(&("v".repeat(level_value as usize)));
-        update_command.push(hint.as_str());
+        if level_value > 0 {
+            #[allow(clippy::cast_sign_loss)]
+            hint.push_str(&("v".repeat(level_value as usize)));
+            update_command.push(hint.as_str());
+        }
     }
 
     update_command.push("-u");
@@ -508,4 +510,40 @@ fn main() {
         write_json_to_file(&package, &indent, &raw_package)
     )
     .expect("Failed to update package.json content");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap_verbosity_flag::Verbosity;
+
+    #[test]
+    fn generate_update_command() {
+        let tests = [
+            // verbose, quiet, expected_command
+            (0, 0, "npd -u"),
+            (1, 0, "npd -v -u"),
+            (2, 0, "npd -vv -u"),
+            (3, 0, "npd -vvv -u"),
+            (4, 0, "npd -vvvv -u"),
+            (5, 0, "npd -vvvv -u"),
+            (255, 0, "npd -vvvv -u"),
+            (0, 1, "npd -q -u"),
+            (0, 2, "npd -q -u"),
+            (0, 255, "npd -q -u"),
+            (255, 255, "npd -u"),
+        ];
+
+        for (verbose, quiet, expected_command) in &tests {
+            let args = Args {
+                verbose: Verbosity::new(*verbose, *quiet),
+                update: false,
+            };
+            assert_eq!(
+                generate_update_command_from_args(&args),
+                *expected_command,
+                "verbose = {verbose}, quiet = {quiet}, expected = {expected_command}"
+            );
+        }
+    }
 }
