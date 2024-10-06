@@ -6,7 +6,10 @@
 
 ## TODO
 
+- [ ] write unit tests
 - [ ] dynamic display mode
 - [ ] binary alias (npd / npm-pin-dependencies)
+- [ ] expose binary inside Docker for multi-stage usage
 - [ ] convert to node using wasm
 - [ ] benchmark vs TS/JS
+- [ ] create github actions
