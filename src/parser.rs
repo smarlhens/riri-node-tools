@@ -5,12 +5,12 @@ use detect_indent::{detect_indent, Indent};
 use regex::Regex;
 use serde_json::{Value as JsonValue, Value};
 use serde_yml::Value as YamlValue;
-use std::error::Error;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
+use anyhow::{anyhow, Result};
 
-pub fn parse_package(path: &PathBuf) -> Result<(PackageJson, Value, Indent), Box<dyn Error>> {
+pub fn parse_package(path: &PathBuf) -> Result<(PackageJson, Value, Indent)> {
     let mut file = File::open(path)?;
 
     let mut contents = String::new();
@@ -23,7 +23,7 @@ pub fn parse_package(path: &PathBuf) -> Result<(PackageJson, Value, Indent), Box
     Ok((package, raw, indent))
 }
 
-fn parse_npm_lock(path: &PathBuf) -> Result<NpmLock, Box<dyn Error>> {
+fn parse_npm_lock(path: &PathBuf) -> Result<NpmLock> {
     let mut contents = String::new();
     File::open(path)?.read_to_string(&mut contents)?;
 
@@ -36,14 +36,14 @@ fn parse_npm_lock(path: &PathBuf) -> Result<NpmLock, Box<dyn Error>> {
                 1 => Ok(NpmLock::Version1(serde_json::from_str(&contents)?)),
                 2 => Ok(NpmLock::Version2(serde_json::from_str(&contents)?)),
                 3 => Ok(NpmLock::Version3(serde_json::from_str(&contents)?)),
-                _ => Err("Unsupported lockfile version".into()),
+                _ => Err(anyhow!("Unsupported lockfile version")),
             }
         }
-        None => Err("lockfileVersion field not found".into()),
+        None => Err(anyhow!("lockfileVersion field not found")),
     }
 }
 
-fn parse_yarn_lock(path: &PathBuf) -> Result<YarnLockV2, Box<dyn Error>> {
+fn parse_yarn_lock(path: &PathBuf) -> Result<YarnLockV2> {
     let is_yarn_lock_v1 = Regex::new(r"# yarn lockfile v1")
         .expect("Failed to create regex pattern for identifying yarn lockfile v1");
     let is_yarn_lock_v2 = Regex::new(r"__metadata:\s*version: (\d)[\r\n]")
@@ -53,26 +53,26 @@ fn parse_yarn_lock(path: &PathBuf) -> Result<YarnLockV2, Box<dyn Error>> {
     File::open(path)?.read_to_string(&mut contents)?;
 
     if is_yarn_lock_v1.is_match(&contents) {
-        Err("Yarn lock v1 parsing is not implemented yet.".into())
+        Err(anyhow!("Yarn lock v1 parsing is not implemented yet."))
     } else if is_yarn_lock_v2.is_match(&contents) {
         Ok(serde_yml::from_str(&contents)?)
     } else {
-        Err("Yarn lock file version parsing is not implemented yet.".into())
+        Err(anyhow!("Yarn lock file version parsing is not implemented yet."))
     }
 }
 
 fn deserialize_pnpm_lock_content_by_version(
     contents: &str,
     version: &str,
-) -> Result<PnpmLock, Box<dyn Error>> {
+) -> Result<PnpmLock> {
     match version {
         "5.4" => Ok(PnpmLock::Version5(serde_yml::from_str(contents)?)),
         "6.0" => Ok(PnpmLock::Version6(serde_yml::from_str(contents)?)),
-        _ => Err("Unsupported lockfile version".into()),
+        _ => Err(anyhow!("Unsupported lockfile version")),
     }
 }
 
-fn parse_pnpm_lock(path: &PathBuf) -> Result<PnpmLock, Box<dyn Error>> {
+fn parse_pnpm_lock(path: &PathBuf) -> Result<PnpmLock> {
     let mut contents = String::new();
     File::open(path)?.read_to_string(&mut contents)?;
 
@@ -86,13 +86,13 @@ fn parse_pnpm_lock(path: &PathBuf) -> Result<PnpmLock, Box<dyn Error>> {
             YamlValue::String(version_str) => {
                 deserialize_pnpm_lock_content_by_version(&contents, version_str)
             }
-            _ => Err("Invalid lockfileVersion type".into()),
+            _ => Err(anyhow!("Invalid lockfileVersion type")),
         },
-        None => Err("lockfileVersion field not found".into()),
+        None => Err(anyhow!("lockfileVersion field not found")),
     }
 }
 
-pub fn parse_lock(lockfile_result: &LockFileResult) -> Result<PackageManagerLock, Box<dyn Error>> {
+pub fn parse_lock(lockfile_result: &LockFileResult) -> Result<PackageManagerLock> {
     match &lockfile_result.package_manager {
         PackageManager::Npm => parse_npm_lock(&lockfile_result.path).map(PackageManagerLock::Npm),
         PackageManager::Yarn => {

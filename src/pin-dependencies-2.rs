@@ -16,7 +16,7 @@ use std::fs::OpenOptions;
 use std::io::{Error, Write};
 use std::path::PathBuf;
 use std::string::ToString;
-use tracing::{debug, error, info};
+use tracing::{debug, info};
 use tracing_log::AsTrace;
 use types::{
     Engine, LockDependency, NpmDependencies, NpmLock, NpmLockEngines, ObjectEngines, PackageJson,
@@ -24,6 +24,7 @@ use types::{
 };
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::thread;
+use anyhow::{anyhow, Result};
 
 type ResolveDependencyKey = fn(name: &str, version: &str) -> String;
 type LockDependencies = HashMap<String, LockDependency>;
@@ -301,55 +302,42 @@ struct Args {
     update: bool,
 }
 
-macro_rules! trace_fn {
-    ($index:expr, $total:expr, $icon:expr, $title:expr, $result:expr) => {{
-        let prefix = style(format!("[{}/{}]", $index, $total,))
-            .bold()
-            .dim()
-            .to_string();
-        info!("{} [STARTED] {} {}...", prefix, $icon, $title);
-        let result = $result;
+fn run_task_with_progress<T, F>(
+    index: usize,
+    total: usize,
+    icon: &str,
+    title: &str,
+    task: F,
+    multi_progress: &MultiProgress,
+) -> Result<T>
+where
+    F: FnOnce() -> Result<T> + Send + 'static,
+    T: Send + 'static,
+{
+    let prefix = format!("[{}/{}]", index, total);
+    let pb = multi_progress.add(ProgressBar::new_spinner());
+    pb.set_style(
+        ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
+            .unwrap()
+            .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ "),
+    );
+    pb.set_prefix(prefix.clone());
+    pb.set_message(format!("{} [STARTED] {}...", icon, title));
+
+    let handle = thread::spawn(move || {
+        let result = task();
         match &result {
             Ok(_) => {
-                info!("{} [SUCCESS] {} {}!", prefix, $icon, $title);
+                pb.finish_with_message(format!("{} [SUCCESS] {}!", icon, title));
             }
             Err(err) => {
-                error!("{} [ERROR] {} {}: {}", prefix, $icon, $title, err);
+                pb.finish_with_message(format!("{} [ERROR] {}: {}", icon, title, err));
             }
         }
         result
-    }};
-}
+    });
 
-macro_rules! trace_fn2 {
-    ($index:expr, $total:expr, $icon:expr, $title:expr, $result:expr, $multi_progress:expr) => {{
-        let prefix = format!("[{}/{}]", $index, $total);
-        let pb = $multi_progress.add(ProgressBar::new_spinner());
-        pb.set_style(
-            ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
-                .unwrap()
-                .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ "),
-        );
-        pb.set_prefix(prefix.clone());
-        pb.set_message(format!("{} [STARTED] {}...", $icon, $title));
-
-        let result = thread::spawn(move || {
-            let result = $result;
-            match &result {
-                Ok(_) => {
-                    pb.finish_with_message(format!("{} [SUCCESS] {}!", $icon, $title));
-                }
-                Err(err) => {
-                    pb.finish_with_message(format!("{} [ERROR] {}: {}", $icon, $title, err));
-                }
-            }
-            result
-        })
-        .join()
-        .unwrap();
-
-        result
-    }};
+    handle.join().unwrap()
 }
 
 
@@ -463,41 +451,45 @@ fn main() {
         .init();
 
     let total_steps = if args.update { 7 } else { 6 };
-    let package = trace_fn!(
+    let package = run_task_with_progress(
         1,
         total_steps,
         "📦",
         "Resolving package.json",
-        finder::get_package()
+        || finder::get_package().map_err(|e| e.into()),
+        &multi_progress,
     )
-    .expect("Unable to get package.json file in the current directory");
-    let package_lock = trace_fn!(
+        .expect("Unable to get package.json file in the current directory");
+
+    let package_lock = run_task_with_progress(
         2,
         total_steps,
         "🔒",
         "Resolving lock file",
-        finder::get_most_recently_modified_lock(),
-        multi_progress
+        || finder::get_most_recently_modified_lock().map_err(|e| e.into()),
+        &multi_progress,
     )
-    .expect("Unable to get the most recently modified lock file in the current directory");
-    let (parsed_package, mut raw_package, indent) = trace_fn!(
+        .expect("Unable to get the most recently modified lock file in the current directory");
+
+    let (parsed_package, mut raw_package, indent) = run_task_with_progress(
         3,
         total_steps,
         "📦",
         "Parsing package.json",
-        parser::parse_package(&package),
-        multi_progress
+        || parser::parse_package(&package).map_err(|e| e.into()),
+        &multi_progress,
     )
-    .expect("Unable to parse package.json file");
-    let parsed_lock_package = trace_fn!(
+        .expect("Unable to parse package.json file");
+
+    let parsed_lock_package = run_task_with_progress(
         4,
         total_steps,
         "🔒",
         "Parsing lock file",
-        parser::parse_lock(&package_lock),
-        multi_progress
+        || parser::parse_lock(&package_lock).map_err(|e| e.into()),
+        &multi_progress,
     )
-    .expect("Unable to parse lock file");
+        .expect("Unable to parse lock file");
 
     let resolver = match parsed_lock_package {
         PackageManagerLock::Npm(npm_lock) => npm_resolver(npm_lock),
@@ -505,15 +497,15 @@ fn main() {
         PackageManagerLock::Pnpm(pnpm_lock) => pnpm_resolver(pnpm_lock),
     };
 
-    let versions_to_pin = trace_fn!(
+    let versions_to_pin = run_task_with_progress(
         5,
         total_steps,
         "⚙️",
         "Computing dependency versions to pin",
-        compute_versions_to_pin(&parsed_package, &resolver),
-        multi_progress
+        || compute_versions_to_pin(&parsed_package, &resolver).map_err(|e| e.into()),
+        &multi_progress,
     )
-    .unwrap();
+        .unwrap();
 
     if args.verbose.is_silent() {
         return;
@@ -574,13 +566,13 @@ fn main() {
     }
 
     write_pinned_versions(&mut raw_package, &versions_to_pin);
-    trace_fn!(
+    run_task_with_progress(
         7,
         total_steps,
         "💾",
         "Updating package.json",
-        write_json_to_file(&package, &indent, &raw_package),
-        multi_progress
+        || write_json_to_file(&package, &indent, &raw_package).map_err(|e| e.into()),
+        &multi_progress,
     )
-    .expect("Failed to update package.json content");
+        .expect("Failed to update package.json content");
 }
