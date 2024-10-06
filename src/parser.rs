@@ -4,7 +4,7 @@ use crate::types::{
 use detect_indent::{detect_indent, Indent};
 use regex::Regex;
 use serde_json::{Value as JsonValue, Value};
-use serde_yaml::Value as YamlValue;
+use serde_yml::Value as YamlValue;
 use std::error::Error;
 use std::fs::File;
 use std::io::Read;
@@ -55,7 +55,7 @@ fn parse_yarn_lock(path: &PathBuf) -> Result<YarnLockV2, Box<dyn Error>> {
     if is_yarn_lock_v1.is_match(&contents) {
         Err("Yarn lock v1 parsing is not implemented yet.".into())
     } else if is_yarn_lock_v2.is_match(&contents) {
-        Ok(serde_yaml::from_str(&contents)?)
+        Ok(serde_yml::from_str(&contents)?)
     } else {
         Err("Yarn lock file version parsing is not implemented yet.".into())
     }
@@ -66,8 +66,8 @@ fn deserialize_pnpm_lock_content_by_version(
     version: &str,
 ) -> Result<PnpmLock, Box<dyn Error>> {
     match version {
-        "5.4" => Ok(PnpmLock::Version5(serde_yaml::from_str(contents)?)),
-        "6.0" => Ok(PnpmLock::Version6(serde_yaml::from_str(contents)?)),
+        "5.4" => Ok(PnpmLock::Version5(serde_yml::from_str(contents)?)),
+        "6.0" => Ok(PnpmLock::Version6(serde_yml::from_str(contents)?)),
         _ => Err("Unsupported lockfile version".into()),
     }
 }
@@ -76,7 +76,7 @@ fn parse_pnpm_lock(path: &PathBuf) -> Result<PnpmLock, Box<dyn Error>> {
     let mut contents = String::new();
     File::open(path)?.read_to_string(&mut contents)?;
 
-    let yaml: YamlValue = serde_yaml::from_str(&contents)?;
+    let yaml: YamlValue = serde_yml::from_str(&contents)?;
 
     match yaml.get("lockfileVersion") {
         Some(lockfile_version) => match lockfile_version {
