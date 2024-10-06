@@ -55,7 +55,7 @@ fn find_most_recently_modified(files: &Vec<PathBuf>) -> Option<PathBuf> {
             if let Ok(modified_time) = metadata.modified() {
                 if modified_time > most_recent_time {
                     most_recent_time = modified_time;
-                    most_recent_file = file.clone();
+                    most_recent_file.clone_from(file);
                 }
             }
         }
