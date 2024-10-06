@@ -1,6 +1,7 @@
 use crate::types::{
     LockFileResult, NpmLock, PackageJson, PackageManager, PackageManagerLock, PnpmLock, YarnLockV2,
 };
+use anyhow::Result;
 use detect_indent::{detect_indent, Indent};
 use regex::Regex;
 use serde_json::{Value as JsonValue, Value};

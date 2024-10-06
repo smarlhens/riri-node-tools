@@ -1,9 +1,10 @@
 use crate::types::{LockFileResult, PackageManager};
+use anyhow::Result;
 use std::io::{Error, ErrorKind};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-fn find_up_multiple<T: AsRef<Path>>(file_names: &[T]) -> std::io::Result<Vec<PathBuf>> {
+fn find_up_multiple<T: AsRef<Path>>(file_names: &[T]) -> Result<Vec<PathBuf>> {
     let cwd = std::env::current_dir().expect("Failed to get the current directory!");
     let mut matches = Vec::new();
     let mut target_dir = Some(cwd);

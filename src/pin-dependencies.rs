@@ -2,6 +2,7 @@ mod finder;
 mod parser;
 mod types;
 
+use anyhow::Result;
 use clap::Parser;
 use clap_verbosity_flag::Verbosity;
 use comfy_table::{presets, Table};
@@ -338,7 +339,7 @@ fn write_pinned_versions(package_json: &mut Value, versions_to_pin: &Vec<Version
     );
 }
 
-fn write_json_to_file(path: &PathBuf, indent: &Indent, content: &Value) -> std::io::Result<()> {
+fn write_json_to_file(path: &PathBuf, indent: &Indent, content: &Value) -> Result<()> {
     let mut buf = Vec::new();
     let formatter = PrettyFormatter::with_indent(indent.indent().as_bytes());
     let mut ser = serde_json::Serializer::with_formatter(&mut buf, formatter);
