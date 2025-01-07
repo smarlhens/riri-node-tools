@@ -3,13 +3,8 @@ ci:
   skip: [cargo-check, clippy]
 
 repos:
-  - repo: https://github.com/pre-commit/pre-commit
-    rev: "v4.0.0"
-    hooks:
-      - id: validate_manifest
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.6.0"
+    rev: "v5.0.0"
     hooks:
       - id: check-builtin-literals
       - id: check-case-conflict
