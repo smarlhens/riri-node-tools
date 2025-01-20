@@ -24,7 +24,7 @@ log = "0.4.22"
 regex = "1.11.1"
 semver = "1.0.24"
 serde = { version = "1.0.217", features = ["derive"] }
-serde_json = { version = "1.0.135", features = ["preserve_order"] }
+serde_json = { version = "1.0.137", features = ["preserve_order"] }
 serde_yml = "0.0.12"
 tracing = "0.1.41"
 tracing-log = "0.2.0"
