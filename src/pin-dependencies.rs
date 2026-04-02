@@ -64,7 +64,7 @@ fn convert_npm_engines_to_object_engines(engines: Option<NpmLockEngines>) -> Opt
 }
 
 #[tracing::instrument]
-fn convert_npm_to_lock_dependencies(npm_dependencies: NpmDependencies) -> LockDependencies {
+fn convert_npm_to_lock_dependencies(npm_dependencies: &NpmDependencies) -> LockDependencies {
     let mut lock_dependencies = LockDependencies::new();
 
     for (dependency_name, versioned_or_resolved) in npm_dependencies.clone() {
@@ -120,24 +120,24 @@ fn npm_resolver(npm_lock: NpmLock) -> DependencyVersionResolver {
 
     match npm_lock {
         NpmLock::Version1(lock) => DependencyVersionResolver {
-            locked_dependencies: convert_npm_to_lock_dependencies(lock.dependencies),
+            locked_dependencies: convert_npm_to_lock_dependencies(&lock.dependencies),
             resolve_dependency_key: resolve_dependency,
         },
         NpmLock::Version2(lock) => {
-            if let Some(packages) = lock.packages {
+            if let Some(ref packages) = lock.packages {
                 DependencyVersionResolver {
                     locked_dependencies: convert_npm_to_lock_dependencies(packages),
                     resolve_dependency_key: resolve_package,
                 }
             } else {
                 DependencyVersionResolver {
-                    locked_dependencies: convert_npm_to_lock_dependencies(lock.dependencies),
+                    locked_dependencies: convert_npm_to_lock_dependencies(&lock.dependencies),
                     resolve_dependency_key: resolve_dependency,
                 }
             }
         }
         NpmLock::Version3(lock) => DependencyVersionResolver {
-            locked_dependencies: convert_npm_to_lock_dependencies(lock.packages),
+            locked_dependencies: convert_npm_to_lock_dependencies(&lock.packages),
             resolve_dependency_key: resolve_package,
         },
     }

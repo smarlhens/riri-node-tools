@@ -1,3 +1,7 @@
+// Types used by both pin-dependencies and check-engines (not yet implemented).
+// Some fields are only read during deserialization or reserved for check-engines.
+#![allow(dead_code)]
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
