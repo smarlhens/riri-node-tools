@@ -10,5 +10,11 @@ target/
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
+# Local cargo config (OS-specific linker/target overrides)
+.cargo/
+
+# Claude Code
+.claude/
+
 # RustRover
 .idea
