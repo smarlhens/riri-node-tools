@@ -14,10 +14,10 @@ fn find_up_multiple<T: AsRef<Path>>(file_names: &[T]) -> Result<Vec<PathBuf>> {
             let path = entry.path();
 
             for target_file_name in file_names {
-                if let Some(file_name) = path.file_name() {
-                    if target_file_name.as_ref() == file_name {
-                        matches.push(path.clone());
-                    }
+                if let Some(file_name) = path.file_name()
+                    && target_file_name.as_ref() == file_name
+                {
+                    matches.push(path.clone());
                 }
             }
 
@@ -52,13 +52,12 @@ fn find_most_recently_modified(files: &Vec<PathBuf>) -> Option<PathBuf> {
     let mut most_recent_time = SystemTime::UNIX_EPOCH;
 
     for file in files {
-        if let Ok(metadata) = file.metadata() {
-            if let Ok(modified_time) = metadata.modified() {
-                if modified_time > most_recent_time {
-                    most_recent_time = modified_time;
-                    most_recent_file.clone_from(file);
-                }
-            }
+        if let Ok(metadata) = file.metadata()
+            && let Ok(modified_time) = metadata.modified()
+            && modified_time > most_recent_time
+        {
+            most_recent_time = modified_time;
+            most_recent_file.clone_from(file);
         }
     }
 
@@ -78,25 +77,25 @@ const PNPM_LOCK_FILE: &str = "pnpm-lock.yaml";
 
 pub fn get_most_recently_modified_lock() -> Result<LockFileResult, Error> {
     let lock_file_names = vec![NPM_LOCK_FILE, YARN_LOCK_FILE, PNPM_LOCK_FILE];
-    if let Ok(matches) = find_up_multiple(&lock_file_names) {
-        if let Some(most_recent_file) = find_most_recently_modified(&matches) {
-            let package_manager = match most_recent_file.file_name().and_then(|s| s.to_str()) {
-                Some(NPM_LOCK_FILE) => PackageManager::Npm,
-                Some(YARN_LOCK_FILE) => PackageManager::Yarn,
-                Some(PNPM_LOCK_FILE) => PackageManager::Pnpm,
-                _ => {
-                    return Err(Error::new(
-                        ErrorKind::InvalidData,
-                        "Unknown lock file format",
-                    ));
-                }
-            };
+    if let Ok(matches) = find_up_multiple(&lock_file_names)
+        && let Some(most_recent_file) = find_most_recently_modified(&matches)
+    {
+        let package_manager = match most_recent_file.file_name().and_then(|s| s.to_str()) {
+            Some(NPM_LOCK_FILE) => PackageManager::Npm,
+            Some(YARN_LOCK_FILE) => PackageManager::Yarn,
+            Some(PNPM_LOCK_FILE) => PackageManager::Pnpm,
+            _ => {
+                return Err(Error::new(
+                    ErrorKind::InvalidData,
+                    "Unknown lock file format",
+                ));
+            }
+        };
 
-            return Ok(LockFileResult {
-                path: most_recent_file,
-                package_manager,
-            });
-        }
+        return Ok(LockFileResult {
+            path: most_recent_file,
+            package_manager,
+        });
     }
 
     Err(Error::new(
