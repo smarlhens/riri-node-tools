@@ -62,6 +62,6 @@
 [pre-commit]: https://pre-commit.com/#install
 [rustc]: https://www.rust-lang.org/tools/install
 [license]: https://github.com/smarlhens/riri-node-tools
-[license-shield]: https://img.shields.io/github/license/smarlhens/riri-node-tools
+[license-shield]: https://img.shields.io/badge/license-BlueOak--1.0.0-blue
 [github-ci]: https://github.com/smarlhens/riri-node-tools/actions/workflows/ci.yml
 [github-ci-shield]: https://github.com/smarlhens/riri-node-tools/workflows/ci/badge.svg

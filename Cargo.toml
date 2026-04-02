@@ -3,7 +3,7 @@ name = "riri-node-tools"
 version = "0.1.0"
 edition = "2021"
 authors = ["Samuel MARLHENS <samuel.marlhens@proton.me>"]
-license-file = "LICENSE"
+license = "BlueOak-1.0.0"
 
 [[bin]]
 name = "pin-dependencies"
