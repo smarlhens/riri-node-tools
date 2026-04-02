@@ -442,7 +442,7 @@ fn main() {
         "Computing dependency versions to pin",
         compute_versions_to_pin(&parsed_package, &resolver)
     )
-    .unwrap();
+    .expect("Unable to compute dependency versions to pin");
 
     if args.verbose.is_silent() {
         return;
