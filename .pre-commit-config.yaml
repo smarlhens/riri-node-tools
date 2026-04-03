@@ -1,7 +1,5 @@
-# skip due to pre-commit CI failures caused by sporadic network errors and issues fetching from crates.io
-ci:
-  skip: [cargo-check, clippy]
-
+# TODO: migrate to prek.toml once Renovate ships native prek manager
+# See: https://github.com/renovatebot/renovate/issues/41683
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v6.0.0"
