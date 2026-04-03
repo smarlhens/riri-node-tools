@@ -2,6 +2,7 @@
 
 [![GitHub CI][github-ci-shield]][github-ci]
 [![GitHub license][license-shield]][license]
+[![prek][prek-shield]][prek]
 
 ---
 
@@ -17,7 +18,7 @@
 ### Prerequisites
 
 - [rustc][rustc] **>=1.74.0 <2.0.0** (_tested with 1.83.0_)
-- [pre-commit][pre-commit] **>=3.2.0 <5.0.0** (_tested with 4.0.1_)
+- [prek][prek] **>=0.3.8** (_tested with 0.3.8_)
 
 ### Installation
 
@@ -42,7 +43,7 @@
 4. Enable pre-commit hooks
 
    ```bash
-   pre-commit install
+   prek install
    ```
 
 ---
@@ -59,7 +60,8 @@
 
 [development]: #development
 [todo]: #todo
-[pre-commit]: https://pre-commit.com/#install
+[prek]: https://prek.j178.dev/
+[prek-shield]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/j178/prek/master/docs/assets/badge-v0.json
 [rustc]: https://www.rust-lang.org/tools/install
 [license]: https://github.com/smarlhens/riri-node-tools
 [license-shield]: https://img.shields.io/badge/license-BlueOak--1.0.0-blue
