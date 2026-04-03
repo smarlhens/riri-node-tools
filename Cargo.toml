@@ -1,4 +1,5 @@
 [workspace]
+resolver = "3"
 members = ["crates/*"]
 
 [workspace.package]
@@ -44,27 +45,3 @@ riri-semver-range = { path = "crates/riri-semver-range" }
 riri-nce = { path = "crates/riri-nce" }
 riri-npd = { path = "crates/riri-npd" }
 riri-task-runner = { path = "crates/riri-task-runner" }
-
-[package]
-name = "riri-node-tools"
-version = "0.1.0"
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-
-[[bin]]
-name = "check-engines"
-path = "src/check-engines.rs"
-
-[dependencies]
-riri-types = { workspace = true }
-riri-npm = { workspace = true }
-anyhow = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-serde_yml = { workspace = true }
-regex = { workspace = true }
-detect-indent = { workspace = true }
-
-[lints]
-workspace = true
