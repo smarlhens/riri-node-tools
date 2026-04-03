@@ -437,6 +437,7 @@ dependencies = [
  "detect-indent",
  "log",
  "regex",
+ "riri-npm",
  "riri-types",
  "semver",
  "serde",
@@ -454,6 +455,14 @@ version = "0.1.0"
 [[package]]
 name = "riri-npm"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "detect-indent",
+ "regex",
+ "riri-types",
+ "serde_json",
+ "serde_yml",
+]
 
 [[package]]
 name = "riri-pnpm"
