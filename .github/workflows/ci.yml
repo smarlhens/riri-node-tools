@@ -23,8 +23,8 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
       - name: Check errors
-        run: cargo check
+        run: cargo check --workspace
       - name: Lint
-        run: cargo clippy --all-targets
+        run: cargo clippy --workspace --all-targets
       - name: Test
-        run: cargo test --verbose
+        run: cargo test --workspace --verbose

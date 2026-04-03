@@ -35,13 +35,13 @@ repos:
       - id: cargo-check
         name: cargo check
         description: Check the package for errors.
-        entry: cargo check
+        entry: cargo check --workspace
         language: rust
         types: [rust]
         pass_filenames: false
       - id: clippy
         name: clippy
-        entry: cargo clippy --all-targets
+        entry: cargo clippy --workspace --all-targets
         language: rust
         args: ["--", "-D", "warnings"]
         types: [rust]
