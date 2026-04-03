@@ -1,19 +1,23 @@
-[package]
-name = "riri-node-tools"
-version = "0.1.0"
+[workspace]
+members = ["crates/*"]
+
+[workspace.package]
 edition = "2024"
 authors = ["Samuel MARLHENS <samuel.marlhens@proton.me>"]
 license = "BlueOak-1.0.0"
 
-[[bin]]
-name = "pin-dependencies"
-path = "src/pin-dependencies.rs"
+[workspace.lints.clippy]
+pedantic = "deny"
+dbg_macro = "deny"
+empty_structs_with_brackets = "deny"
+float_cmp_const = "deny"
+if_then_some_else_none = "deny"
+same_name_method = "deny"
+tests_outside_test_module = "deny"
+unseparated_literal_suffix = "deny"
+unwrap_used = "deny"
 
-[[bin]]
-name = "check-engines"
-path = "src/check-engines.rs"
-
-[dependencies]
+[workspace.dependencies]
 anyhow = "1.0.102"
 clap = { version = "4.6.0", features = ["derive"] }
 clap-verbosity-flag = "3.0.4"
@@ -30,13 +34,48 @@ tracing = "0.1.44"
 tracing-log = "0.2.0"
 tracing-subscriber = "0.3.23"
 
-[lints.clippy]
-pedantic = "deny"
-dbg_macro = "deny"
-empty_structs_with_brackets = "deny"
-float_cmp_const = "deny"
-if_then_some_else_none = "deny"
-same_name_method = "deny"
-tests_outside_test_module = "deny"
-unseparated_literal_suffix = "deny"
-unwrap_used = "deny"
+# workspace internal
+riri-types = { path = "crates/riri-types" }
+riri-npm = { path = "crates/riri-npm" }
+riri-pnpm = { path = "crates/riri-pnpm" }
+riri-yarn = { path = "crates/riri-yarn" }
+riri-bun = { path = "crates/riri-bun" }
+riri-semver-range = { path = "crates/riri-semver-range" }
+riri-nce = { path = "crates/riri-nce" }
+riri-npd = { path = "crates/riri-npd" }
+riri-task-runner = { path = "crates/riri-task-runner" }
+
+[package]
+name = "riri-node-tools"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "pin-dependencies"
+path = "src/pin-dependencies.rs"
+
+[[bin]]
+name = "check-engines"
+path = "src/check-engines.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+clap-verbosity-flag = { workspace = true }
+comfy-table = { workspace = true }
+console = { workspace = true }
+detect-indent = { workspace = true }
+log = { workspace = true }
+regex = { workspace = true }
+semver = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yml = { workspace = true }
+tracing = { workspace = true }
+tracing-log = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[lints]
+workspace = true

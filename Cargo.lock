@@ -418,6 +418,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
 
 [[package]]
+name = "riri-bun"
+version = "0.1.0"
+
+[[package]]
+name = "riri-nce"
+version = "0.1.0"
+
+[[package]]
 name = "riri-node-tools"
 version = "0.1.0"
 dependencies = [
@@ -437,6 +445,34 @@ dependencies = [
  "tracing-log",
  "tracing-subscriber",
 ]
+
+[[package]]
+name = "riri-npd"
+version = "0.1.0"
+
+[[package]]
+name = "riri-npm"
+version = "0.1.0"
+
+[[package]]
+name = "riri-pnpm"
+version = "0.1.0"
+
+[[package]]
+name = "riri-semver-range"
+version = "0.1.0"
+
+[[package]]
+name = "riri-task-runner"
+version = "0.1.0"
+
+[[package]]
+name = "riri-types"
+version = "0.1.0"
+
+[[package]]
+name = "riri-yarn"
+version = "0.1.0"
 
 [[package]]
 name = "rustix"
