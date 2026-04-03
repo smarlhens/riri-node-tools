@@ -424,19 +424,10 @@ version = "0.1.0"
 [[package]]
 name = "riri-nce"
 version = "0.1.0"
-
-[[package]]
-name = "riri-node-tools"
-version = "0.1.0"
 dependencies = [
  "anyhow",
- "detect-indent",
- "regex",
  "riri-npm",
  "riri-types",
- "serde",
- "serde_json",
- "serde_yml",
 ]
 
 [[package]]
