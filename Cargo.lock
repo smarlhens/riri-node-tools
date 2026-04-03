@@ -437,6 +437,7 @@ dependencies = [
  "detect-indent",
  "log",
  "regex",
+ "riri-types",
  "semver",
  "serde",
  "serde_json",
@@ -469,6 +470,9 @@ version = "0.1.0"
 [[package]]
 name = "riri-types"
 version = "0.1.0"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "riri-yarn"
