@@ -35,6 +35,12 @@ tracing = "0.1.44"
 tracing-log = "0.2.0"
 tracing-subscriber = "0.3.23"
 
+# test infrastructure
+criterion = { version = "0.8.2", features = ["html_reports"] }
+insta = "1.47.2"
+proptest = "1.11.0"
+rstest = "0.26.1"
+
 # workspace internal
 riri-types = { path = "crates/riri-types" }
 riri-npm = { path = "crates/riri-npm" }
