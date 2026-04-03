@@ -61,6 +61,7 @@ name = "check-engines"
 path = "src/check-engines.rs"
 
 [dependencies]
+riri-types = { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true }
 clap-verbosity-flag = { workspace = true }
