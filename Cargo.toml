@@ -53,10 +53,6 @@ authors.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "pin-dependencies"
-path = "src/pin-dependencies.rs"
-
-[[bin]]
 name = "check-engines"
 path = "src/check-engines.rs"
 
@@ -64,20 +60,11 @@ path = "src/check-engines.rs"
 riri-types = { workspace = true }
 riri-npm = { workspace = true }
 anyhow = { workspace = true }
-clap = { workspace = true }
-clap-verbosity-flag = { workspace = true }
-comfy-table = { workspace = true }
-console = { workspace = true }
-detect-indent = { workspace = true }
-log = { workspace = true }
-regex = { workspace = true }
-semver = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde_yml = { workspace = true }
-tracing = { workspace = true }
-tracing-log = { workspace = true }
-tracing-subscriber = { workspace = true }
+regex = { workspace = true }
+detect-indent = { workspace = true }
 
 [lints]
 workspace = true

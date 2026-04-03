@@ -5,5 +5,22 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
+[dependencies]
+riri-types = { workspace = true }
+riri-npm = { workspace = true }
+anyhow = { workspace = true }
+clap = { workspace = true }
+clap-verbosity-flag = { workspace = true }
+comfy-table = { workspace = true }
+console = { workspace = true }
+detect-indent = { workspace = true }
+log = { workspace = true }
+semver = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-log = { workspace = true }
+tracing-subscriber = { workspace = true }
+
 [lints]
 workspace = true

@@ -430,27 +430,35 @@ name = "riri-node-tools"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "detect-indent",
+ "regex",
+ "riri-npm",
+ "riri-types",
+ "serde",
+ "serde_json",
+ "serde_yml",
+]
+
+[[package]]
+name = "riri-npd"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
  "clap",
  "clap-verbosity-flag",
  "comfy-table",
  "console",
  "detect-indent",
  "log",
- "regex",
  "riri-npm",
  "riri-types",
  "semver",
  "serde",
  "serde_json",
- "serde_yml",
  "tracing",
  "tracing-log",
  "tracing-subscriber",
 ]
-
-[[package]]
-name = "riri-npd"
-version = "0.1.0"
 
 [[package]]
 name = "riri-npm"
