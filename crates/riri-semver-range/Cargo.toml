@@ -5,5 +5,21 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
+[dependencies]
+semver = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+nodejs-semver = "4.2.0"
+proptest = { workspace = true }
+
+[[bench]]
+name = "range_parsing"
+harness = false
+
+[[bench]]
+name = "range_satisfies"
+harness = false
+
 [lints]
 workspace = true
