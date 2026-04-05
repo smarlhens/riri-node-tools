@@ -890,11 +890,6 @@ version = "0.1.0"
 [[package]]
 name = "riri-nce"
 version = "0.1.0"
-dependencies = [
- "anyhow",
- "riri-npm",
- "riri-types",
-]
 
 [[package]]
 name = "riri-npd"
@@ -907,11 +902,11 @@ dependencies = [
  "console",
  "detect-indent",
  "log",
- "riri-npm",
- "riri-types",
+ "regex",
  "semver",
  "serde",
  "serde_json",
+ "serde_yml",
  "tracing",
  "tracing-log",
  "tracing-subscriber",

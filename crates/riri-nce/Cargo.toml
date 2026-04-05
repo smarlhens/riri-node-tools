@@ -6,9 +6,6 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-riri-types = { workspace = true }
-riri-npm = { workspace = true }
-anyhow = { workspace = true }
 
 [lints]
 workspace = true

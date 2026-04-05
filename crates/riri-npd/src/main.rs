@@ -1,4 +1,6 @@
 mod finder;
+mod parser;
+mod types;
 
 use anyhow::Result;
 use clap::Parser;
@@ -6,11 +8,7 @@ use clap_verbosity_flag::Verbosity;
 use comfy_table::{Table, presets};
 use console::style;
 use detect_indent::Indent;
-use riri_npm::{parse_lock, parse_package};
-use riri_types::{
-    Engine, LockDependency, NpmDependencies, NpmLock, NpmLockEngines, ObjectEngines, PackageJson,
-    PackageManagerLock, PnpmLock, VersionedDependencyOrResolved, YarnLockV2,
-};
+use parser::{parse_lock, parse_package};
 use semver::Version;
 use serde::ser::Serialize;
 use serde_json::Value;
@@ -22,6 +20,10 @@ use std::path::PathBuf;
 use std::string::ToString;
 use tracing::{debug, error, info};
 use tracing_log::AsTrace;
+use types::{
+    Engine, LockDependency, NpmDependencies, NpmLock, NpmLockEngines, ObjectEngines, PackageJson,
+    PackageManagerLock, PnpmLock, VersionedDependencyOrResolved, YarnLockV2,
+};
 
 type ResolveDependencyKey = fn(name: &str, version: &str) -> String;
 type LockDependencies = HashMap<String, LockDependency>;
