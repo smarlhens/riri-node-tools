@@ -43,6 +43,7 @@ proptest = "1.11.0"
 rstest = "0.26.1"
 
 # workspace internal
+riri-find-up = { path = "crates/riri-find-up" }
 riri-types = { path = "crates/riri-types" }
 riri-npm = { path = "crates/riri-npm" }
 riri-pnpm = { path = "crates/riri-pnpm" }
