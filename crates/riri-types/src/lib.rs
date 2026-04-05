@@ -60,10 +60,10 @@ pub enum Engines {
     Array(Vec<String>),
 }
 
-/// Minimal representation of a `package.json` for engine checking.
-///
-/// Only deserializes the fields needed by `npm-check-engines`.
+/// Shared `package.json` representation covering fields needed by both
+/// `npm-check-engines` (engines) and `npm-pin-dependencies` (dependencies).
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PackageJson {
     #[serde(default)]
     pub name: Option<String>,
@@ -71,6 +71,12 @@ pub struct PackageJson {
     pub version: Option<String>,
     #[serde(default)]
     pub engines: Option<HashMap<String, String>>,
+    #[serde(default)]
+    pub dependencies: Option<HashMap<String, String>>,
+    #[serde(default)]
+    pub dev_dependencies: Option<HashMap<String, String>>,
+    #[serde(default)]
+    pub optional_dependencies: Option<HashMap<String, String>>,
 }
 
 /// Unified trait for extracting engine constraints from any lockfile format.
