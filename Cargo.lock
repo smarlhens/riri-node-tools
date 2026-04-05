@@ -1014,6 +1014,7 @@ dependencies = [
  "riri-semver-range",
  "riri-task-runner",
  "serde_json",
+ "tempfile",
  "thiserror",
 ]
 
