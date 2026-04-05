@@ -1,3 +1,7 @@
+mod detect;
+
+pub use detect::{DetectError, detect_lockfile, find_package_json};
+
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fmt;
