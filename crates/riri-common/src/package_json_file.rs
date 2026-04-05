@@ -44,6 +44,8 @@ impl PackageJsonFile {
     /// Write the raw JSON value back to disk, preserving the original indentation
     /// and ensuring a trailing newline.
     ///
+    /// Uses atomic write (temp file + rename) to avoid partial writes on crash.
+    ///
     /// # Errors
     ///
     /// Returns [`DetectError::Io`] if the file can't be written.
@@ -57,7 +59,17 @@ impl PackageJsonFile {
         })?;
         buf.push(b'\n');
 
-        std::fs::write(&self.path, &buf).map_err(|e| DetectError::Io {
+        // Atomic write: write to temp file in same directory, then rename.
+        let parent = self
+            .path
+            .parent()
+            .unwrap_or_else(|| std::path::Path::new("."));
+        let tmp_path = parent.join(".package.json.tmp");
+        std::fs::write(&tmp_path, &buf).map_err(|e| DetectError::Io {
+            path: tmp_path.clone(),
+            source: e,
+        })?;
+        std::fs::rename(&tmp_path, &self.path).map_err(|e| DetectError::Io {
             path: self.path.clone(),
             source: e,
         })
