@@ -888,6 +888,13 @@ name = "riri-bun"
 version = "0.1.0"
 
 [[package]]
+name = "riri-common"
+version = "0.1.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "riri-find-up"
 version = "0.1.0"
 dependencies = [
@@ -923,7 +930,7 @@ dependencies = [
 name = "riri-npm"
 version = "0.1.0"
 dependencies = [
- "riri-types",
+ "riri-common",
  "serde",
  "serde_json",
  "thiserror",
@@ -946,13 +953,6 @@ dependencies = [
 [[package]]
 name = "riri-task-runner"
 version = "0.1.0"
-
-[[package]]
-name = "riri-types"
-version = "0.1.0"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "riri-yarn"
