@@ -50,6 +50,23 @@ impl PackageJsonFile {
     ///
     /// Returns [`DetectError::Io`] if the file can't be written.
     pub fn write(&self) -> Result<(), DetectError> {
+        self.write_inner(false)
+    }
+
+    /// Write the raw JSON value back to disk with keys sorted using
+    /// `sort-package-json` conventions.
+    ///
+    /// Requires the `sort` feature on `riri-common`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DetectError::Io`] if the file can't be written.
+    #[cfg(feature = "sort")]
+    pub fn write_sorted(&self) -> Result<(), DetectError> {
+        self.write_inner(true)
+    }
+
+    fn write_inner(&self, sort: bool) -> Result<(), DetectError> {
         let formatter = serde_json::ser::PrettyFormatter::with_indent(self.indent.as_bytes());
         let mut buf = Vec::new();
         let mut serializer = serde_json::Serializer::with_formatter(&mut buf, formatter);
@@ -59,13 +76,35 @@ impl PackageJsonFile {
         })?;
         buf.push(b'\n');
 
+        let output = if sort {
+            #[cfg(feature = "sort")]
+            {
+                let json_str = String::from_utf8(buf).map_err(|e| DetectError::Io {
+                    path: self.path.clone(),
+                    source: std::io::Error::new(std::io::ErrorKind::InvalidData, e),
+                })?;
+                sort_package_json::sort_package_json(&json_str)
+                    .map_err(|e| DetectError::Io {
+                        path: self.path.clone(),
+                        source: std::io::Error::new(std::io::ErrorKind::InvalidData, e),
+                    })?
+                    .into_bytes()
+            }
+            #[cfg(not(feature = "sort"))]
+            {
+                buf
+            }
+        } else {
+            buf
+        };
+
         // Atomic write: write to temp file in same directory, then rename.
         let parent = self
             .path
             .parent()
             .unwrap_or_else(|| std::path::Path::new("."));
         let tmp_path = parent.join(".package.json.tmp");
-        std::fs::write(&tmp_path, &buf).map_err(|e| DetectError::Io {
+        std::fs::write(&tmp_path, &output).map_err(|e| DetectError::Io {
             path: tmp_path.clone(),
             source: e,
         })?;

@@ -45,6 +45,10 @@ struct Args {
     /// Output results as JSON.
     #[arg(long)]
     json: bool,
+
+    /// Sort package.json keys on write (uses sort-package-json conventions).
+    #[arg(long)]
+    sort: bool,
 }
 
 fn renderer_mode(args: &Args) -> RendererMode {
@@ -194,7 +198,13 @@ fn run(args: &Args) -> Result<ExitCode> {
     if args.update {
         let task = runner.task("Updating package.json...");
         apply_engines_update(&mut pkg_file, &output.engines_range_to_set);
-        pkg_file.write().context("failed to write package.json")?;
+        if args.sort {
+            pkg_file
+                .write_sorted()
+                .context("failed to write package.json")?;
+        } else {
+            pkg_file.write().context("failed to write package.json")?;
+        }
         task.complete("Updated package.json");
 
         let task = runner.task("Updating lockfile...");

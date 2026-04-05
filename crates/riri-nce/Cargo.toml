@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-riri-common = { workspace = true }
+riri-common = { workspace = true, features = ["sort"] }
 riri-npm = { workspace = true }
 riri-semver-range = { workspace = true }
 riri-task-runner = { workspace = true }
