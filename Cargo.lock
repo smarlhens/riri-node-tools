@@ -982,6 +982,13 @@ dependencies = [
 [[package]]
 name = "riri-nce"
 version = "0.1.0"
+dependencies = [
+ "riri-common",
+ "riri-npm",
+ "riri-semver-range",
+ "serde_json",
+ "thiserror",
+]
 
 [[package]]
 name = "riri-npd"
