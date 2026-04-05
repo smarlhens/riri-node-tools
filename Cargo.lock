@@ -970,6 +970,7 @@ dependencies = [
  "riri-find-up",
  "serde",
  "serde_json",
+ "tempfile",
  "thiserror",
 ]
 
