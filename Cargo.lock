@@ -966,6 +966,7 @@ version = "0.1.0"
 name = "riri-common"
 version = "0.1.0"
 dependencies = [
+ "detect-indent",
  "riri-find-up",
  "serde",
  "serde_json",

@@ -1,6 +1,8 @@
 mod detect;
+mod package_json_file;
 
 pub use detect::{DetectError, detect_lockfile, find_package_json};
+pub use package_json_file::PackageJsonFile;
 
 use serde::Deserialize;
 use std::collections::HashMap;
