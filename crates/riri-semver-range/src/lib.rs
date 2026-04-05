@@ -49,8 +49,10 @@ impl RangePart {
         let (Op::Gte, Some(Op::Lt), Some(max)) = (&self.min_op, &self.max_op, &self.max) else {
             return false;
         };
-        // Standard caret: >=X.Y.Z <(X+1).0.0 (works for any major including 0)
-        if max.major == self.min.major + 1 && max.minor == 0 && max.patch == 0 {
+        // Standard caret: >=X.Y.Z <(X+1).0.0 — only for major > 0.
+        // For major 0, node-semver caret has special semantics (locks minor or patch).
+        if self.min.major > 0 && max.major == self.min.major + 1 && max.minor == 0 && max.patch == 0
+        {
             return true;
         }
         // Zero-major caret: >=0.Y.Z <0.(Y+1).0
