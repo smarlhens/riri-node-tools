@@ -919,6 +919,7 @@ dependencies = [
  "riri-types",
  "serde",
  "serde_json",
+ "thiserror",
 ]
 
 [[package]]
