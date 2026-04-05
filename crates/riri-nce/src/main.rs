@@ -145,7 +145,7 @@ fn run(args: &Args) -> Result<ExitCode> {
         let json_output = serde_json::json!({
             "computed": output.computed_engines.iter()
                 .map(|(k, v)| (k.to_string(), v.clone()))
-                .collect::<std::collections::HashMap<String, String>>(),
+                .collect::<std::collections::BTreeMap<String, String>>(),
             "changes": output.engines_range_to_set.iter()
                 .map(|c| serde_json::json!({
                     "engine": c.engine.to_string(),
@@ -164,27 +164,30 @@ fn run(args: &Args) -> Result<ExitCode> {
 
     // Display results
     if output.engines_range_to_set.is_empty() {
-        let task = runner.task("");
-        task.complete(&format!(
-            "All computed engines range constraints are up-to-date {}",
-            style(":)").green()
-        ));
+        if !args.quiet {
+            eprintln!(
+                "\n  All computed engines range constraints are up-to-date {}",
+                style(":)").green()
+            );
+        }
         return Ok(ExitCode::SUCCESS);
     }
 
-    let mut table = Table::new();
-    table.load_preset(presets::NOTHING);
-    for change in &output.engines_range_to_set {
-        table.add_row(vec![
-            change.engine.to_string(),
-            change.range.clone(),
-            "\u{2192}".to_string(),
-            change.range_to_set.clone(),
-        ]);
-    }
+    if !args.quiet {
+        let mut table = Table::new();
+        table.load_preset(presets::NOTHING);
+        for change in &output.engines_range_to_set {
+            table.add_row(vec![
+                change.engine.to_string(),
+                change.range.clone(),
+                "\u{2192}".to_string(),
+                change.range_to_set.clone(),
+            ]);
+        }
 
-    for line in table.lines() {
-        eprintln!("  {}", line.trim());
+        for line in table.lines() {
+            eprintln!("  {}", line.trim());
+        }
     }
 
     // Update if requested
@@ -200,7 +203,7 @@ fn run(args: &Args) -> Result<ExitCode> {
         let lockfile_out = serde_json::to_string_pretty(&lockfile_raw)? + "\n";
         std::fs::write(&lockfile_result.path, lockfile_out).context("failed to write lockfile")?;
         task.complete("Updated lockfile");
-    } else {
+    } else if !args.quiet {
         let hint = generate_update_hint(args);
         eprintln!(
             "\n  Run {} to upgrade package.json.",
