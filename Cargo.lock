@@ -1004,10 +1004,15 @@ dependencies = [
 name = "riri-nce"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "clap",
+ "comfy-table",
+ "console",
  "insta",
  "riri-common",
  "riri-npm",
  "riri-semver-range",
+ "riri-task-runner",
  "serde_json",
  "thiserror",
 ]
