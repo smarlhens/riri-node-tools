@@ -916,12 +916,9 @@ dependencies = [
 name = "riri-npm"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "detect-indent",
- "regex",
  "riri-types",
+ "serde",
  "serde_json",
- "serde_yml",
 ]
 
 [[package]]
