@@ -60,6 +60,19 @@ pub enum Engines {
     Array(Vec<String>),
 }
 
+/// Minimal representation of a `package.json` for engine checking.
+///
+/// Only deserializes the fields needed by `npm-check-engines`.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct PackageJson {
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub version: Option<String>,
+    #[serde(default)]
+    pub engines: Option<HashMap<String, String>>,
+}
+
 /// Unified trait for extracting engine constraints from any lockfile format.
 ///
 /// Each package manager crate implements this for its own lockfile type.
