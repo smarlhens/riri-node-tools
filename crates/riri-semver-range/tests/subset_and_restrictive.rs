@@ -180,7 +180,8 @@ fn humanize_bounded_range() {
 #[test]
 fn humanize_lte_cross_major() {
     // <=2.0.0 spans majors 0, 1, and includes exactly 2.0.0
-    check_humanize("<=2.0.0", "^0.0.0 || ^1.0.0 || 2.0.0");
+    // ^0.0.0 in node-semver means >=0.0.0 <0.0.1, so we can't use caret for major 0.
+    check_humanize("<=2.0.0", ">=0.0.0 <1.0.0 || ^1.0.0 || 2.0.0");
 }
 
 #[test]
