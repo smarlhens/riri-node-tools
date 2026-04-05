@@ -983,6 +983,7 @@ dependencies = [
 name = "riri-nce"
 version = "0.1.0"
 dependencies = [
+ "insta",
  "riri-common",
  "riri-npm",
  "riri-semver-range",
