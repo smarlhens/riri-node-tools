@@ -3,7 +3,7 @@
 //! Parses the lockfile and exposes engine constraints per dependency
 //! via the [`LockfileEngines`] trait.
 
-use riri_types::Engines;
+use riri_types::{Engines, LockfileEngines};
 use serde::Deserialize;
 use std::collections::HashMap;
 
@@ -95,6 +95,16 @@ impl NpmPackageLock {
             Self::V1 { dependencies } | Self::V2 { dependencies, .. } => dependencies,
             Self::V3 { packages } => packages,
         }
+    }
+}
+
+impl LockfileEngines for NpmPackageLock {
+    fn engines_iter(&self) -> Box<dyn Iterator<Item = (&str, &Engines)> + '_> {
+        Box::new(
+            self.entries()
+                .iter()
+                .filter_map(|(name, entry)| entry.engines.as_ref().map(|e| (name.as_str(), e))),
+        )
     }
 }
 
