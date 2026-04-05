@@ -6,6 +6,7 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
+detect-indent = { workspace = true }
 riri-find-up = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
