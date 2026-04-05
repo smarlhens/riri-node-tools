@@ -22,7 +22,13 @@ pub enum NpmParseError {
 #[derive(Debug, Clone, Deserialize)]
 pub struct NpmLockEntry {
     #[serde(default)]
+    pub version: Option<String>,
+    #[serde(default)]
     pub engines: Option<Engines>,
+    #[serde(default)]
+    pub resolved: Option<String>,
+    #[serde(default)]
+    pub link: Option<bool>,
 }
 
 /// Parsed npm `package-lock.json` covering v1, v2, and v3 formats.
