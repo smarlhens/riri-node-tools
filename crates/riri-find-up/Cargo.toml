@@ -1,0 +1,12 @@
+[package]
+name = "riri-find-up"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dev-dependencies]
+tempfile = "3.19.1"
+
+[lints]
+workspace = true

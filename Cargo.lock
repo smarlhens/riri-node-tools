@@ -888,6 +888,13 @@ name = "riri-bun"
 version = "0.1.0"
 
 [[package]]
+name = "riri-find-up"
+version = "0.1.0"
+dependencies = [
+ "tempfile",
+]
+
+[[package]]
 name = "riri-nce"
 version = "0.1.0"
 
