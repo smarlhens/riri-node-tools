@@ -7,11 +7,8 @@ license.workspace = true
 
 [dependencies]
 riri-types = { workspace = true }
-anyhow = { workspace = true }
-detect-indent = { workspace = true }
-regex = { workspace = true }
+serde = { workspace = true }
 serde_json = { workspace = true }
-serde_yml = { workspace = true }
 
 [lints]
 workspace = true
