@@ -1,0 +1,6 @@
+---
+source: crates/riri-npm/tests/parse_fixtures.rs
+expression: snapshot
+---
+: {node: 18.14}
+node_modules/foo: {node: 18.13}
