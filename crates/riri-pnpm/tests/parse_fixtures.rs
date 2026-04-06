@@ -52,3 +52,36 @@ fn parse_pnpm_fixture(#[files("../../fixtures/pnpm-*/pnpm-lock.yaml")] lockfile_
         insta::assert_snapshot!(snapshot);
     });
 }
+
+#[test]
+fn missing_lockfile_version() {
+    let err = PnpmLockfile::parse("packages: {}").unwrap_err();
+    assert!(
+        matches!(err, riri_pnpm::PnpmParseError::MissingVersion),
+        "expected MissingVersion, got: {err}"
+    );
+}
+
+#[test]
+fn unsupported_lockfile_version() {
+    let err = PnpmLockfile::parse("lockfileVersion: '99.0'\npackages: {}").unwrap_err();
+    assert!(
+        matches!(err, riri_pnpm::PnpmParseError::UnsupportedVersion(_)),
+        "expected UnsupportedVersion, got: {err}"
+    );
+}
+
+#[test]
+fn invalid_yaml() {
+    let err = PnpmLockfile::parse("{{{{invalid yaml").unwrap_err();
+    assert!(
+        matches!(err, riri_pnpm::PnpmParseError::Yaml(_)),
+        "expected Yaml error, got: {err}"
+    );
+}
+
+#[test]
+fn empty_packages() {
+    let lock = PnpmLockfile::parse("lockfileVersion: 5.4\npackages: {}").unwrap();
+    assert_eq!(lock.engines_iter().count(), 0);
+}
