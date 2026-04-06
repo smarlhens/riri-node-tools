@@ -30,49 +30,52 @@ fn run_in_fixture(fixture: &str, extra_args: &[&str]) -> (String, String, i32) {
 }
 
 #[test]
-fn cli_or_ranges_node_only_verbose() {
+fn cli_npm_or_ranges_node_only_verbose() {
     let (stdout, stderr, code) = run_in_fixture("npm-v3-or-ranges-node-only", &["-v"]);
     assert_eq!(code, 1);
     assert!(stdout.is_empty());
-    insta::assert_snapshot!("or_ranges_node_only_verbose_stderr", stderr);
+    insta::assert_snapshot!("npm_or_ranges_node_only_verbose_stderr", stderr);
 }
 
 #[test]
-fn cli_or_ranges_node_npm_yarn_verbose() {
+fn cli_npm_or_ranges_node_npm_yarn_verbose() {
     let (stdout, stderr, code) = run_in_fixture("npm-v3-or-ranges-node-npm-yarn", &["-v"]);
     assert_eq!(code, 1);
-    insta::assert_snapshot!("or_ranges_node_npm_yarn_verbose_stderr", stderr);
+    insta::assert_snapshot!("npm_or_ranges_node_npm_yarn_verbose_stderr", stderr);
     assert!(stdout.is_empty());
 }
 
 #[test]
-fn cli_up_to_date_verbose() {
+fn cli_npm_up_to_date_verbose() {
     let (stdout, stderr, code) = run_in_fixture("npm-v1-deps-field", &["-v"]);
     assert_eq!(code, 0);
-    insta::assert_snapshot!("up_to_date_verbose_stderr", stderr);
+    insta::assert_snapshot!("npm_up_to_date_verbose_stderr", stderr);
     assert!(stdout.is_empty());
 }
 
 #[test]
-fn cli_json_output() {
+fn cli_npm_json_output() {
     let (stdout, _stderr, code) = run_in_fixture("npm-v3-or-ranges-node-only", &["--json"]);
     assert_eq!(code, 1);
     // Parse to normalize key order, then snapshot
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
-    insta::assert_snapshot!("json_output", serde_json::to_string_pretty(&json).unwrap());
+    insta::assert_snapshot!(
+        "npm_json_output",
+        serde_json::to_string_pretty(&json).unwrap()
+    );
 }
 
 #[test]
-fn cli_engine_filter_verbose() {
+fn cli_npm_engine_filter_verbose() {
     let (stdout, stderr, code) =
         run_in_fixture("npm-v3-or-ranges-node-npm-yarn", &["-v", "-e", "node"]);
     assert_eq!(code, 1);
-    insta::assert_snapshot!("engine_filter_verbose_stderr", stderr);
+    insta::assert_snapshot!("npm_engine_filter_verbose_stderr", stderr);
     assert!(stdout.is_empty());
 }
 
 #[test]
-fn cli_quiet_mode() {
+fn cli_npm_quiet_mode() {
     let (stdout, stderr, code) = run_in_fixture("npm-v3-or-ranges-node-only", &["-q"]);
     assert_eq!(code, 1);
     assert!(stdout.is_empty());
