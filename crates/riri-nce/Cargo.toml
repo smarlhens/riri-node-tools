@@ -21,6 +21,7 @@ thiserror = { workspace = true }
 
 [dev-dependencies]
 criterion = { workspace = true }
+dhat = "0.3.3"
 insta = { workspace = true }
 serde_json = { workspace = true }
 tempfile = { workspace = true }
