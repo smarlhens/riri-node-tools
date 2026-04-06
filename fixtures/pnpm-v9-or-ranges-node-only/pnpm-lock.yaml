@@ -1,0 +1,53 @@
+lockfileVersion: '9.0'
+
+packages:
+
+  foo@1.0.0:
+    resolution:
+      integrity: sha512-placeholder
+    engines:
+      node: '>=6.9.0'
+
+  bar@1.0.0:
+    resolution:
+      integrity: sha512-placeholder
+    engines:
+      node: '>=12.22.0'
+
+  all@1.0.0:
+    resolution:
+      integrity: sha512-placeholder
+    engines:
+      node: '*'
+
+  arr@1.0.0:
+    resolution:
+      integrity: sha512-placeholder
+    engines:
+      node: '>= 7'
+
+  noengines@1.0.0:
+    resolution:
+      integrity: sha512-placeholder
+
+  complex1@1.0.0:
+    resolution:
+      integrity: sha512-placeholder
+    engines:
+      node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0
+
+  complex2@1.0.0:
+    resolution:
+      integrity: sha512-placeholder
+    engines:
+      node: '>=16.0.0||^14.17.0'
+
+snapshots:
+
+  foo@1.0.0: {}
+  bar@1.0.0: {}
+  all@1.0.0: {}
+  arr@1.0.0: {}
+  noengines@1.0.0: {}
+  complex1@1.0.0: {}
+  complex2@1.0.0: {}
