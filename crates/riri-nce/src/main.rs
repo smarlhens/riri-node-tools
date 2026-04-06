@@ -11,6 +11,7 @@ use riri_nce::{CheckEnginesInput, apply_engines_to_lockfile, apply_engines_updat
 use riri_npm::NpmPackageLock;
 use riri_pnpm::PnpmLockfile;
 use riri_task_runner::{RendererMode, TaskRunner};
+use riri_yarn::YarnProject;
 use std::process::ExitCode;
 
 /// Check and update Node.js engine constraints in package.json
@@ -136,9 +137,21 @@ fn run(args: &Args) -> Result<ExitCode> {
                 Box::new(lock)
             }
         },
-        other @ PackageManager::Yarn => {
-            task.skip("Parsing lockfile", &format!("{other:?} not yet supported"));
-            return Ok(ExitCode::SUCCESS);
+        PackageManager::Yarn => {
+            let project_dir = lockfile_result
+                .path
+                .parent()
+                .unwrap_or_else(|| std::path::Path::new("."));
+            match YarnProject::scan(project_dir) {
+                Err(e) => {
+                    task.fail("Scanning node_modules");
+                    return Err(anyhow::anyhow!(e));
+                }
+                Ok(project) => {
+                    task.complete("Scanned node_modules");
+                    Box::new(project)
+                }
+            }
         }
     };
 
