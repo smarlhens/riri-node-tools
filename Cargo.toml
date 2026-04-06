@@ -28,7 +28,7 @@ detect-indent = "0.1.0"
 indicatif = "0.18.4"
 log = "0.4.29"
 regex = "1.12.3"
-semver = "1.0.27"
+semver = "1.0.28"
 serde = { version = "1.0.228", features = ["derive"] }
 sort-package-json = "0.0.12"
 serde_json = { version = "1.0.149", features = ["preserve_order"] }
