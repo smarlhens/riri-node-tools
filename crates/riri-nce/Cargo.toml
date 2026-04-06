@@ -20,7 +20,6 @@ thiserror = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
-riri-pnpm = { workspace = true }
 serde_json = { workspace = true }
 tempfile = "3.19.1"
 
