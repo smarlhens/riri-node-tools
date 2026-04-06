@@ -2,5 +2,5 @@
 source: crates/riri-pnpm/tests/parse_fixtures.rs
 expression: snapshot
 ---
-/@babel/core/7.20.7: {node: >=6.9.0}
-/eslint/8.30.0: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+/@fake-scope/fake-lib-a/7.20.7: {node: >=6.9.0}
+/fake-lib-b/8.30.0: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}

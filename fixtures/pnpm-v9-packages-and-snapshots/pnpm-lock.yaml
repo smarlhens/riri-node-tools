@@ -2,13 +2,13 @@ lockfileVersion: '9.0'
 
 packages:
 
-  lodash@4.17.21:
+  fake-lib-a@4.17.21:
     resolution:
       integrity: sha512-placeholder
     engines:
       node: '>=0.10.0'
 
-  typescript@5.0.4:
+  fake-lib-b@5.0.4:
     resolution:
       integrity: sha512-placeholder
     engines:
@@ -17,6 +17,6 @@ packages:
 
 snapshots:
 
-  lodash@4.17.21: {}
+  fake-lib-a@4.17.21: {}
 
-  typescript@5.0.4: {}
+  fake-lib-b@5.0.4: {}
