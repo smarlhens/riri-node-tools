@@ -8,7 +8,7 @@ license.workspace = true
 [dependencies]
 riri-common = { workspace = true }
 serde = { workspace = true }
-serde_yml = { workspace = true }
+serde-saphyr = "0.0.23"
 thiserror = { workspace = true }
 
 [dev-dependencies]
