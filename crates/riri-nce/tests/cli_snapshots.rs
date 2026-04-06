@@ -160,3 +160,11 @@ fn cli_yarn_json_output() {
         serde_json::to_string_pretty(&json).unwrap()
     );
 }
+
+#[test]
+fn cli_yarn_up_to_date_verbose() {
+    let (stdout, stderr, code) = run_in_fixture("yarn-v1-up-to-date", &["-v"]);
+    assert_eq!(code, 0);
+    insta::assert_snapshot!("yarn_up_to_date_verbose_stderr", stderr);
+    assert!(stdout.is_empty());
+}

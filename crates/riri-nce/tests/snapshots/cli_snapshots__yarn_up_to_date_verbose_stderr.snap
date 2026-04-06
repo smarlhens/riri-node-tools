@@ -1,0 +1,14 @@
+---
+source: crates/riri-nce/tests/cli_snapshots.rs
+expression: stderr
+---
+  Detecting lockfile...
+  Detected yarn.lock
+  Reading package.json...
+  Read package.json
+  Parsing lockfile...
+  Scanned node_modules
+  Computing engine constraints...
+  Computed engine constraints
+
+  All computed engines range constraints are up-to-date :)
