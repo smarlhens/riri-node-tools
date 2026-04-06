@@ -242,3 +242,57 @@ fn pnpm_or_ranges_node_npm_yarn() {
     let result = run_pnpm_fixture("pnpm-v9-or-ranges-node-npm-yarn");
     insta::assert_snapshot!(result);
 }
+
+// ── yarn fixtures ───────────────────────────────────────────────────
+
+fn run_yarn_fixture(fixture_dir: &str) -> String {
+    let fixture_path = std::path::Path::new("../../fixtures").join(fixture_dir);
+    let pkg_path = fixture_path.join("package.json");
+
+    let project = riri_yarn::YarnProject::scan(&fixture_path).unwrap();
+    let pkg_content = std::fs::read_to_string(&pkg_path).unwrap();
+    let pkg: riri_common::PackageJson = serde_json::from_str(&pkg_content).unwrap();
+
+    let entries: Vec<(&str, &riri_common::Engines)> = project.engines_iter().collect();
+
+    let input = CheckEnginesInput {
+        lockfile_entries: entries,
+        package_engines: pkg.engines.as_ref(),
+        filter_engines: vec![],
+    };
+
+    let output = check_engines(&input);
+
+    let mut lines = Vec::new();
+
+    let mut computed: Vec<_> = output.computed_engines.iter().collect();
+    computed.sort_by_key(|(k, _)| format!("{k}"));
+    for (key, range) in &computed {
+        lines.push(format!("computed {key}: {range}"));
+    }
+
+    if output.engines_range_to_set.is_empty() {
+        lines.push("no changes needed".to_string());
+    } else {
+        for change in &output.engines_range_to_set {
+            lines.push(format!(
+                "change {}: {} → {}",
+                change.engine, change.range, change.range_to_set
+            ));
+        }
+    }
+
+    lines.join("\n")
+}
+
+#[test]
+fn yarn_or_ranges_node_only() {
+    let result = run_yarn_fixture("yarn-v1-or-ranges-node-only");
+    insta::assert_snapshot!(result);
+}
+
+#[test]
+fn yarn_or_ranges_node_npm_yarn() {
+    let result = run_yarn_fixture("yarn-v4-or-ranges-node-npm-yarn");
+    insta::assert_snapshot!(result);
+}
