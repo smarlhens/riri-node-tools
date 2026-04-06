@@ -1,0 +1,18 @@
+lockfileVersion: 5.4
+
+packages:
+
+  /@babel/core/7.20.7:
+    resolution:
+      integrity: sha512-placeholder
+    engines:
+      node: '>=6.9.0'
+    dev: false
+
+  /eslint/8.30.0:
+    resolution:
+      integrity: sha512-placeholder
+    engines:
+      node: ^12.22.0 || ^14.17.0 || >=16.0.0
+    hasBin: true
+    dev: true
