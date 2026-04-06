@@ -33,6 +33,11 @@ pub enum PnpmLockfile {
     V5 {
         packages: HashMap<String, PnpmPackageEntry>,
     },
+    /// v6 format (lockfileVersion 6.x — pnpm v8).
+    /// Keys: `/name@version(peers)` or `/@scope/name@version(peers)`.
+    V6 {
+        packages: HashMap<String, PnpmPackageEntry>,
+    },
 }
 
 impl PnpmLockfile {
@@ -66,6 +71,12 @@ impl PnpmLockfile {
                     packages: lock.packages,
                 })
             }
+            6 => {
+                let lock: PnpmLockV6Raw = serde_yml::from_value(raw)?;
+                Ok(Self::V6 {
+                    packages: lock.packages,
+                })
+            }
             _ => Err(PnpmParseError::UnsupportedVersion(version_str)),
         }
     }
@@ -74,7 +85,7 @@ impl PnpmLockfile {
     #[must_use]
     pub fn entries(&self) -> &HashMap<String, PnpmPackageEntry> {
         match self {
-            Self::V5 { packages } => packages,
+            Self::V5 { packages } | Self::V6 { packages } => packages,
         }
     }
 }
@@ -99,6 +110,15 @@ fn parse_major_version(version: &str) -> Option<u64> {
 
 #[derive(Deserialize)]
 struct PnpmLockV5Raw {
+    #[allow(dead_code)]
+    #[serde(alias = "lockfileVersion")]
+    lockfile_version: serde_yml::Value,
+    #[serde(default)]
+    packages: HashMap<String, PnpmPackageEntry>,
+}
+
+#[derive(Deserialize)]
+struct PnpmLockV6Raw {
     #[allow(dead_code)]
     #[serde(alias = "lockfileVersion")]
     lockfile_version: serde_yml::Value,
