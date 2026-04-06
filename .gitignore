@@ -19,5 +19,8 @@ target/
 # RustRover
 .idea
 
+# dhat heap profiling output
+dhat-heap.json
+
 # Node
 node_modules/
