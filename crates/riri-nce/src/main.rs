@@ -9,6 +9,7 @@ use riri_common::{
 };
 use riri_nce::{CheckEnginesInput, apply_engines_to_lockfile, apply_engines_update, check_engines};
 use riri_npm::NpmPackageLock;
+use riri_pnpm::PnpmLockfile;
 use riri_task_runner::{RendererMode, TaskRunner};
 use std::process::ExitCode;
 
@@ -111,29 +112,39 @@ fn run(args: &Args) -> Result<ExitCode> {
 
     // Parse lockfile
     let task = runner.task("Parsing lockfile...");
-    if lockfile_result.package_manager != PackageManager::Npm {
-        task.skip(
-            "Parsing lockfile",
-            &format!("{:?} not yet supported", lockfile_result.package_manager),
-        );
-        return Ok(ExitCode::SUCCESS);
-    }
     let lockfile_content =
         std::fs::read_to_string(&lockfile_result.path).context("failed to read lockfile")?;
-    match NpmPackageLock::parse(&lockfile_content) {
-        Err(e) => {
-            task.fail("Parsing lockfile");
-            return Err(anyhow::anyhow!(e));
+
+    let parsed_lock: Box<dyn LockfileEngines> = match lockfile_result.package_manager {
+        PackageManager::Npm => match NpmPackageLock::parse(&lockfile_content) {
+            Err(e) => {
+                task.fail("Parsing lockfile");
+                return Err(anyhow::anyhow!(e));
+            }
+            Ok(lock) => {
+                task.complete("Parsed lockfile");
+                Box::new(lock)
+            }
+        },
+        PackageManager::Pnpm => match PnpmLockfile::parse(&lockfile_content) {
+            Err(e) => {
+                task.fail("Parsing lockfile");
+                return Err(anyhow::anyhow!(e));
+            }
+            Ok(lock) => {
+                task.complete("Parsed lockfile");
+                Box::new(lock)
+            }
+        },
+        other @ PackageManager::Yarn => {
+            task.skip("Parsing lockfile", &format!("{other:?} not yet supported"));
+            return Ok(ExitCode::SUCCESS);
         }
-        Ok(_) => {
-            task.complete("Parsed lockfile");
-        }
-    }
-    let lock = NpmPackageLock::parse(&lockfile_content)?;
+    };
 
     // Compute engine constraints
     let task = runner.task("Computing engine constraints...");
-    let entries: Vec<(&str, &riri_common::Engines)> = lock.engines_iter().collect();
+    let entries: Vec<(&str, &riri_common::Engines)> = parsed_lock.engines_iter().collect();
     let filter_engines = parse_engine_filters(&args.engines);
 
     let input = CheckEnginesInput {
@@ -207,12 +218,15 @@ fn run(args: &Args) -> Result<ExitCode> {
         }
         task.complete("Updated package.json");
 
-        let task = runner.task("Updating lockfile...");
-        let mut lockfile_raw: serde_json::Value = serde_json::from_str(&lockfile_content)?;
-        apply_engines_to_lockfile(&mut lockfile_raw, &output.engines_range_to_set);
-        let lockfile_out = serde_json::to_string_pretty(&lockfile_raw)? + "\n";
-        std::fs::write(&lockfile_result.path, lockfile_out).context("failed to write lockfile")?;
-        task.complete("Updated lockfile");
+        if lockfile_result.package_manager == PackageManager::Npm {
+            let task = runner.task("Updating lockfile...");
+            let mut lockfile_raw: serde_json::Value = serde_json::from_str(&lockfile_content)?;
+            apply_engines_to_lockfile(&mut lockfile_raw, &output.engines_range_to_set);
+            let lockfile_out = serde_json::to_string_pretty(&lockfile_raw)? + "\n";
+            std::fs::write(&lockfile_result.path, lockfile_out)
+                .context("failed to write lockfile")?;
+            task.complete("Updated lockfile");
+        }
     } else if !args.quiet {
         let hint = generate_update_hint(args);
         eprintln!(
