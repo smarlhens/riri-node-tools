@@ -1077,6 +1077,7 @@ dependencies = [
  "riri-pnpm",
  "riri-semver-range",
  "riri-task-runner",
+ "riri-yarn",
  "serde_json",
  "tempfile",
  "thiserror",
