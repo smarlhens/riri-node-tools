@@ -1055,6 +1055,14 @@ dependencies = [
 [[package]]
 name = "riri-pnpm"
 version = "0.1.0"
+dependencies = [
+ "insta",
+ "riri-common",
+ "rstest",
+ "serde",
+ "serde_yml",
+ "thiserror",
+]
 
 [[package]]
 name = "riri-semver-range"
