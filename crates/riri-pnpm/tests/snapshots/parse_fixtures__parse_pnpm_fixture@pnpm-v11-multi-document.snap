@@ -1,0 +1,6 @@
+---
+source: crates/riri-pnpm/tests/parse_fixtures.rs
+expression: snapshot
+---
+lodash@4.17.21: {node: >=0.10.0}
+typescript@5.0.4: {node: >=14.17}
