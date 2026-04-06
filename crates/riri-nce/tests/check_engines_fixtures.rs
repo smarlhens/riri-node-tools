@@ -56,49 +56,49 @@ fn run_fixture(fixture_dir: &str) -> String {
 }
 
 #[test]
-fn or_ranges_node_only() {
+fn npm_or_ranges_node_only() {
     let result = run_fixture("npm-v3-or-ranges-node-only");
     insta::assert_snapshot!(result);
 }
 
 #[test]
-fn or_ranges_node_npm_yarn() {
+fn npm_or_ranges_node_npm_yarn() {
     let result = run_fixture("npm-v3-or-ranges-node-npm-yarn");
     insta::assert_snapshot!(result);
 }
 
 #[test]
-fn no_intersection() {
+fn npm_no_intersection() {
     let result = run_fixture("npm-v3-no-intersection");
     insta::assert_snapshot!(result);
 }
 
 #[test]
-fn wildcard_and_missing() {
+fn npm_wildcard_and_missing() {
     let result = run_fixture("npm-v3-wildcard-and-missing");
     insta::assert_snapshot!(result);
 }
 
 #[test]
-fn engines_as_array() {
+fn npm_engines_as_array() {
     let result = run_fixture("npm-v3-engines-as-array");
     insta::assert_snapshot!(result);
 }
 
 #[test]
-fn packages_field_v3() {
+fn npm_packages_field_v3() {
     let result = run_fixture("npm-v3-packages-field");
     insta::assert_snapshot!(result);
 }
 
 #[test]
-fn v1_deps_field() {
+fn npm_v1_deps_field() {
     let result = run_fixture("npm-v1-deps-field");
     insta::assert_snapshot!(result);
 }
 
 #[test]
-fn engine_filtering_node_only() {
+fn npm_engine_filtering_node_only() {
     let lock_content =
         std::fs::read_to_string("../../fixtures/npm-v3-or-ranges-node-npm-yarn/package-lock.json")
             .unwrap();
@@ -128,7 +128,7 @@ fn engine_filtering_node_only() {
 }
 
 #[test]
-fn no_engines_package_json() {
+fn npm_no_engines_package_json() {
     let lock_content =
         std::fs::read_to_string("../../fixtures/npm-v3-no-npmrc/package-lock.json").unwrap();
     let pkg_content =
