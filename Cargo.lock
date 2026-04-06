@@ -1012,6 +1012,7 @@ dependencies = [
  "insta",
  "riri-common",
  "riri-npm",
+ "riri-pnpm",
  "riri-semver-range",
  "riri-task-runner",
  "serde_json",
