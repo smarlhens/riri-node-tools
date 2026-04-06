@@ -21,7 +21,7 @@ thiserror = { workspace = true }
 [dev-dependencies]
 insta = { workspace = true }
 serde_json = { workspace = true }
-tempfile = "3.19.1"
+tempfile = "3.27.0"
 
 [lints]
 workspace = true

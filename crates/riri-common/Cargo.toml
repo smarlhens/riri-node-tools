@@ -17,7 +17,7 @@ sort-package-json = { workspace = true, optional = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
-tempfile = "3.19.1"
+tempfile = "3.27.0"
 
 [lints]
 workspace = true
