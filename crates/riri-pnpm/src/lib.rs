@@ -38,6 +38,12 @@ pub enum PnpmLockfile {
     V6 {
         packages: HashMap<String, PnpmPackageEntry>,
     },
+    /// v9 format (lockfileVersion 9.x — pnpm v9/v10/v11).
+    /// Engines in `packages` (keyed `name@version`, no leading `/`).
+    /// `snapshots` holds per-peer-context data (not needed for engines).
+    V9 {
+        packages: HashMap<String, PnpmPackageEntry>,
+    },
 }
 
 impl PnpmLockfile {
@@ -77,6 +83,12 @@ impl PnpmLockfile {
                     packages: lock.packages,
                 })
             }
+            9 => {
+                let lock: PnpmLockV9Raw = serde_yml::from_value(raw)?;
+                Ok(Self::V9 {
+                    packages: lock.packages,
+                })
+            }
             _ => Err(PnpmParseError::UnsupportedVersion(version_str)),
         }
     }
@@ -85,7 +97,7 @@ impl PnpmLockfile {
     #[must_use]
     pub fn entries(&self) -> &HashMap<String, PnpmPackageEntry> {
         match self {
-            Self::V5 { packages } | Self::V6 { packages } => packages,
+            Self::V5 { packages } | Self::V6 { packages } | Self::V9 { packages } => packages,
         }
     }
 }
@@ -124,4 +136,16 @@ struct PnpmLockV6Raw {
     lockfile_version: serde_yml::Value,
     #[serde(default)]
     packages: HashMap<String, PnpmPackageEntry>,
+}
+
+#[derive(Deserialize)]
+struct PnpmLockV9Raw {
+    #[allow(dead_code)]
+    #[serde(alias = "lockfileVersion")]
+    lockfile_version: serde_yml::Value,
+    #[serde(default)]
+    packages: HashMap<String, PnpmPackageEntry>,
+    #[allow(dead_code)]
+    #[serde(default)]
+    snapshots: Option<serde_yml::Value>,
 }
