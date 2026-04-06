@@ -103,3 +103,30 @@ fn cli_help() {
     assert!(stdout.contains("--engines"), "should show --engines flag");
     assert!(stdout.contains("--json"), "should show --json flag");
 }
+
+#[test]
+fn cli_pnpm_or_ranges_node_only_verbose() {
+    let (stdout, stderr, code) = run_in_fixture("pnpm-v9-or-ranges-node-only", &["-v"]);
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("pnpm_or_ranges_node_only_verbose_stderr", stderr);
+}
+
+#[test]
+fn cli_pnpm_or_ranges_node_npm_yarn_verbose() {
+    let (stdout, stderr, code) = run_in_fixture("pnpm-v9-or-ranges-node-npm-yarn", &["-v"]);
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("pnpm_or_ranges_node_npm_yarn_verbose_stderr", stderr);
+}
+
+#[test]
+fn cli_pnpm_json_output() {
+    let (stdout, _stderr, code) = run_in_fixture("pnpm-v9-or-ranges-node-only", &["--json"]);
+    assert_eq!(code, 1);
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    insta::assert_snapshot!(
+        "pnpm_json_output",
+        serde_json::to_string_pretty(&json).unwrap()
+    );
+}
