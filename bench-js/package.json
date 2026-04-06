@@ -1,0 +1,12 @@
+{
+  "name": "bench-js",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench": "node bench.mjs"
+  },
+  "dependencies": {
+    "@smarlhens/npm-check-engines": "0.14.4",
+    "tinybench": "6.0.0"
+  }
+}
