@@ -1148,6 +1148,15 @@ dependencies = [
 [[package]]
 name = "riri-yarn"
 version = "0.1.0"
+dependencies = [
+ "insta",
+ "riri-common",
+ "rstest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "walkdir",
+]
 
 [[package]]
 name = "rstest"
