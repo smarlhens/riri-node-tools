@@ -2,14 +2,14 @@ lockfileVersion: 5.4
 
 packages:
 
-  /@babel/core/7.20.7:
+  /@fake-scope/fake-lib-a/7.20.7:
     resolution:
       integrity: sha512-placeholder
     engines:
       node: '>=6.9.0'
     dev: false
 
-  /eslint/8.30.0:
+  /fake-lib-b/8.30.0:
     resolution:
       integrity: sha512-placeholder
     engines:
