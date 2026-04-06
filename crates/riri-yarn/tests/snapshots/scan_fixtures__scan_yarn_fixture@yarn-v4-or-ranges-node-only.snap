@@ -1,0 +1,9 @@
+---
+source: crates/riri-yarn/tests/scan_fixtures.rs
+expression: snapshot
+---
+fake-lib-a: {node: >=6.9.0}
+fake-lib-b: {node: >=12.22.0}
+fake-lib-c: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+fake-lib-d: {node: >=16.0.0||^14.17.0}
+fake-lib-e: {node: *}
