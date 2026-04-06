@@ -56,7 +56,13 @@ impl PnpmLockfile {
     /// Returns [`PnpmParseError`] if the YAML is invalid, the `lockfileVersion`
     /// field is missing, or the version is unsupported.
     pub fn parse(content: &str) -> Result<Self, PnpmParseError> {
-        let raw: serde_yml::Value = serde_yml::from_str(content)?;
+        // pnpm v11 uses multi-document YAML (env lockfile + main lockfile).
+        // The main lockfile is always the last document.
+        let yaml_content = content
+            .rsplit_once("\n---")
+            .map_or(content, |(_, last)| last);
+
+        let raw: serde_yml::Value = serde_yml::from_str(yaml_content)?;
 
         let version_str = raw
             .get("lockfileVersion")
