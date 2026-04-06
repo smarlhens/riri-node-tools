@@ -10,12 +10,12 @@ riri-common = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
-walkdir = "2.5.0"
+walkdir = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
 rstest = { workspace = true }
-tempfile = "3.27.0"
+tempfile = { workspace = true }
 
 [lints]
 workspace = true
