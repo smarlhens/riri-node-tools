@@ -1,0 +1,504 @@
+---
+source: crates/riri-npm/tests/parse_fixtures.rs
+expression: snapshot
+---
+node_modules/fake-dep-0: {node: >=6.9.0}
+node_modules/fake-dep-1: {node: >=12.22.0}
+node_modules/fake-dep-10: {node: *}
+node_modules/fake-dep-100: {node: *}
+node_modules/fake-dep-101: {node: >=0.10.0}
+node_modules/fake-dep-102: {node: >=8.0.0}
+node_modules/fake-dep-103: {node: >=10.13.0}
+node_modules/fake-dep-104: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-105: {node: >=6.9.0}
+node_modules/fake-dep-106: {node: >=12.22.0}
+node_modules/fake-dep-107: {node: >=14.0.0}
+node_modules/fake-dep-108: {node: >=16.0.0}
+node_modules/fake-dep-109: {node: >=18.0.0}
+node_modules/fake-dep-11: {node: >=0.10.0}
+node_modules/fake-dep-110: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-111: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-112: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-113: {node: >=14.0.0}
+node_modules/fake-dep-114: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-115: {node: *}
+node_modules/fake-dep-116: {node: >=0.10.0}
+node_modules/fake-dep-117: {node: >=8.0.0}
+node_modules/fake-dep-118: {node: >=10.13.0}
+node_modules/fake-dep-119: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-12: {node: >=8.0.0}
+node_modules/fake-dep-120: {node: >=6.9.0}
+node_modules/fake-dep-121: {node: >=12.22.0}
+node_modules/fake-dep-122: {node: >=14.0.0}
+node_modules/fake-dep-123: {node: >=16.0.0}
+node_modules/fake-dep-124: {node: >=18.0.0}
+node_modules/fake-dep-125: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-126: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-127: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-128: {node: >=14.0.0}
+node_modules/fake-dep-129: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-13: {node: >=10.13.0}
+node_modules/fake-dep-130: {node: *}
+node_modules/fake-dep-131: {node: >=0.10.0}
+node_modules/fake-dep-132: {node: >=8.0.0}
+node_modules/fake-dep-133: {node: >=10.13.0}
+node_modules/fake-dep-134: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-135: {node: >=6.9.0}
+node_modules/fake-dep-136: {node: >=12.22.0}
+node_modules/fake-dep-137: {node: >=14.0.0}
+node_modules/fake-dep-138: {node: >=16.0.0}
+node_modules/fake-dep-139: {node: >=18.0.0}
+node_modules/fake-dep-14: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-140: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-141: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-142: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-143: {node: >=14.0.0}
+node_modules/fake-dep-144: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-145: {node: *}
+node_modules/fake-dep-146: {node: >=0.10.0}
+node_modules/fake-dep-147: {node: >=8.0.0}
+node_modules/fake-dep-148: {node: >=10.13.0}
+node_modules/fake-dep-149: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-15: {node: >=6.9.0}
+node_modules/fake-dep-150: {node: >=6.9.0}
+node_modules/fake-dep-151: {node: >=12.22.0}
+node_modules/fake-dep-152: {node: >=14.0.0}
+node_modules/fake-dep-153: {node: >=16.0.0}
+node_modules/fake-dep-154: {node: >=18.0.0}
+node_modules/fake-dep-155: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-156: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-157: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-158: {node: >=14.0.0}
+node_modules/fake-dep-159: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-16: {node: >=12.22.0}
+node_modules/fake-dep-160: {node: *}
+node_modules/fake-dep-161: {node: >=0.10.0}
+node_modules/fake-dep-162: {node: >=8.0.0}
+node_modules/fake-dep-163: {node: >=10.13.0}
+node_modules/fake-dep-164: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-165: {node: >=6.9.0}
+node_modules/fake-dep-166: {node: >=12.22.0}
+node_modules/fake-dep-167: {node: >=14.0.0}
+node_modules/fake-dep-168: {node: >=16.0.0}
+node_modules/fake-dep-169: {node: >=18.0.0}
+node_modules/fake-dep-17: {node: >=14.0.0}
+node_modules/fake-dep-170: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-171: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-172: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-173: {node: >=14.0.0}
+node_modules/fake-dep-174: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-175: {node: *}
+node_modules/fake-dep-176: {node: >=0.10.0}
+node_modules/fake-dep-177: {node: >=8.0.0}
+node_modules/fake-dep-178: {node: >=10.13.0}
+node_modules/fake-dep-179: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-18: {node: >=16.0.0}
+node_modules/fake-dep-180: {node: >=6.9.0}
+node_modules/fake-dep-181: {node: >=12.22.0}
+node_modules/fake-dep-182: {node: >=14.0.0}
+node_modules/fake-dep-183: {node: >=16.0.0}
+node_modules/fake-dep-184: {node: >=18.0.0}
+node_modules/fake-dep-185: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-186: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-187: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-188: {node: >=14.0.0}
+node_modules/fake-dep-189: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-19: {node: >=18.0.0}
+node_modules/fake-dep-190: {node: *}
+node_modules/fake-dep-191: {node: >=0.10.0}
+node_modules/fake-dep-192: {node: >=8.0.0}
+node_modules/fake-dep-193: {node: >=10.13.0}
+node_modules/fake-dep-194: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-195: {node: >=6.9.0}
+node_modules/fake-dep-196: {node: >=12.22.0}
+node_modules/fake-dep-197: {node: >=14.0.0}
+node_modules/fake-dep-198: {node: >=16.0.0}
+node_modules/fake-dep-199: {node: >=18.0.0}
+node_modules/fake-dep-2: {node: >=14.0.0}
+node_modules/fake-dep-20: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-200: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-201: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-202: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-203: {node: >=14.0.0}
+node_modules/fake-dep-204: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-205: {node: *}
+node_modules/fake-dep-206: {node: >=0.10.0}
+node_modules/fake-dep-207: {node: >=8.0.0}
+node_modules/fake-dep-208: {node: >=10.13.0}
+node_modules/fake-dep-209: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-21: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-210: {node: >=6.9.0}
+node_modules/fake-dep-211: {node: >=12.22.0}
+node_modules/fake-dep-212: {node: >=14.0.0}
+node_modules/fake-dep-213: {node: >=16.0.0}
+node_modules/fake-dep-214: {node: >=18.0.0}
+node_modules/fake-dep-215: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-216: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-217: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-218: {node: >=14.0.0}
+node_modules/fake-dep-219: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-22: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-220: {node: *}
+node_modules/fake-dep-221: {node: >=0.10.0}
+node_modules/fake-dep-222: {node: >=8.0.0}
+node_modules/fake-dep-223: {node: >=10.13.0}
+node_modules/fake-dep-224: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-225: {node: >=6.9.0}
+node_modules/fake-dep-226: {node: >=12.22.0}
+node_modules/fake-dep-227: {node: >=14.0.0}
+node_modules/fake-dep-228: {node: >=16.0.0}
+node_modules/fake-dep-229: {node: >=18.0.0}
+node_modules/fake-dep-23: {node: >=14.0.0}
+node_modules/fake-dep-230: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-231: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-232: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-233: {node: >=14.0.0}
+node_modules/fake-dep-234: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-235: {node: *}
+node_modules/fake-dep-236: {node: >=0.10.0}
+node_modules/fake-dep-237: {node: >=8.0.0}
+node_modules/fake-dep-238: {node: >=10.13.0}
+node_modules/fake-dep-239: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-24: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-240: {node: >=6.9.0}
+node_modules/fake-dep-241: {node: >=12.22.0}
+node_modules/fake-dep-242: {node: >=14.0.0}
+node_modules/fake-dep-243: {node: >=16.0.0}
+node_modules/fake-dep-244: {node: >=18.0.0}
+node_modules/fake-dep-245: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-246: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-247: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-248: {node: >=14.0.0}
+node_modules/fake-dep-249: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-25: {node: *}
+node_modules/fake-dep-250: {node: *}
+node_modules/fake-dep-251: {node: >=0.10.0}
+node_modules/fake-dep-252: {node: >=8.0.0}
+node_modules/fake-dep-253: {node: >=10.13.0}
+node_modules/fake-dep-254: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-255: {node: >=6.9.0}
+node_modules/fake-dep-256: {node: >=12.22.0}
+node_modules/fake-dep-257: {node: >=14.0.0}
+node_modules/fake-dep-258: {node: >=16.0.0}
+node_modules/fake-dep-259: {node: >=18.0.0}
+node_modules/fake-dep-26: {node: >=0.10.0}
+node_modules/fake-dep-260: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-261: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-262: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-263: {node: >=14.0.0}
+node_modules/fake-dep-264: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-265: {node: *}
+node_modules/fake-dep-266: {node: >=0.10.0}
+node_modules/fake-dep-267: {node: >=8.0.0}
+node_modules/fake-dep-268: {node: >=10.13.0}
+node_modules/fake-dep-269: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-27: {node: >=8.0.0}
+node_modules/fake-dep-270: {node: >=6.9.0}
+node_modules/fake-dep-271: {node: >=12.22.0}
+node_modules/fake-dep-272: {node: >=14.0.0}
+node_modules/fake-dep-273: {node: >=16.0.0}
+node_modules/fake-dep-274: {node: >=18.0.0}
+node_modules/fake-dep-275: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-276: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-277: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-278: {node: >=14.0.0}
+node_modules/fake-dep-279: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-28: {node: >=10.13.0}
+node_modules/fake-dep-280: {node: *}
+node_modules/fake-dep-281: {node: >=0.10.0}
+node_modules/fake-dep-282: {node: >=8.0.0}
+node_modules/fake-dep-283: {node: >=10.13.0}
+node_modules/fake-dep-284: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-285: {node: >=6.9.0}
+node_modules/fake-dep-286: {node: >=12.22.0}
+node_modules/fake-dep-287: {node: >=14.0.0}
+node_modules/fake-dep-288: {node: >=16.0.0}
+node_modules/fake-dep-289: {node: >=18.0.0}
+node_modules/fake-dep-29: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-290: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-291: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-292: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-293: {node: >=14.0.0}
+node_modules/fake-dep-294: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-295: {node: *}
+node_modules/fake-dep-296: {node: >=0.10.0}
+node_modules/fake-dep-297: {node: >=8.0.0}
+node_modules/fake-dep-298: {node: >=10.13.0}
+node_modules/fake-dep-299: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-3: {node: >=16.0.0}
+node_modules/fake-dep-30: {node: >=6.9.0}
+node_modules/fake-dep-300: {node: >=6.9.0}
+node_modules/fake-dep-301: {node: >=12.22.0}
+node_modules/fake-dep-302: {node: >=14.0.0}
+node_modules/fake-dep-303: {node: >=16.0.0}
+node_modules/fake-dep-304: {node: >=18.0.0}
+node_modules/fake-dep-305: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-306: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-307: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-308: {node: >=14.0.0}
+node_modules/fake-dep-309: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-31: {node: >=12.22.0}
+node_modules/fake-dep-310: {node: *}
+node_modules/fake-dep-311: {node: >=0.10.0}
+node_modules/fake-dep-312: {node: >=8.0.0}
+node_modules/fake-dep-313: {node: >=10.13.0}
+node_modules/fake-dep-314: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-315: {node: >=6.9.0}
+node_modules/fake-dep-316: {node: >=12.22.0}
+node_modules/fake-dep-317: {node: >=14.0.0}
+node_modules/fake-dep-318: {node: >=16.0.0}
+node_modules/fake-dep-319: {node: >=18.0.0}
+node_modules/fake-dep-32: {node: >=14.0.0}
+node_modules/fake-dep-320: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-321: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-322: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-323: {node: >=14.0.0}
+node_modules/fake-dep-324: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-325: {node: *}
+node_modules/fake-dep-326: {node: >=0.10.0}
+node_modules/fake-dep-327: {node: >=8.0.0}
+node_modules/fake-dep-328: {node: >=10.13.0}
+node_modules/fake-dep-329: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-33: {node: >=16.0.0}
+node_modules/fake-dep-330: {node: >=6.9.0}
+node_modules/fake-dep-331: {node: >=12.22.0}
+node_modules/fake-dep-332: {node: >=14.0.0}
+node_modules/fake-dep-333: {node: >=16.0.0}
+node_modules/fake-dep-334: {node: >=18.0.0}
+node_modules/fake-dep-335: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-336: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-337: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-338: {node: >=14.0.0}
+node_modules/fake-dep-339: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-34: {node: >=18.0.0}
+node_modules/fake-dep-340: {node: *}
+node_modules/fake-dep-341: {node: >=0.10.0}
+node_modules/fake-dep-342: {node: >=8.0.0}
+node_modules/fake-dep-343: {node: >=10.13.0}
+node_modules/fake-dep-344: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-345: {node: >=6.9.0}
+node_modules/fake-dep-346: {node: >=12.22.0}
+node_modules/fake-dep-347: {node: >=14.0.0}
+node_modules/fake-dep-348: {node: >=16.0.0}
+node_modules/fake-dep-349: {node: >=18.0.0}
+node_modules/fake-dep-35: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-350: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-351: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-352: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-353: {node: >=14.0.0}
+node_modules/fake-dep-354: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-355: {node: *}
+node_modules/fake-dep-356: {node: >=0.10.0}
+node_modules/fake-dep-357: {node: >=8.0.0}
+node_modules/fake-dep-358: {node: >=10.13.0}
+node_modules/fake-dep-359: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-36: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-360: {node: >=6.9.0}
+node_modules/fake-dep-361: {node: >=12.22.0}
+node_modules/fake-dep-362: {node: >=14.0.0}
+node_modules/fake-dep-363: {node: >=16.0.0}
+node_modules/fake-dep-364: {node: >=18.0.0}
+node_modules/fake-dep-365: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-366: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-367: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-368: {node: >=14.0.0}
+node_modules/fake-dep-369: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-37: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-370: {node: *}
+node_modules/fake-dep-371: {node: >=0.10.0}
+node_modules/fake-dep-372: {node: >=8.0.0}
+node_modules/fake-dep-373: {node: >=10.13.0}
+node_modules/fake-dep-374: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-375: {node: >=6.9.0}
+node_modules/fake-dep-376: {node: >=12.22.0}
+node_modules/fake-dep-377: {node: >=14.0.0}
+node_modules/fake-dep-378: {node: >=16.0.0}
+node_modules/fake-dep-379: {node: >=18.0.0}
+node_modules/fake-dep-38: {node: >=14.0.0}
+node_modules/fake-dep-380: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-381: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-382: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-383: {node: >=14.0.0}
+node_modules/fake-dep-384: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-385: {node: *}
+node_modules/fake-dep-386: {node: >=0.10.0}
+node_modules/fake-dep-387: {node: >=8.0.0}
+node_modules/fake-dep-388: {node: >=10.13.0}
+node_modules/fake-dep-389: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-39: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-390: {node: >=6.9.0}
+node_modules/fake-dep-391: {node: >=12.22.0}
+node_modules/fake-dep-392: {node: >=14.0.0}
+node_modules/fake-dep-393: {node: >=16.0.0}
+node_modules/fake-dep-394: {node: >=18.0.0}
+node_modules/fake-dep-395: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-396: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-397: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-398: {node: >=14.0.0}
+node_modules/fake-dep-399: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-4: {node: >=18.0.0}
+node_modules/fake-dep-40: {node: *}
+node_modules/fake-dep-400: {node: *}
+node_modules/fake-dep-401: {node: >=0.10.0}
+node_modules/fake-dep-402: {node: >=8.0.0}
+node_modules/fake-dep-403: {node: >=10.13.0}
+node_modules/fake-dep-404: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-405: {node: >=6.9.0}
+node_modules/fake-dep-406: {node: >=12.22.0}
+node_modules/fake-dep-407: {node: >=14.0.0}
+node_modules/fake-dep-408: {node: >=16.0.0}
+node_modules/fake-dep-409: {node: >=18.0.0}
+node_modules/fake-dep-41: {node: >=0.10.0}
+node_modules/fake-dep-410: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-411: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-412: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-413: {node: >=14.0.0}
+node_modules/fake-dep-414: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-415: {node: *}
+node_modules/fake-dep-416: {node: >=0.10.0}
+node_modules/fake-dep-417: {node: >=8.0.0}
+node_modules/fake-dep-418: {node: >=10.13.0}
+node_modules/fake-dep-419: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-42: {node: >=8.0.0}
+node_modules/fake-dep-420: {node: >=6.9.0}
+node_modules/fake-dep-421: {node: >=12.22.0}
+node_modules/fake-dep-422: {node: >=14.0.0}
+node_modules/fake-dep-423: {node: >=16.0.0}
+node_modules/fake-dep-424: {node: >=18.0.0}
+node_modules/fake-dep-425: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-426: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-427: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-428: {node: >=14.0.0}
+node_modules/fake-dep-429: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-43: {node: >=10.13.0}
+node_modules/fake-dep-430: {node: *}
+node_modules/fake-dep-431: {node: >=0.10.0}
+node_modules/fake-dep-432: {node: >=8.0.0}
+node_modules/fake-dep-433: {node: >=10.13.0}
+node_modules/fake-dep-434: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-435: {node: >=6.9.0}
+node_modules/fake-dep-436: {node: >=12.22.0}
+node_modules/fake-dep-437: {node: >=14.0.0}
+node_modules/fake-dep-438: {node: >=16.0.0}
+node_modules/fake-dep-439: {node: >=18.0.0}
+node_modules/fake-dep-44: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-440: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-441: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-442: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-443: {node: >=14.0.0}
+node_modules/fake-dep-444: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-445: {node: *}
+node_modules/fake-dep-446: {node: >=0.10.0}
+node_modules/fake-dep-447: {node: >=8.0.0}
+node_modules/fake-dep-448: {node: >=10.13.0}
+node_modules/fake-dep-449: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-45: {node: >=6.9.0}
+node_modules/fake-dep-450: {node: >=6.9.0}
+node_modules/fake-dep-451: {node: >=12.22.0}
+node_modules/fake-dep-452: {node: >=14.0.0}
+node_modules/fake-dep-453: {node: >=16.0.0}
+node_modules/fake-dep-454: {node: >=18.0.0}
+node_modules/fake-dep-455: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-456: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-457: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-458: {node: >=14.0.0}
+node_modules/fake-dep-459: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-46: {node: >=12.22.0}
+node_modules/fake-dep-460: {node: *}
+node_modules/fake-dep-461: {node: >=0.10.0}
+node_modules/fake-dep-462: {node: >=8.0.0}
+node_modules/fake-dep-463: {node: >=10.13.0}
+node_modules/fake-dep-464: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-465: {node: >=6.9.0}
+node_modules/fake-dep-466: {node: >=12.22.0}
+node_modules/fake-dep-467: {node: >=14.0.0}
+node_modules/fake-dep-468: {node: >=16.0.0}
+node_modules/fake-dep-469: {node: >=18.0.0}
+node_modules/fake-dep-47: {node: >=14.0.0}
+node_modules/fake-dep-470: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-471: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-472: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-473: {node: >=14.0.0}
+node_modules/fake-dep-474: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-475: {node: *}
+node_modules/fake-dep-476: {node: >=0.10.0}
+node_modules/fake-dep-477: {node: >=8.0.0}
+node_modules/fake-dep-478: {node: >=10.13.0}
+node_modules/fake-dep-479: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-48: {node: >=16.0.0}
+node_modules/fake-dep-480: {node: >=6.9.0}
+node_modules/fake-dep-481: {node: >=12.22.0}
+node_modules/fake-dep-482: {node: >=14.0.0}
+node_modules/fake-dep-483: {node: >=16.0.0}
+node_modules/fake-dep-484: {node: >=18.0.0}
+node_modules/fake-dep-485: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-486: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-487: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-488: {node: >=14.0.0}
+node_modules/fake-dep-489: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-49: {node: >=18.0.0}
+node_modules/fake-dep-490: {node: *}
+node_modules/fake-dep-491: {node: >=0.10.0}
+node_modules/fake-dep-492: {node: >=8.0.0}
+node_modules/fake-dep-493: {node: >=10.13.0}
+node_modules/fake-dep-494: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-495: {node: >=6.9.0}
+node_modules/fake-dep-496: {node: >=12.22.0}
+node_modules/fake-dep-497: {node: >=14.0.0}
+node_modules/fake-dep-498: {node: >=16.0.0}
+node_modules/fake-dep-499: {node: >=18.0.0}
+node_modules/fake-dep-5: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-50: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-51: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-52: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-53: {node: >=14.0.0}
+node_modules/fake-dep-54: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-55: {node: *}
+node_modules/fake-dep-56: {node: >=0.10.0}
+node_modules/fake-dep-57: {node: >=8.0.0}
+node_modules/fake-dep-58: {node: >=10.13.0}
+node_modules/fake-dep-59: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-6: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-60: {node: >=6.9.0}
+node_modules/fake-dep-61: {node: >=12.22.0}
+node_modules/fake-dep-62: {node: >=14.0.0}
+node_modules/fake-dep-63: {node: >=16.0.0}
+node_modules/fake-dep-64: {node: >=18.0.0}
+node_modules/fake-dep-65: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-66: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-67: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-68: {node: >=14.0.0}
+node_modules/fake-dep-69: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-7: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-70: {node: *}
+node_modules/fake-dep-71: {node: >=0.10.0}
+node_modules/fake-dep-72: {node: >=8.0.0}
+node_modules/fake-dep-73: {node: >=10.13.0}
+node_modules/fake-dep-74: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-75: {node: >=6.9.0}
+node_modules/fake-dep-76: {node: >=12.22.0}
+node_modules/fake-dep-77: {node: >=14.0.0}
+node_modules/fake-dep-78: {node: >=16.0.0}
+node_modules/fake-dep-79: {node: >=18.0.0}
+node_modules/fake-dep-8: {node: >=14.0.0}
+node_modules/fake-dep-80: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-81: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-82: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-83: {node: >=14.0.0}
+node_modules/fake-dep-84: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-85: {node: *}
+node_modules/fake-dep-86: {node: >=0.10.0}
+node_modules/fake-dep-87: {node: >=8.0.0}
+node_modules/fake-dep-88: {node: >=10.13.0}
+node_modules/fake-dep-89: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-9: {node: ^18.0.0 || ^20.0.0}
+node_modules/fake-dep-90: {node: >=6.9.0}
+node_modules/fake-dep-91: {node: >=12.22.0}
+node_modules/fake-dep-92: {node: >=14.0.0}
+node_modules/fake-dep-93: {node: >=16.0.0}
+node_modules/fake-dep-94: {node: >=18.0.0}
+node_modules/fake-dep-95: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-96: {node: >=16.0.0||^14.17.0}
+node_modules/fake-dep-97: {node: ^14.17.0 || ^16.10.0 || >=17.0.0}
+node_modules/fake-dep-98: {node: >=14.0.0}
+node_modules/fake-dep-99: {node: ^18.0.0 || ^20.0.0}
