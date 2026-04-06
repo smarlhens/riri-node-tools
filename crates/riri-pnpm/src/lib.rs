@@ -11,7 +11,7 @@ use std::collections::HashMap;
 #[derive(Debug, thiserror::Error)]
 pub enum PnpmParseError {
     #[error("invalid YAML: {0}")]
-    Yaml(#[from] serde_yml::Error),
+    Yaml(#[from] serde_saphyr::Error),
     #[error("missing lockfileVersion field")]
     MissingVersion,
     #[error("unsupported pnpm lockfile version: {0}")]
@@ -62,35 +62,41 @@ impl PnpmLockfile {
             .rsplit_once("\n---")
             .map_or(content, |(_, last)| last);
 
-        let raw: serde_yml::Value = serde_yml::from_str(yaml_content)?;
+        // First pass: detect lockfile version.
+        let detect: VersionDetect = serde_saphyr::from_str(yaml_content).map_err(|e| {
+            // Distinguish genuine YAML syntax errors from a missing field:
+            // re-parse into a throwaway type — if *that* also fails the YAML is broken.
+            if serde_saphyr::from_str::<serde::de::IgnoredAny>(yaml_content).is_err() {
+                PnpmParseError::Yaml(e)
+            } else {
+                PnpmParseError::MissingVersion
+            }
+        })?;
 
-        let version_str = raw
-            .get("lockfileVersion")
-            .map(|v| match v {
-                serde_yml::Value::Number(n) => n.to_string(),
-                serde_yml::Value::String(s) => s.clone(),
-                other => format!("{other:?}"),
-            })
-            .ok_or(PnpmParseError::MissingVersion)?;
+        let version_str = match detect.lockfile_version {
+            VersionValue::Number(n) => n.to_string(),
+            VersionValue::String(s) => s,
+        };
 
         let major = parse_major_version(&version_str)
             .ok_or_else(|| PnpmParseError::UnsupportedVersion(version_str.clone()))?;
 
+        // Second pass: deserialize the full lockfile into the correct typed struct.
         match major {
             5 => {
-                let lock: PnpmLockV5Raw = serde_yml::from_value(raw)?;
+                let lock: PnpmLockPackages = serde_saphyr::from_str(yaml_content)?;
                 Ok(Self::V5 {
                     packages: lock.packages,
                 })
             }
             6 => {
-                let lock: PnpmLockV6Raw = serde_yml::from_value(raw)?;
+                let lock: PnpmLockPackages = serde_saphyr::from_str(yaml_content)?;
                 Ok(Self::V6 {
                     packages: lock.packages,
                 })
             }
             9 => {
-                let lock: PnpmLockV9Raw = serde_yml::from_value(raw)?;
+                let lock: PnpmLockPackages = serde_saphyr::from_str(yaml_content)?;
                 Ok(Self::V9 {
                     packages: lock.packages,
                 })
@@ -124,34 +130,28 @@ fn parse_major_version(version: &str) -> Option<u64> {
     clean.split('.').next()?.parse().ok()
 }
 
-// --- Internal raw serde types ---
+// --- Internal serde types ---
 
+/// Handles `lockfileVersion` being either a YAML number (5.4) or a quoted string ('6.0').
 #[derive(Deserialize)]
-struct PnpmLockV5Raw {
-    #[allow(dead_code)]
-    #[serde(alias = "lockfileVersion")]
-    lockfile_version: serde_yml::Value,
-    #[serde(default)]
-    packages: HashMap<String, PnpmPackageEntry>,
+#[serde(untagged)]
+enum VersionValue {
+    Number(f64),
+    String(String),
 }
 
+/// Minimal struct for version detection (first pass).
 #[derive(Deserialize)]
-struct PnpmLockV6Raw {
-    #[allow(dead_code)]
+struct VersionDetect {
     #[serde(alias = "lockfileVersion")]
-    lockfile_version: serde_yml::Value,
-    #[serde(default)]
-    packages: HashMap<String, PnpmPackageEntry>,
+    lockfile_version: VersionValue,
 }
 
+/// Shared struct for all lockfile versions — we only need `packages`.
+/// `#[serde(deny_unknown_fields)]` is NOT used so extra fields
+/// (like `snapshots`, `settings`, `importers`) are silently ignored.
 #[derive(Deserialize)]
-struct PnpmLockV9Raw {
-    #[allow(dead_code)]
-    #[serde(alias = "lockfileVersion")]
-    lockfile_version: serde_yml::Value,
+struct PnpmLockPackages {
     #[serde(default)]
     packages: HashMap<String, PnpmPackageEntry>,
-    #[allow(dead_code)]
-    #[serde(default)]
-    snapshots: Option<serde_yml::Value>,
 }
