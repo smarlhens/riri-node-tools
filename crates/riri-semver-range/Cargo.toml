@@ -21,5 +21,9 @@ harness = false
 name = "range_satisfies"
 harness = false
 
+[[bench]]
+name = "range_intersection"
+harness = false
+
 [lints]
 workspace = true
