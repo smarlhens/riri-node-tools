@@ -8,6 +8,7 @@ license.workspace = true
 [dependencies]
 riri-common = { workspace = true, features = ["sort"] }
 riri-npm = { workspace = true }
+riri-pnpm = { workspace = true }
 riri-semver-range = { workspace = true }
 riri-task-runner = { workspace = true }
 anyhow = { workspace = true }
