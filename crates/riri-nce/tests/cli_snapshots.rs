@@ -168,3 +168,14 @@ fn cli_yarn_up_to_date_verbose() {
     insta::assert_snapshot!("yarn_up_to_date_verbose_stderr", stderr);
     assert!(stdout.is_empty());
 }
+
+#[test]
+fn cli_yarn_no_node_modules() {
+    let (stdout, stderr, code) = run_in_fixture("yarn-v1-no-node-modules", &["-v"]);
+    assert_eq!(code, 2);
+    assert!(stdout.is_empty());
+    assert!(
+        stderr.contains("node_modules"),
+        "error should mention node_modules: {stderr}"
+    );
+}

@@ -25,7 +25,12 @@ fn fmt_engines(engines: &Engines) -> String {
 }
 
 #[rstest]
-fn scan_yarn_fixture(#[files("../../fixtures/yarn-*/yarn.lock")] lockfile_path: PathBuf) {
+fn scan_yarn_fixture(
+    #[files("../../fixtures/yarn-v*-or-ranges-*/yarn.lock")]
+    #[files("../../fixtures/yarn-v*-scoped-*/yarn.lock")]
+    #[files("../../fixtures/yarn-v*-up-to-date/yarn.lock")]
+    lockfile_path: PathBuf,
+) {
     let fixture_dir = lockfile_path.parent().unwrap();
     let fixture_name = fixture_dir.file_name().unwrap().to_str().unwrap();
 
