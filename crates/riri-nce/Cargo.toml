@@ -10,6 +10,7 @@ riri-common = { workspace = true, features = ["sort"] }
 riri-npm = { workspace = true }
 riri-pnpm = { workspace = true }
 riri-semver-range = { workspace = true }
+riri-yarn = { workspace = true }
 riri-task-runner = { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true }
@@ -20,7 +21,6 @@ thiserror = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
-riri-yarn = { workspace = true }
 serde_json = { workspace = true }
 tempfile = "3.27.0"
 
