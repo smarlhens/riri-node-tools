@@ -5,5 +5,15 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
+[dependencies]
+riri-common = { workspace = true }
+serde = { workspace = true }
+serde_yml = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }
+rstest = { workspace = true }
+
 [lints]
 workspace = true
