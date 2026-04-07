@@ -30,3 +30,34 @@ jobs:
         run: cargo clippy --workspace --all-targets
       - name: Test
         run: cargo test --workspace --verbose
+
+  bench-baseline:
+    uses: ./.github/workflows/bench-run.yml
+    with:
+      ref: ${{ github.sha }}
+      baseline-name: base
+      artifact-name: criterion-base
+      save-rust-cache: true
+      rust-cache-prefix: bench-v1
+
+  cache-baseline:
+    needs: bench-baseline
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download criterion baselines
+        uses: actions/download-artifact@v4
+        with:
+          name: criterion-base
+          path: /tmp/bench-baseline/criterion
+
+      - name: Save baseline metadata
+        run: |
+          echo '${{ needs.bench-baseline.outputs.binary-sizes }}' > /tmp/bench-baseline/binary-sizes.json
+          echo '${{ needs.bench-baseline.outputs.test-count }}' > /tmp/bench-baseline/test-count.txt
+          echo '${{ needs.bench-baseline.outputs.peak-rss-kb }}' > /tmp/bench-baseline/peak-rss-kb.txt
+
+      - name: Cache baseline results
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/bench-baseline
+          key: bench-baseline-${{ github.sha }}
