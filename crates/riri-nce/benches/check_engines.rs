@@ -29,6 +29,7 @@ fn bench_check_engines_small(c: &mut Criterion) {
                 lockfile_entries: entries,
                 package_engines: pkg.engines.as_ref(),
                 filter_engines: vec![],
+                precision: riri_semver_range::VersionPrecision::Full,
             };
             black_box(check_engines(&input))
         });
@@ -45,6 +46,7 @@ fn bench_check_engines_500(c: &mut Criterion) {
                 lockfile_entries: entries,
                 package_engines: pkg.engines.as_ref(),
                 filter_engines: vec![],
+                precision: riri_semver_range::VersionPrecision::Full,
             };
             black_box(check_engines(&input))
         });

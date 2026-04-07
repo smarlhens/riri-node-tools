@@ -10,6 +10,7 @@ use riri_common::{
 use riri_nce::{CheckEnginesInput, apply_engines_to_lockfile, apply_engines_update, check_engines};
 use riri_npm::NpmPackageLock;
 use riri_pnpm::PnpmLockfile;
+use riri_semver_range::VersionPrecision;
 use riri_task_runner::{RendererMode, TaskRunner};
 use riri_yarn::YarnProject;
 use std::process::ExitCode;
@@ -51,6 +52,30 @@ struct Args {
     /// Sort package.json keys on write (uses sort-package-json conventions).
     #[arg(long)]
     sort: bool,
+
+    /// Version precision in output: major (e.g. >=24), minor (e.g. >=24.0),
+    /// or patch (e.g. >=24.0.0). Trailing .0 components are trimmed accordingly.
+    /// Non-zero components are never dropped.
+    #[arg(long, value_enum, default_value_t = PrecisionArg::Patch)]
+    precision: PrecisionArg,
+}
+
+#[derive(Debug, Clone, Copy, clap::ValueEnum)]
+enum PrecisionArg {
+    /// Trim all trailing .0 (minimum 1 component).
+    Major,
+    /// Trim trailing .0 patch only (minimum 2 components).
+    Minor,
+    /// Always show major.minor.patch.
+    Patch,
+}
+
+fn to_version_precision(arg: PrecisionArg) -> VersionPrecision {
+    match arg {
+        PrecisionArg::Major => VersionPrecision::Major,
+        PrecisionArg::Minor => VersionPrecision::MajorMinor,
+        PrecisionArg::Patch => VersionPrecision::Full,
+    }
 }
 
 fn renderer_mode(args: &Args) -> RendererMode {
@@ -164,6 +189,7 @@ fn run(args: &Args) -> Result<ExitCode> {
         lockfile_entries: entries,
         package_engines: pkg_file.parsed.engines.as_ref(),
         filter_engines,
+        precision: to_version_precision(args.precision),
     };
     let output = check_engines(&input);
     task.complete("Computed engine constraints");

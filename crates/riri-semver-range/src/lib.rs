@@ -9,6 +9,56 @@ pub use parse::ParsedRange;
 pub use subset::{intersects, is_subset_of};
 
 use semver::Version;
+use std::fmt;
+
+/// Controls how many version components are emitted by [`ParsedRange::humanize_with`].
+///
+/// Trailing `.0` components are trimmed down to the requested minimum precision.
+/// Non-zero components are never trimmed.
+///
+/// # Examples
+///
+/// | Version   | `Major` | `MajorMinor` | `Full`    |
+/// |-----------|---------|--------------|-----------|
+/// | `24.0.0`  | `24`    | `24.0`       | `24.0.0`  |
+/// | `16.10.0` | `16.10` | `16.10`      | `16.10.0` |
+/// | `1.2.3`   | `1.2.3` | `1.2.3`      | `1.2.3`   |
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum VersionPrecision {
+    /// Trim as many trailing `.0` as possible (minimum 1 component).
+    Major,
+    /// Trim trailing `.0` patch only (minimum 2 components).
+    MajorMinor,
+    /// Always emit `major.minor.patch` (default, current behaviour).
+    #[default]
+    Full,
+}
+
+/// Format a [`semver::Version`] respecting the requested precision.
+///
+/// Trailing zero components are trimmed down to the minimum required by `precision`,
+/// but non-zero components are never dropped.
+pub(crate) fn format_version(v: &Version, precision: VersionPrecision) -> String {
+    match precision {
+        VersionPrecision::Full => fmt::format(format_args!("{v}")),
+        VersionPrecision::MajorMinor => {
+            if v.patch == 0 {
+                format!("{}.{}", v.major, v.minor)
+            } else {
+                fmt::format(format_args!("{v}"))
+            }
+        }
+        VersionPrecision::Major => {
+            if v.minor == 0 && v.patch == 0 {
+                format!("{}", v.major)
+            } else if v.patch == 0 {
+                format!("{}.{}", v.major, v.minor)
+            } else {
+                fmt::format(format_args!("{v}"))
+            }
+        }
+    }
+}
 
 fn same_tuple(v: &Version, tuple: (u64, u64, u64)) -> bool {
     (v.major, v.minor, v.patch) == tuple

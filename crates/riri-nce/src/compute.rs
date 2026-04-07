@@ -1,7 +1,7 @@
 //! Core engine constraint computation.
 
 use riri_common::{EngineConstraintKey, Engines};
-use riri_semver_range::{ParsedRange, restrictive_range};
+use riri_semver_range::{ParsedRange, VersionPrecision, restrictive_range};
 use std::collections::HashMap;
 
 /// Extract the constraint string for a given engine key from an `Engines` value.
@@ -30,6 +30,7 @@ pub fn get_constraint_from_engines(engines: &Engines, key: EngineConstraintKey) 
 pub fn compute_engines_constraint<'a>(
     entries: impl Iterator<Item = (&'a str, &'a Engines)>,
     key: EngineConstraintKey,
+    precision: VersionPrecision,
 ) -> String {
     let wildcard = ParsedRange::parse("*").expect("wildcard always parses");
     let mut most_restrictive = wildcard;
@@ -62,7 +63,7 @@ pub fn compute_engines_constraint<'a>(
         }
     }
 
-    most_restrictive.humanize()
+    most_restrictive.humanize_with(precision)
 }
 
 /// Input for [`check_engines`].
@@ -73,6 +74,8 @@ pub struct CheckEnginesInput<'a> {
     pub package_engines: Option<&'a HashMap<String, String>>,
     /// Which engine keys to check. If empty, checks all (node, npm, yarn).
     pub filter_engines: Vec<EngineConstraintKey>,
+    /// Version precision for humanized output.
+    pub precision: VersionPrecision,
 }
 
 /// A single engine whose computed range differs from the current `package.json`.
@@ -122,7 +125,7 @@ pub fn check_engines(input: &CheckEnginesInput<'_>) -> CheckEnginesOutput {
             Some(pkg_engines) => {
                 let root_engines = Engines::Object(pkg_engines.clone());
                 let root_entries: Vec<(&str, &Engines)> = vec![("", &root_engines)];
-                compute_engines_constraint(root_entries.into_iter(), key)
+                compute_engines_constraint(root_entries.into_iter(), key, input.precision)
             }
             None => "*".to_string(),
         };
@@ -136,7 +139,7 @@ pub fn check_engines(input: &CheckEnginesInput<'_>) -> CheckEnginesOutput {
                 .map_or_else(|| Engines::Object(HashMap::new()), Engines::Object);
             let combined = std::iter::once(("" as &str, &root_engines as &Engines))
                 .chain(input.lockfile_entries.iter().copied());
-            compute_engines_constraint(combined, key)
+            compute_engines_constraint(combined, key, input.precision)
         };
 
         computed_engines.insert(key, to.clone());

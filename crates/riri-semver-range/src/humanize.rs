@@ -1,13 +1,22 @@
 use crate::helpers::split_by_major;
-use crate::{Op, ParsedRange, RangePart};
+use crate::{Op, ParsedRange, RangePart, VersionPrecision, format_version};
 
 impl ParsedRange {
     /// Convert the range to a human-readable string.
     ///
     /// Cross-major parts are split into one per major, then each part
     /// is formatted as caret (`^X.Y.Z`), gte (`>=X.Y.Z`), or raw bounds.
+    ///
+    /// Always uses [`VersionPrecision::Full`] (three-component versions).
     #[must_use]
     pub fn humanize(&self) -> String {
+        self.humanize_with(VersionPrecision::Full)
+    }
+
+    /// Like [`humanize`](Self::humanize), but trims trailing `.0` components
+    /// according to the given [`VersionPrecision`].
+    #[must_use]
+    pub fn humanize_with(&self, precision: VersionPrecision) -> String {
         if self.parts.is_empty() {
             return "*".to_string();
         }
@@ -26,25 +35,27 @@ impl ParsedRange {
             .parts
             .iter()
             .flat_map(split_by_major)
-            .map(|p| humanize_part(&p))
+            .map(|p| humanize_part(&p, precision))
             .collect();
 
         humanized.join(" || ")
     }
 }
 
-fn humanize_part(part: &RangePart) -> String {
+fn humanize_part(part: &RangePart, precision: VersionPrecision) -> String {
+    let fmt = |v: &semver::Version| format_version(v, precision);
+
     // Caret pattern: >=X.Y.Z <(X+1).0.0
     if part.is_caret() {
-        return format!("^{}", part.min);
+        return format!("^{}", fmt(&part.min));
     }
 
     // Open-ended: >=X.Y.Z (no upper bound)
     if part.max.is_none() {
         return match part.min_op {
-            Op::Gte => format!(">={}", part.min),
-            Op::Gt => format!(">{}", part.min),
-            _ => format!("{}", part.min),
+            Op::Gte => format!(">={}", fmt(&part.min)),
+            Op::Gt => format!(">{}", fmt(&part.min)),
+            _ => fmt(&part.min),
         };
     }
 
@@ -57,19 +68,19 @@ fn humanize_part(part: &RangePart) -> String {
             && max.patch == part.min.patch + 1)
             || (part.max_op == Some(Op::Lte) && *max == part.min))
     {
-        return format!("{}", part.min);
+        return fmt(&part.min);
     }
 
     // Generic bounded range
     let min_str = match part.min_op {
-        Op::Gte => format!(">={}", part.min),
-        Op::Gt => format!(">{}", part.min),
-        _ => format!("{}", part.min),
+        Op::Gte => format!(">={}", fmt(&part.min)),
+        Op::Gt => format!(">{}", fmt(&part.min)),
+        _ => fmt(&part.min),
     };
 
     match (&part.max, &part.max_op) {
-        (Some(max), Some(Op::Lt)) => format!("{min_str} <{max}"),
-        (Some(max), Some(Op::Lte)) => format!("{min_str} <={max}"),
+        (Some(max), Some(Op::Lt)) => format!("{min_str} <{}", fmt(max)),
+        (Some(max), Some(Op::Lte)) => format!("{min_str} <={}", fmt(max)),
         _ => min_str,
     }
 }
