@@ -231,3 +231,76 @@ fn humanize_round_trip() {
         }
     }
 }
+
+// ===== humanize_with precision =====
+
+fn check_humanize_with(
+    input: &str,
+    precision: riri_semver_range::VersionPrecision,
+    expected: &str,
+) {
+    let r = parse(input);
+    assert_eq!(
+        r.humanize_with(precision),
+        expected,
+        "humanize_with({input:?}, {precision:?})"
+    );
+}
+
+#[test]
+fn humanize_with_full_is_default() {
+    use riri_semver_range::VersionPrecision;
+    // Full precision should match humanize()
+    let inputs = ["^1.2.3", ">=17.0.0", ">=24.0.0", "*"];
+    for input in &inputs {
+        let r = parse(input);
+        assert_eq!(r.humanize(), r.humanize_with(VersionPrecision::Full));
+    }
+}
+
+#[test]
+fn humanize_with_major_trims_trailing_zeros() {
+    use riri_semver_range::VersionPrecision;
+    check_humanize_with(">=24.0.0", VersionPrecision::Major, ">=24");
+    check_humanize_with("^1.0.0", VersionPrecision::Major, "^1");
+    check_humanize_with(">=16.0.0", VersionPrecision::Major, ">=16");
+}
+
+#[test]
+fn humanize_with_major_preserves_nonzero() {
+    use riri_semver_range::VersionPrecision;
+    // Non-zero components are never trimmed
+    check_humanize_with(">=16.10.0", VersionPrecision::Major, ">=16.10");
+    check_humanize_with("^1.2.3", VersionPrecision::Major, "^1.2.3");
+    check_humanize_with(">=1.0.5", VersionPrecision::Major, ">=1.0.5");
+}
+
+#[test]
+fn humanize_with_major_minor_trims_patch_zero() {
+    use riri_semver_range::VersionPrecision;
+    check_humanize_with(">=24.0.0", VersionPrecision::MajorMinor, ">=24.0");
+    check_humanize_with(">=16.10.0", VersionPrecision::MajorMinor, ">=16.10");
+    check_humanize_with("^1.0.0", VersionPrecision::MajorMinor, "^1.0");
+}
+
+#[test]
+fn humanize_with_major_minor_preserves_nonzero_patch() {
+    use riri_semver_range::VersionPrecision;
+    check_humanize_with("^1.2.3", VersionPrecision::MajorMinor, "^1.2.3");
+    check_humanize_with(">=1.0.5", VersionPrecision::MajorMinor, ">=1.0.5");
+}
+
+#[test]
+fn humanize_with_bounded_range() {
+    use riri_semver_range::VersionPrecision;
+    // Both bounds should be formatted with the same precision
+    check_humanize_with(">=1.0.0 <2.0.0", VersionPrecision::Major, "^1");
+    check_humanize_with(">=1.0.0 <1.5.0", VersionPrecision::Major, ">=1 <1.5");
+}
+
+#[test]
+fn humanize_with_wildcard_unchanged() {
+    use riri_semver_range::VersionPrecision;
+    check_humanize_with("*", VersionPrecision::Major, "*");
+    check_humanize_with("*", VersionPrecision::MajorMinor, "*");
+}
