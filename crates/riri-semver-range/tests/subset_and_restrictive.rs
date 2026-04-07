@@ -131,6 +131,84 @@ fn restrictive_commutative_for_subsets() {
     check_restrictive(r2, r1, "^16.14.0");
 }
 
+// ===== restrictive_range: complex cases =====
+
+#[test]
+fn restrictive_disjoint_or_with_bounded_range() {
+    // The original proptest bug: r2 has a part outside r1's bounds
+    check_restrictive(">=5.0.0 <9.0.0", "^5.0.0 || ^11.0.0", "^5.0.0");
+}
+
+#[test]
+fn restrictive_open_ended_with_or() {
+    // Open-ended r1 should keep matching r2 parts
+    check_restrictive(
+        ">=14.0.0",
+        "^14.17.0 || ^16.10.0 || >=18.0.0",
+        "^14.17.0 || ^16.10.0 || >=18.0.0",
+    );
+}
+
+#[test]
+fn restrictive_cross_major_bounded() {
+    // r1 spans multiple majors, r2 has specific carets
+    check_restrictive(
+        ">=14.0.0 <18.0.0",
+        "^14.17.0 || ^16.10.0 || >=18.0.0",
+        "^14.17.0 || ^16.10.0",
+    );
+}
+
+#[test]
+fn restrictive_both_open_ended() {
+    // Two open-ended ranges — result is the higher min
+    check_restrictive(">=14.0.0", ">=16.0.0", ">=16.0.0");
+}
+
+#[test]
+fn restrictive_or_ranges_partial_overlap() {
+    // Only some parts overlap
+    check_restrictive(
+        "^12.0.0 || ^14.0.0 || ^16.0.0",
+        "^14.0.0 || ^16.0.0 || ^18.0.0",
+        "^14.0.0 || ^16.0.0",
+    );
+}
+
+#[test]
+fn restrictive_tighter_min_within_same_caret() {
+    // Both are carets on same major but different min patches
+    check_restrictive("^16.10.0", "^16.13.0", "^16.13.0");
+}
+
+#[test]
+fn restrictive_bounded_vs_open_ended_same_major() {
+    // Bounded at major 16 vs open-ended from major 16
+    check_restrictive(">=16.0.0 <17.0.0", ">=16.10.0", "^16.10.0");
+}
+
+#[test]
+fn restrictive_many_or_parts() {
+    // Many OR parts, only a few overlap
+    check_restrictive(
+        "^10.0.0 || ^12.0.0 || ^14.0.0 || ^16.0.0 || ^18.0.0",
+        "^14.0.0 || ^18.0.0 || ^20.0.0",
+        "^14.0.0 || ^18.0.0",
+    );
+}
+
+#[test]
+fn restrictive_exact_version_in_range() {
+    // Exact version within a caret range
+    check_restrictive("^16.0.0", "16.5.0", "16.5.0");
+}
+
+#[test]
+fn restrictive_zero_major_ranges() {
+    // Zero-major caret has special semantics
+    check_restrictive("^0.1.0", "^0.1.5", "^0.1.5");
+}
+
 // ===== humanize =====
 
 #[test]

@@ -1,42 +1,5 @@
-use crate::{Op, ParsedRange, RangePart};
+use crate::{Op, RangePart};
 use semver::Version;
-
-/// Apply a minimum version to a range: drop parts below `min`'s major,
-/// bump same-major parts whose min is below `min`.
-#[must_use]
-pub fn apply_min_version(range: &ParsedRange, min: &Version) -> ParsedRange {
-    let parts: Vec<RangePart> = range
-        .parts
-        .iter()
-        .filter_map(|part| {
-            // Drop parts whose max is below min
-            if let (Some(max), Some(Op::Lt)) = (&part.max, &part.max_op)
-                && max <= min
-            {
-                return None;
-            }
-            if let (Some(max), Some(Op::Lte)) = (&part.max, &part.max_op)
-                && max < min
-            {
-                return None;
-            }
-
-            // For same-major parts: bump lower bound if needed
-            if part.min < *min {
-                Some(RangePart {
-                    min: min.clone(),
-                    min_op: Op::Gte,
-                    max: part.max.clone(),
-                    max_op: part.max_op,
-                })
-            } else {
-                Some(part.clone())
-            }
-        })
-        .collect();
-
-    ParsedRange { parts }
-}
 
 /// Split a cross-major range part into one part per major version.
 ///
