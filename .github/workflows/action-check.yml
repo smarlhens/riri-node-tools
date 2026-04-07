@@ -1,0 +1,50 @@
+name: action-check
+
+on:
+  pull_request:
+    paths:
+      - ".github/actions/bench-compare/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/actions/bench-compare/**"
+
+env:
+  ACTION_DIR: .github/actions/bench-compare
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: .github/actions/bench-compare
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .github/actions/bench-compare/.nvmrc
+          cache: npm
+          cache-dependency-path: .github/actions/bench-compare/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npx oxlint --config $GITHUB_WORKSPACE/oxlintrc.json
+
+      - name: Format check
+        run: npx oxfmt --config $GITHUB_WORKSPACE/.oxfmtrc.json --check
+
+      - name: Bundle
+        run: npm run bundle

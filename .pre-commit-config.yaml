@@ -23,6 +23,11 @@ repos:
       - id: oxfmt
         types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css]
 
+  - repo: https://github.com/oxc-project/mirrors-oxlint
+    rev: "v1.59.0"
+    hooks:
+      - id: oxlint
+
   - repo: local
     hooks:
       - id: fmt
