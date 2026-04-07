@@ -13,6 +13,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      bench: ${{ steps.filter.outputs.bench }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Detect changes
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            bench:
+              - "crates/**"
+              - "Cargo.toml"
+              - "Cargo.lock"
+              - "fixtures/**"
+              - "scripts/**"
+              - "rustfmt.toml"
+              - ".github/workflows/ci.yml"
+              - ".github/workflows/bench-run.yml"
+
   rust:
     runs-on: ubuntu-24.04
     steps:
@@ -42,6 +64,8 @@ jobs:
           token: ${{ secrets.PAT }}
 
   bench-baseline:
+    needs: changes
+    if: needs.changes.outputs.bench == 'true'
     uses: ./.github/workflows/bench-run.yml
     with:
       ref: ${{ github.sha }}
@@ -51,7 +75,8 @@ jobs:
       rust-cache-prefix: bench-v1
 
   cache-baseline:
-    needs: bench-baseline
+    needs: [changes, bench-baseline]
+    if: needs.changes.outputs.bench == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Download criterion baselines

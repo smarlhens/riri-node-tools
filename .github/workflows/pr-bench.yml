@@ -4,6 +4,15 @@ on:
   pull_request:
     branches:
       - "**"
+    paths:
+      - "crates/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "fixtures/**"
+      - "scripts/**"
+      - "rustfmt.toml"
+      - ".github/workflows/pr-bench.yml"
+      - ".github/workflows/bench-run.yml"
 
 permissions:
   contents: read
