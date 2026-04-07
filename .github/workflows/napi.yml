@@ -1,0 +1,208 @@
+name: napi
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "crates/riri-napi/**"
+      - "crates/riri-nce/**"
+      - "crates/riri-semver-range/**"
+      - "crates/riri-common/**"
+      - "crates/riri-npm/**"
+      - "crates/riri-pnpm/**"
+      - "crates/riri-yarn/**"
+      - ".github/workflows/napi.yml"
+  pull_request:
+    paths:
+      - "crates/riri-napi/**"
+      - "crates/riri-nce/**"
+      - "crates/riri-semver-range/**"
+      - "crates/riri-common/**"
+      - "crates/riri-npm/**"
+      - "crates/riri-pnpm/**"
+      - "crates/riri-yarn/**"
+      - ".github/workflows/napi.yml"
+
+env:
+  APP_NAME: npm-check-engines
+  MACOSX_DEPLOYMENT_TARGET: "10.13"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+            build: npx napi build --platform --release --target x86_64-unknown-linux-gnu --use-napi-cross
+
+          - host: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            build: npx napi build --platform --release --target x86_64-unknown-linux-musl -x
+
+          - host: ubuntu-24.04
+            target: aarch64-unknown-linux-gnu
+            build: npx napi build --platform --release --target aarch64-unknown-linux-gnu --use-napi-cross
+
+          - host: ubuntu-24.04
+            target: aarch64-unknown-linux-musl
+            build: npx napi build --platform --release --target aarch64-unknown-linux-musl -x
+
+          - host: macos-15
+            target: x86_64-apple-darwin
+            build: npx napi build --platform --release --target x86_64-apple-darwin
+
+          - host: macos-15
+            target: aarch64-apple-darwin
+            build: npx napi build --platform --release --target aarch64-apple-darwin
+
+          - host: windows-2025
+            target: x86_64-pc-windows-msvc
+            build: npx napi build --platform --release --target x86_64-pc-windows-msvc
+
+    name: build - ${{ matrix.settings.target }}
+    runs-on: ${{ matrix.settings.host }}
+    defaults:
+      run:
+        working-directory: crates/riri-napi
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: crates/riri-napi/.nvmrc
+          cache: npm
+          cache-dependency-path: crates/riri-napi/package-lock.json
+
+      - name: Install Rust
+        run: rustup update stable && rustup default stable && rustup target add ${{ matrix.settings.target }}
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: napi-${{ matrix.settings.target }}
+
+      - name: Install zig (musl targets)
+        if: contains(matrix.settings.target, 'musl')
+        uses: mlugg/setup-zig@v2
+
+      - name: Install cargo-zigbuild (musl targets)
+        if: contains(matrix.settings.target, 'musl')
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-zigbuild
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: ${{ matrix.settings.build }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: bindings-${{ matrix.settings.target }}
+          path: crates/riri-napi/${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
+          retention-days: 1
+
+  test-native:
+    name: test - ${{ matrix.settings.target }}
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: macos-15
+            target: x86_64-apple-darwin
+            architecture: x64
+
+          - host: macos-15
+            target: aarch64-apple-darwin
+            architecture: arm64
+
+          - host: windows-2025
+            target: x86_64-pc-windows-msvc
+            architecture: x64
+
+    runs-on: ${{ matrix.settings.host }}
+    defaults:
+      run:
+        working-directory: crates/riri-napi
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: crates/riri-napi/.nvmrc
+          architecture: ${{ matrix.settings.architecture }}
+
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: bindings-${{ matrix.settings.target }}
+          path: crates/riri-napi
+
+      - name: Run tests
+        run: node test.mjs
+
+  test-linux:
+    name: test - ${{ matrix.target }}
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-gnu
+          - aarch64-unknown-linux-musl
+
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: bindings-${{ matrix.target }}
+          path: crates/riri-napi
+
+      - name: Set up QEMU (arm64)
+        if: contains(matrix.target, 'aarch64')
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Test (glibc)
+        if: contains(matrix.target, 'gnu')
+        uses: addnab/docker-run-action@v3
+        with:
+          image: node:lts-slim
+          options: >-
+            --platform ${{ contains(matrix.target, 'aarch64') && 'linux/arm64' || 'linux/amd64' }}
+            -v ${{ github.workspace }}:/work
+            -w /work/crates/riri-napi
+          run: node test.mjs
+
+      - name: Test (musl)
+        if: contains(matrix.target, 'musl')
+        uses: addnab/docker-run-action@v3
+        with:
+          image: node:lts-alpine
+          options: >-
+            --platform ${{ contains(matrix.target, 'aarch64') && 'linux/arm64' || 'linux/amd64' }}
+            -v ${{ github.workspace }}:/work
+            -w /work/crates/riri-napi
+          run: node test.mjs
