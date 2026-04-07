@@ -30,6 +30,16 @@ jobs:
         run: cargo clippy --workspace --all-targets
       - name: Test
         run: cargo test --workspace --verbose
+      - name: Set release-please variables
+        run: |
+          echo "skip_github_pull_request=${{ startsWith(github.event.head_commit.message, 'chore(main): release') }}" >> $GITHUB_ENV
+          echo "skip_github_release=${{ !startsWith(github.event.head_commit.message, 'chore(main): release') }}" >> $GITHUB_ENV
+      - name: Prepare release
+        uses: googleapis/release-please-action@v4
+        with:
+          skip-github-pull-request: ${{ env.skip_github_pull_request }}
+          skip-github-release: ${{ env.skip_github_release }}
+          token: ${{ secrets.PAT }}
 
   bench-baseline:
     uses: ./.github/workflows/bench-run.yml
