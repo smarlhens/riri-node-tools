@@ -1,14 +1,20 @@
-name: action-check
+name: pr-action
 
 on:
   pull_request:
     paths:
       - ".github/actions/bench-compare/**"
+      - ".github/workflows/pr-action.yml"
+      - ".oxfmtrc.json"
+      - "oxlintrc.json"
   push:
     branches:
       - main
     paths:
       - ".github/actions/bench-compare/**"
+      - ".github/workflows/pr-action.yml"
+      - ".oxfmtrc.json"
+      - "oxlintrc.json"
 
 env:
   ACTION_DIR: .github/actions/bench-compare
@@ -18,7 +24,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
+  bench-compare:
     runs-on: ubuntu-24.04
     defaults:
       run:
