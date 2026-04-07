@@ -102,6 +102,7 @@ proptest! {
 // --- Invariant: restrictive_range result is at most as permissive as inputs ---
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(1000))]
     #[test]
     fn restrictive_range_tighter(r1 in arb_range(), r2 in arb_range(), v in arb_version()) {
         let (Some(a), Some(b)) = (try_parse(&r1), try_parse(&r2)) else { return Ok(()); };
@@ -118,6 +119,7 @@ proptest! {
 // --- Invariant: restrictive_range is subset of both (when they intersect) ---
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(1000))]
     #[test]
     fn restrictive_range_subset_when_intersecting(r1 in arb_range(), r2 in arb_range(), v in arb_version()) {
         let (Some(a), Some(b)) = (try_parse(&r1), try_parse(&r2)) else { return Ok(()); };
