@@ -120,6 +120,11 @@ pub fn check_engines(input: &CheckEnginesInput<'_>) -> CheckEnginesOutput {
     let mut computed_engines = HashMap::new();
 
     for &key in keys {
+        // Raw string from package.json (before parsing/humanizing)
+        let raw_from = input
+            .package_engines
+            .and_then(|pkg| pkg.get(&key.to_string()).cloned());
+
         // Build the "from" range: just the root package.json engines
         let from = match input.package_engines {
             Some(pkg_engines) => {
@@ -144,10 +149,16 @@ pub fn check_engines(input: &CheckEnginesInput<'_>) -> CheckEnginesOutput {
 
         computed_engines.insert(key, to.clone());
 
-        if from != to {
+        // Report a change if the computed range differs semantically OR
+        // if the raw package.json string differs from the normalized form
+        // (e.g. ">=24" vs ">=24.0.0").
+        let needs_update = from != to || raw_from.as_deref().is_some_and(|raw| raw != to);
+
+        if needs_update {
+            let display_from = raw_from.unwrap_or(from);
             engines_range_to_set.push(EngineRangeToSet {
                 engine: key,
-                range: from,
+                range: display_from,
                 range_to_set: to,
             });
         }

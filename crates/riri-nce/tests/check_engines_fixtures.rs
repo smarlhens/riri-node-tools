@@ -188,6 +188,74 @@ fn get_constraint_from_engines_array() {
     );
 }
 
+// ── normalization detection ─────────────────────────────────────────
+
+#[test]
+fn normalization_detects_short_form() {
+    // If package.json has ">=24" but the humanized form is ">=24.0.0",
+    // check_engines should report a change to normalize the format.
+    let pkg_engines = HashMap::from([("node".to_string(), ">=24".to_string())]);
+    let input = CheckEnginesInput {
+        lockfile_entries: vec![],
+        package_engines: Some(&pkg_engines),
+        filter_engines: vec![EngineConstraintKey::Node],
+        precision: VersionPrecision::Full,
+    };
+    let output = check_engines(&input);
+    assert_eq!(output.engines_range_to_set.len(), 1);
+    assert_eq!(output.engines_range_to_set[0].range, ">=24");
+    assert_eq!(output.engines_range_to_set[0].range_to_set, ">=24.0.0");
+}
+
+#[test]
+fn normalization_skips_already_full() {
+    // If package.json already has the full form, no change needed.
+    let pkg_engines = HashMap::from([("node".to_string(), ">=24.0.0".to_string())]);
+    let input = CheckEnginesInput {
+        lockfile_entries: vec![],
+        package_engines: Some(&pkg_engines),
+        filter_engines: vec![EngineConstraintKey::Node],
+        precision: VersionPrecision::Full,
+    };
+    let output = check_engines(&input);
+    assert!(
+        output.engines_range_to_set.is_empty(),
+        "no changes expected for already-normalized range"
+    );
+}
+
+#[test]
+fn normalization_with_major_precision() {
+    // With Major precision, ">=24.0.0" in package.json should be normalized to ">=24".
+    let pkg_engines = HashMap::from([("node".to_string(), ">=24.0.0".to_string())]);
+    let input = CheckEnginesInput {
+        lockfile_entries: vec![],
+        package_engines: Some(&pkg_engines),
+        filter_engines: vec![EngineConstraintKey::Node],
+        precision: VersionPrecision::Major,
+    };
+    let output = check_engines(&input);
+    assert_eq!(output.engines_range_to_set.len(), 1);
+    assert_eq!(output.engines_range_to_set[0].range, ">=24.0.0");
+    assert_eq!(output.engines_range_to_set[0].range_to_set, ">=24");
+}
+
+#[test]
+fn normalization_caret_short_form() {
+    // "^1" in package.json should be normalized to "^1.0.0" at Full precision.
+    let pkg_engines = HashMap::from([("node".to_string(), "^1".to_string())]);
+    let input = CheckEnginesInput {
+        lockfile_entries: vec![],
+        package_engines: Some(&pkg_engines),
+        filter_engines: vec![EngineConstraintKey::Node],
+        precision: VersionPrecision::Full,
+    };
+    let output = check_engines(&input);
+    assert_eq!(output.engines_range_to_set.len(), 1);
+    assert_eq!(output.engines_range_to_set[0].range, "^1");
+    assert_eq!(output.engines_range_to_set[0].range_to_set, "^1.0.0");
+}
+
 // ── pnpm fixtures ───────────────────────────────────────────────────
 
 fn run_pnpm_fixture(fixture_dir: &str) -> String {
