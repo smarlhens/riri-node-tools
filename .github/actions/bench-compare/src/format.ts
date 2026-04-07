@@ -1,6 +1,6 @@
 import { markdownTable } from 'markdown-table';
 
-import type { BenchmarkResult } from './criterion.js';
+import type { BenchmarkResult, CrossComparison } from './criterion.js';
 
 const NANOSECONDS_PER_SECOND = 1_000_000_000;
 const NANOSECONDS_PER_MILLISECOND = 1_000_000;
@@ -156,8 +156,29 @@ export const formatTestCountTable = (prCount: number, baseCount: number): string
   );
 };
 
+export const formatCrossComparisonTable = (comparisons: CrossComparison[]): string => {
+  if (comparisons.length === 0) {
+    return '_No cross-comparison data._';
+  }
+
+  const firstOwn = comparisons[0].ownName;
+  const firstRef = comparisons[0].referenceName;
+
+  const rows = comparisons.map(comparison => [
+    comparison.metric,
+    formatNanoseconds(comparison.ownNanoseconds),
+    formatNanoseconds(comparison.referenceNanoseconds),
+    `${comparison.speedup.toFixed(DECIMAL_PLACES_LONG)}x`,
+  ]);
+
+  return markdownTable([['Metric', firstOwn, firstRef, 'Speedup'], ...rows], {
+    align: ['l', 'r', 'r', 'r'],
+  });
+};
+
 export const buildFullComment = (
   benchmarkTable: string,
+  crossComparisonTable: string,
   sizeTable: string,
   rssTable: string,
   testTable: string,
@@ -171,9 +192,13 @@ export const buildFullComment = (
 
   return `## Benchmark & Size Comparison
 
-### Criterion Benchmarks
+### Criterion Benchmarks (base vs PR)
 
 ${benchmarkTable}
+
+### Cross-Library Comparison
+
+${crossComparisonTable}
 
 ### Binary Size
 

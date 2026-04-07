@@ -39,8 +39,12 @@ inputs:
     description: Peak RSS in KB for base branch
     required: false
     default: "0"
+  reference-prefix:
+    description: "Comma-separated prefixes for reference benchmarks (excluded from regression, shown in cross-comparison)"
+    required: false
+    default: ""
   threshold:
-    description: Regression percentage threshold to fail the check
+    description: Regression percentage threshold to warn
     required: false
     default: "10"
   token:

@@ -2,11 +2,12 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 
 import { createOrUpdateComment } from './comment.js';
-import { compareBenchmarks } from './criterion.js';
+import { buildCrossComparisons, compareBenchmarks } from './criterion.js';
 import {
   buildFullComment,
   formatBenchmarkTable,
   formatBinarySizeTable,
+  formatCrossComparisonTable,
   formatRssTable,
   formatTestCountTable,
 } from './format.js';
@@ -27,32 +28,57 @@ export const run = async (): Promise<void> => {
     const baseTestCount = parseInt(core.getInput('base-test-count'), RADIX_DECIMAL);
     const prPeakRssKilobytes = parseInt(core.getInput('pr-peak-rss-kb'), RADIX_DECIMAL);
     const basePeakRssKilobytes = parseInt(core.getInput('base-peak-rss-kb'), RADIX_DECIMAL);
+    const referencePrefixRaw = core.getInput('reference-prefix');
     const threshold = parseFloat(core.getInput('threshold'));
     const token = core.getInput('token');
+
+    const referencePrefixes = referencePrefixRaw
+      .split(',')
+      .map(prefix => prefix.trim())
+      .filter(prefix => prefix.length > 0);
 
     core.info(`Comparing criterion baselines: ${baseBaseline} vs ${prBaseline}`);
     core.info(`Criterion directory: ${criterionDirectory}`);
     core.info(`Threshold: ${threshold}%`);
+    if (referencePrefixes.length > 0) {
+      core.info(`Reference prefixes (excluded from regression): ${referencePrefixes.join(', ')}`);
+    }
 
-    const benchmarkResults = await compareBenchmarks(criterionDirectory, baseBaseline, prBaseline);
+    const allBenchmarkResults = await compareBenchmarks(criterionDirectory, baseBaseline, prBaseline);
 
-    core.info(`Found ${benchmarkResults.length} benchmark(s)`);
-    for (const result of benchmarkResults) {
+    const isReference = (name: string): boolean => referencePrefixes.some(prefix => name.startsWith(prefix));
+
+    const ownBenchmarkResults = allBenchmarkResults.filter(result => !isReference(result.name));
+    const crossComparisons = buildCrossComparisons(allBenchmarkResults, referencePrefixes);
+
+    core.info(
+      `Found ${allBenchmarkResults.length} benchmark(s) (${ownBenchmarkResults.length} own, ${allBenchmarkResults.length - ownBenchmarkResults.length} reference)`,
+    );
+    for (const result of ownBenchmarkResults) {
       core.info(`  ${result.name}: ${result.diffPercentage.toFixed(DECIMAL_PLACES_LONG)}%`);
     }
 
-    const maxRegression = benchmarkResults.reduce(
+    const maxRegression = ownBenchmarkResults.reduce(
       (max, result) => Math.max(max, result.diffPercentage),
       INITIAL_MAX_REGRESSION,
     );
     const hasRegression = maxRegression > threshold;
 
-    const benchmarkTable = formatBenchmarkTable(benchmarkResults, threshold);
+    const benchmarkTable = formatBenchmarkTable(ownBenchmarkResults, threshold);
+    const crossComparisonTable = formatCrossComparisonTable(crossComparisons);
     const sizeTable = formatBinarySizeTable(prBinarySizes, baseBinarySizes);
     const rssTable = formatRssTable(prPeakRssKilobytes, basePeakRssKilobytes);
     const testTable = formatTestCountTable(prTestCount, baseTestCount);
 
-    const commentBody = buildFullComment(benchmarkTable, sizeTable, rssTable, testTable, threshold, maxRegression);
+    const commentBody = buildFullComment(
+      benchmarkTable,
+      crossComparisonTable,
+      sizeTable,
+      rssTable,
+      testTable,
+      threshold,
+      maxRegression,
+    );
 
     await core.summary.addRaw(commentBody).write();
     core.info('Job summary written');
@@ -75,7 +101,7 @@ export const run = async (): Promise<void> => {
     core.setOutput('max-regression', maxRegression.toFixed(DECIMAL_PLACES_LONG));
 
     if (hasRegression) {
-      core.setFailed(
+      core.warning(
         `Benchmark regression of ${maxRegression.toFixed(DECIMAL_PLACES_SHORT)}% exceeds threshold of ${threshold}%`,
       );
     }

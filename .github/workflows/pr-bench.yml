@@ -1,0 +1,138 @@
+name: pr-bench
+
+on:
+  pull_request:
+    branches:
+      - "**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Check for cached base results ────────────────────────
+  check-cache:
+    runs-on: ubuntu-24.04
+    outputs:
+      has-cache: ${{ steps.cache.outputs.cache-hit }}
+    steps:
+      - name: Restore base benchmark cache
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/bench-baseline
+          key: bench-baseline-${{ github.event.pull_request.base.sha }}
+          restore-keys: bench-baseline-
+          lookup-only: true
+
+  # ── Benchmark PR branch (always runs) ────────────────────
+  bench-pr:
+    uses: ./.github/workflows/bench-run.yml
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+      baseline-name: pr
+      artifact-name: criterion-pr
+      save-rust-cache: true
+      rust-cache-prefix: bench-v1
+
+  # ── Benchmark base branch (only if no cache) ─────────────
+  bench-base:
+    needs: check-cache
+    if: needs.check-cache.outputs.has-cache != 'true'
+    uses: ./.github/workflows/bench-run.yml
+    with:
+      ref: ${{ github.event.pull_request.base.sha }}
+      baseline-name: base
+      artifact-name: criterion-base
+      save-rust-cache: false
+
+  # ── Compare & report ─────────────────────────────────────
+  compare:
+    needs: [check-cache, bench-pr, bench-base]
+    if: always() && needs.bench-pr.result == 'success'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .github/actions/bench-compare/.nvmrc
+          cache: npm
+          cache-dependency-path: .github/actions/bench-compare/package-lock.json
+
+      - name: Download PR criterion baselines
+        uses: actions/download-artifact@v4
+        with:
+          name: criterion-pr
+          path: target/criterion
+
+      # Restore base baselines from cache or artifact
+      - name: Restore base benchmark cache
+        if: needs.check-cache.outputs.has-cache == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/bench-baseline
+          key: bench-baseline-${{ github.event.pull_request.base.sha }}
+          restore-keys: bench-baseline-
+
+      - name: Copy cached base criterion baselines
+        if: needs.check-cache.outputs.has-cache == 'true'
+        run: |
+          if [ -d /tmp/bench-baseline/criterion ]; then
+            cp -r /tmp/bench-baseline/criterion/* target/criterion/ 2>/dev/null || true
+          fi
+
+      - name: Download base criterion baselines
+        if: needs.check-cache.outputs.has-cache != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: criterion-base
+          path: target/criterion
+          merge-multiple: true
+
+      - name: Resolve base results
+        id: base
+        env:
+          CACHE_HIT: ${{ needs.check-cache.outputs.has-cache }}
+          FALLBACK_SIZES: ${{ needs.bench-base.outputs.binary-sizes }}
+          FALLBACK_TEST_COUNT: ${{ needs.bench-base.outputs.test-count }}
+          FALLBACK_RSS_KB: ${{ needs.bench-base.outputs.peak-rss-kb }}
+        run: |
+          if [ "$CACHE_HIT" = "true" ] && [ -d /tmp/bench-baseline ]; then
+            echo "sizes=$(cat /tmp/bench-baseline/binary-sizes.json)" >> "$GITHUB_OUTPUT"
+            echo "test_count=$(cat /tmp/bench-baseline/test-count.txt)" >> "$GITHUB_OUTPUT"
+            echo "rss_kb=$(cat /tmp/bench-baseline/peak-rss-kb.txt)" >> "$GITHUB_OUTPUT"
+          else
+            echo "sizes=$FALLBACK_SIZES" >> "$GITHUB_OUTPUT"
+            echo "test_count=$FALLBACK_TEST_COUNT" >> "$GITHUB_OUTPUT"
+            echo "rss_kb=$FALLBACK_RSS_KB" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install action dependencies
+        run: npm ci
+        working-directory: .github/actions/bench-compare
+
+      - name: Bundle action
+        run: npm run bundle
+        working-directory: .github/actions/bench-compare
+
+      - name: Run bench-compare
+        uses: ./.github/actions/bench-compare
+        with:
+          criterion-dir: target/criterion
+          pr-baseline: pr
+          base-baseline: base
+          pr-binary-sizes: ${{ needs.bench-pr.outputs.binary-sizes }}
+          base-binary-sizes: ${{ steps.base.outputs.sizes }}
+          pr-test-count: ${{ needs.bench-pr.outputs.test-count }}
+          base-test-count: ${{ steps.base.outputs.test_count }}
+          pr-peak-rss-kb: ${{ needs.bench-pr.outputs.peak-rss-kb }}
+          base-peak-rss-kb: ${{ steps.base.outputs.rss_kb }}
+          reference-prefix: "nodejs-semver"
+          threshold: "10"
