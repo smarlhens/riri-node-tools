@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Download criterion baselines
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: criterion-base
           path: /tmp/bench-baseline/criterion
@@ -57,7 +57,7 @@ jobs:
           echo '${{ needs.bench-baseline.outputs.peak-rss-kb }}' > /tmp/bench-baseline/peak-rss-kb.txt
 
       - name: Cache baseline results
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: /tmp/bench-baseline
           key: bench-baseline-${{ github.sha }}
