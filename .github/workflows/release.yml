@@ -1,0 +1,34 @@
+name: release
+
+on: workflow_dispatch
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v6
+      - name: Install Rust
+        run: rustup update stable && rustup default stable
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Check errors
+        run: cargo check --workspace
+      - name: Lint
+        run: cargo clippy --workspace --all-targets
+      - name: Test
+        run: cargo test --workspace --verbose
+      - name: Release
+        uses: googleapis/release-please-action@v4
+        with:
+          skip-github-pull-request: true
+          token: ${{ secrets.PAT }}

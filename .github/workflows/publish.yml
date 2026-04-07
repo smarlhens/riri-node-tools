@@ -1,0 +1,126 @@
+name: publish
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+env:
+  APP_NAME: npm-check-engines
+  MACOSX_DEPLOYMENT_TARGET: "10.13"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+            build: npx napi build --platform --release --target x86_64-unknown-linux-gnu --use-napi-cross
+
+          - host: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            build: npx napi build --platform --release --target x86_64-unknown-linux-musl -x
+
+          - host: ubuntu-24.04
+            target: aarch64-unknown-linux-gnu
+            build: npx napi build --platform --release --target aarch64-unknown-linux-gnu --use-napi-cross
+
+          - host: ubuntu-24.04
+            target: aarch64-unknown-linux-musl
+            build: npx napi build --platform --release --target aarch64-unknown-linux-musl -x
+
+          - host: macos-15
+            target: x86_64-apple-darwin
+            build: npx napi build --platform --release --target x86_64-apple-darwin
+
+          - host: macos-15
+            target: aarch64-apple-darwin
+            build: npx napi build --platform --release --target aarch64-apple-darwin
+
+          - host: windows-2025
+            target: x86_64-pc-windows-msvc
+            build: npx napi build --platform --release --target x86_64-pc-windows-msvc
+
+    name: build - ${{ matrix.settings.target }}
+    runs-on: ${{ matrix.settings.host }}
+    defaults:
+      run:
+        working-directory: crates/riri-napi
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: crates/riri-napi/.nvmrc
+          cache: npm
+          cache-dependency-path: crates/riri-napi/package-lock.json
+
+      - name: Install Rust
+        run: rustup update stable && rustup default stable && rustup target add ${{ matrix.settings.target }}
+
+      - name: Install zig (musl targets)
+        if: contains(matrix.settings.target, 'musl')
+        uses: mlugg/setup-zig@v2
+
+      - name: Install cargo-zigbuild (musl targets)
+        if: contains(matrix.settings.target, 'musl')
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-zigbuild
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: ${{ matrix.settings.build }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: bindings-${{ matrix.settings.target }}
+          path: crates/riri-napi/${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: publish
+    needs: build
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: crates/riri-napi
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: crates/riri-napi/.nvmrc
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create npm dirs
+        run: npx napi create-npm-dirs
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: crates/riri-napi/artifacts
+
+      - name: Move artifacts
+        run: npx napi artifacts --dir artifacts
+
+      - name: Publish
+        run: npm publish --access public --provenance
