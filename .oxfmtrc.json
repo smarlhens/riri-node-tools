@@ -8,7 +8,7 @@
   "trailingComma": "all",
   "overrides": [
     {
-      "files": ["*.json", "*.yml"],
+      "files": ["*.json", "*.json5", "*.yml", "*.yaml", "*.toml"],
       "options": {
         "singleQuote": false
       }
