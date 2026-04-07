@@ -1,0 +1,82 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/refs/heads/main/npm/oxlint/configuration_schema.json",
+
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+
+  "plugins": ["typescript", "unicorn", "import", "oxc", "node", "promise"],
+
+  "rules": {
+    "eslint/array-callback-return": "error",
+    "eslint/block-scoped-var": "error",
+    "eslint/curly": "error",
+    "eslint/eqeqeq": "error",
+    "eslint/no-alert": "warn",
+    "eslint/no-case-declarations": "error",
+    "eslint/no-cond-assign": "error",
+    "eslint/no-console": "off",
+    "eslint/no-constant-condition": "warn",
+    "eslint/no-debugger": "off",
+    "eslint/no-magic-numbers": ["error", { "ignore": [0] }],
+    "eslint/no-multi-str": "error",
+    "eslint/no-param-reassign": "error",
+    "eslint/no-redeclare": "error",
+    "eslint/no-return-assign": "error",
+    "eslint/no-useless-assignment": "error",
+    "eslint/no-useless-constructor": "error",
+    "eslint/no-useless-escape": "error",
+    "eslint/no-var": "error",
+    "eslint/no-void": "error",
+    "eslint/no-with": "error",
+    "eslint/object-shorthand": "error",
+    "eslint/prefer-const": "error",
+    "eslint/prefer-exponentiation-operator": "error",
+    "eslint/prefer-rest-params": "error",
+    "eslint/prefer-spread": "error",
+    "eslint/prefer-template": "error",
+    "eslint/sort-keys": "error",
+    "eslint/vars-on-top": "error",
+
+    "typescript/ban-ts-comment": "error",
+    "typescript/consistent-indexed-object-style": "error",
+    "typescript/consistent-type-exports": "error",
+    "typescript/consistent-type-imports": "error",
+    "typescript/explicit-function-return-type": "off",
+    "typescript/explicit-module-boundary-types": "off",
+    "typescript/no-empty-object-type": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-non-null-assertion": "warn",
+    "typescript/no-require-imports": "error",
+    "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-unnecessary-type-conversion": "error",
+    "typescript/prefer-readonly": "error",
+
+    "unicorn/error-message": "error",
+    "unicorn/escape-case": "error",
+    "unicorn/no-instanceof-builtins": "error",
+    "unicorn/no-new-buffer": "error",
+    "unicorn/no-useless-iterator-to-array": "error",
+    "unicorn/number-literal-case": "error",
+    "unicorn/prefer-dom-node-text-content": "error",
+    "unicorn/prefer-includes": "error",
+    "unicorn/prefer-module": "error",
+    "unicorn/prefer-string-starts-ends-with": "error",
+    "unicorn/prefer-ternary": "warn",
+    "unicorn/prefer-type-error": "error",
+    "unicorn/throw-new-error": "error",
+
+    "import/first": "error",
+    "import/named": "off",
+    "import/no-absolute-path": "error",
+    "import/no-duplicates": "error",
+    "import/no-mutable-exports": "error",
+    "import/no-named-as-default-member": "off",
+
+    "promise/avoid-new": "error"
+  },
+
+  "ignorePatterns": ["dist", "node_modules"]
+}
