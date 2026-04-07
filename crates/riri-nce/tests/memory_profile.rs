@@ -28,6 +28,7 @@ fn profile_check_engines_500_deps() {
         lockfile_entries: entries,
         package_engines: pkg.engines.as_ref(),
         filter_engines: vec![],
+        precision: riri_semver_range::VersionPrecision::Full,
     };
 
     let _output = check_engines(&input);

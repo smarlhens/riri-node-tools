@@ -9,6 +9,7 @@ use riri_common::{EngineConstraintKey, LockfileEngines};
 use riri_nce::{CheckEnginesInput, check_engines};
 use riri_npm::NpmPackageLock;
 use riri_pnpm::PnpmLockfile;
+use riri_semver_range::VersionPrecision;
 use std::collections::HashMap;
 
 fn run_fixture(fixture_dir: &str) -> String {
@@ -28,6 +29,7 @@ fn run_fixture(fixture_dir: &str) -> String {
         lockfile_entries: entries,
         package_engines: pkg.engines.as_ref(),
         filter_engines: vec![],
+        precision: VersionPrecision::Full,
     };
 
     let output = check_engines(&input);
@@ -115,6 +117,7 @@ fn npm_engine_filtering_node_only() {
         lockfile_entries: entries,
         package_engines: pkg.engines.as_ref(),
         filter_engines: vec![EngineConstraintKey::Node],
+        precision: VersionPrecision::Full,
     };
 
     let output = check_engines(&input);
@@ -143,6 +146,7 @@ fn npm_no_engines_package_json() {
         lockfile_entries: entries,
         package_engines: pkg.engines.as_ref(),
         filter_engines: vec![],
+        precision: VersionPrecision::Full,
     };
 
     let output = check_engines(&input);
@@ -203,6 +207,7 @@ fn run_pnpm_fixture(fixture_dir: &str) -> String {
         lockfile_entries: entries,
         package_engines: pkg.engines.as_ref(),
         filter_engines: vec![],
+        precision: VersionPrecision::Full,
     };
 
     let output = check_engines(&input);
@@ -259,6 +264,7 @@ fn run_yarn_fixture(fixture_dir: &str) -> String {
         lockfile_entries: entries,
         package_engines: pkg.engines.as_ref(),
         filter_engines: vec![],
+        precision: VersionPrecision::Full,
     };
 
     let output = check_engines(&input);
