@@ -1,0 +1,22 @@
+{
+  "name": "bench-compare-action",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bundle": "rolldown -c rolldown.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@actions/core": "3.0.0",
+    "@actions/github": "9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.2",
+    "rolldown": "1.0.0-rc.13",
+    "typescript": "6.0.2"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
