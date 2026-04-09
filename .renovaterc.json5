@@ -9,7 +9,7 @@
     ":prImmediately",
   ],
   labels: ["dependencies"],
-  enabledManagers: ["cargo", "github-actions", "pre-commit"],
+  enabledManagers: ["cargo", "github-actions", "npm", "pre-commit"],
   "pre-commit": {
     enabled: true,
   },
