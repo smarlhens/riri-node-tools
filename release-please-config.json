@@ -15,16 +15,16 @@
     { "type": "chore", "section": "Chores", "hidden": false },
     { "type": "revert", "section": "Reverts", "hidden": false }
   ],
-  "extra-files": [
-    {
-      "type": "json",
-      "path": "crates/riri-napi/package.json",
-      "jsonpath": "$.version"
-    }
-  ],
   "packages": {
     "crates/riri-napi": {
       "package-name": "@smarlhens/npm-check-engines",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "package.json",
+          "jsonpath": "$.version"
+        }
+      ],
       "prerelease": true,
       "prerelease-type": "rc",
       "release-as": "1.0.0-rc.0"
