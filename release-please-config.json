@@ -24,7 +24,6 @@
   ],
   "packages": {
     "crates/riri-napi": {
-      "changelog-path": "../../CHANGELOG.md",
       "package-name": "@smarlhens/npm-check-engines",
       "prerelease": true,
       "prerelease-type": "rc",
