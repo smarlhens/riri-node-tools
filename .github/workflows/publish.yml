@@ -120,7 +120,7 @@ jobs:
           path: crates/riri-napi/artifacts
 
       - name: Move artifacts
-        run: npx napi artifacts --dir artifacts
+        run: npx napi artifacts --output-dir artifacts
 
       - name: Publish
         run: npm publish --access public --provenance
