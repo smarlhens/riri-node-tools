@@ -86,7 +86,7 @@ jobs:
       - name: Update Cargo.lock
         run: cargo update --workspace
       - name: Commit Cargo.lock
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_options: "--amend --no-edit"
           push_options: "--force-with-lease"
