@@ -40,6 +40,9 @@ jobs:
 
   rust:
     runs-on: ubuntu-24.04
+    outputs:
+      prs_created: ${{ steps.release.outputs.prs_created }}
+      pr_branch: ${{ steps.release.outputs.prs_created == 'true' && fromJson(steps.release.outputs.prs)[0].headBranchName || '' }}
     steps:
       - name: Checkout source code
         uses: actions/checkout@v6
@@ -60,11 +63,34 @@ jobs:
           echo "skip_github_pull_request=${{ startsWith(github.event.head_commit.message, 'chore(main): release') }}" >> $GITHUB_ENV
           echo "skip_github_release=${{ !startsWith(github.event.head_commit.message, 'chore(main): release') }}" >> $GITHUB_ENV
       - name: Prepare release
+        id: release
         uses: googleapis/release-please-action@v4
         with:
           skip-github-pull-request: ${{ env.skip_github_pull_request }}
           skip-github-release: ${{ env.skip_github_release }}
           token: ${{ secrets.PAT }}
+
+  update-lockfile:
+    needs: rust
+    if: needs.rust.outputs.prs_created == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout release PR branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.rust.outputs.pr_branch }}
+      - name: Install Rust
+        run: rustup update stable && rustup default stable
+      - name: Update Cargo.lock
+        run: cargo update --workspace
+      - name: Commit Cargo.lock
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_options: "--amend --no-edit"
+          push_options: "--force-with-lease"
+          file_pattern: Cargo.lock
 
   bench-baseline:
     needs: changes
