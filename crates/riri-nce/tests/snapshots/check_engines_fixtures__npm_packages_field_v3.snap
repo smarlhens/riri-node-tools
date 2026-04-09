@@ -1,0 +1,8 @@
+---
+source: crates/riri-nce/tests/check_engines_fixtures.rs
+expression: result
+---
+computed node: >=6.9.0
+computed npm: *
+computed yarn: *
+change node: * → >=6.9.0

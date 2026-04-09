@@ -1,0 +1,13 @@
+[package]
+name = "riri-task-runner"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+console = { workspace = true }
+indicatif = { workspace = true }
+
+[lints]
+workspace = true

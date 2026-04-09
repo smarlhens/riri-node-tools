@@ -1,0 +1,65 @@
+name: Benchmark Comparison
+description: Compare criterion benchmarks, binary sizes, test counts, and peak RSS between base and PR
+author: Samuel MARLHENS
+
+inputs:
+  criterion-dir:
+    description: Path to target/criterion directory
+    required: true
+    default: target/criterion
+  pr-baseline:
+    description: Criterion baseline name for PR
+    required: false
+    default: pr
+  base-baseline:
+    description: Criterion baseline name for base
+    required: false
+    default: base
+  pr-binary-sizes:
+    description: 'JSON object of PR binary sizes in bytes, e.g. {"riri-nce": 1234}'
+    required: false
+    default: "{}"
+  base-binary-sizes:
+    description: 'JSON object of base binary sizes in bytes, e.g. {"riri-nce": 1234}'
+    required: false
+    default: "{}"
+  pr-test-count:
+    description: Number of tests in PR branch
+    required: false
+    default: "0"
+  base-test-count:
+    description: Number of tests in base branch
+    required: false
+    default: "0"
+  pr-peak-rss-kb:
+    description: Peak RSS in KB for PR branch
+    required: false
+    default: "0"
+  base-peak-rss-kb:
+    description: Peak RSS in KB for base branch
+    required: false
+    default: "0"
+  reference-prefix:
+    description: "Comma-separated prefixes for reference benchmarks (excluded from regression, shown in cross-comparison)"
+    required: false
+    default: ""
+  threshold:
+    description: Regression percentage threshold to warn
+    required: false
+    default: "10"
+  token:
+    description: GitHub token for API access
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  has-regression:
+    description: Whether a benchmark regression was detected
+  max-regression:
+    description: Maximum regression percentage found
+  comment-id:
+    description: ID of the created/updated PR comment
+
+runs:
+  using: node24
+  main: dist/index.js

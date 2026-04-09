@@ -1,0 +1,18 @@
+lockfileVersion: '6.0'
+
+packages:
+
+  /fake-lib-a@4.17.21:
+    resolution:
+      integrity: sha512-placeholder
+    engines:
+      node: '>=0.10.0'
+    dev: false
+
+  /fake-lib-b@5.0.4:
+    resolution:
+      integrity: sha512-placeholder
+    engines:
+      node: '>=14.17'
+    hasBin: true
+    dev: true

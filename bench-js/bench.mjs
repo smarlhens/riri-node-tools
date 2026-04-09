@@ -1,0 +1,86 @@
+import { checkEnginesFromString } from '@smarlhens/npm-check-engines';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { Bench } from 'tinybench';
+
+const require = createRequire(import.meta.url);
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Find the .node binary for the current platform
+const napiDir = resolve(__dirname, '../crates/riri-napi');
+const { readdirSync } = await import('node:fs');
+const nodeFile = readdirSync(napiDir).find(f => f.startsWith('npm-check-engines.') && f.endsWith('.node'));
+if (!nodeFile) {
+  console.error('No .node binary found. Run `cd crates/riri-napi && npx napi build --platform --release` first.');
+  process.exit(1);
+}
+const napi = require(resolve(napiDir, nodeFile));
+const rootDir = resolve(__dirname, '..');
+
+const fixtures = {
+  'small (7 deps)': {
+    dir: resolve(rootDir, 'fixtures/npm-v3-or-ranges-node-only'),
+    iterations: 100,
+    warmupIterations: 5,
+  },
+  'large (500 deps)': {
+    dir: resolve(rootDir, 'fixtures/npm-v3-500-deps'),
+    iterations: 3,
+    warmupIterations: 0,
+  },
+};
+
+// Pre-read fixture files
+const fixtureData = {};
+for (const [name, config] of Object.entries(fixtures)) {
+  fixtureData[name] = {
+    ...config,
+    packageJsonString: readFileSync(resolve(config.dir, 'package.json'), 'utf8'),
+    packageLockString: readFileSync(resolve(config.dir, 'package-lock.json'), 'utf8'),
+  };
+}
+
+for (const [name, data] of Object.entries(fixtureData)) {
+  console.log(`\n=== ${name} ===\n`);
+
+  const bench = new Bench({
+    iterations: data.iterations,
+    time: 0,
+    warmupIterations: data.warmupIterations,
+    warmupTime: 0,
+  });
+
+  bench.add('js checkEnginesFromString', () => {
+    checkEnginesFromString({
+      packageJsonString: data.packageJsonString,
+      packageLockString: data.packageLockString,
+    });
+  });
+
+  bench.add('napi checkEngines', () => {
+    napi.checkEngines({
+      lockfileContent: data.packageLockString,
+      lockfileType: 'npm',
+      packageJson: data.packageJsonString,
+    });
+  });
+
+  await bench.run();
+
+  const results = bench.tasks.map(task => {
+    const r = task.result;
+    const avgMs = r.latency.mean.toFixed(4);
+    const p99Ms = r.latency.p99.toFixed(4);
+    const opsPerSec = r.throughput.mean.toFixed(2);
+    return {
+      Name: task.name,
+      'avg (ms)': avgMs,
+      'ops/sec': opsPerSec,
+      'p99 (ms)': p99Ms,
+    };
+  });
+
+  console.table(results);
+}

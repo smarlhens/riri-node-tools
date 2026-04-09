@@ -1,0 +1,26 @@
+[package]
+name = "riri-npd"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+clap-verbosity-flag = { workspace = true }
+comfy-table = { workspace = true }
+console = { workspace = true }
+detect-indent = { workspace = true }
+log = { workspace = true }
+regex = { workspace = true }
+semver = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yml = { workspace = true }
+tracing = { workspace = true }
+tracing-log = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[lints]
+workspace = true

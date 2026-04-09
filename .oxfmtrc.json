@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/refs/heads/main/npm/oxfmt/configuration_schema.json",
+  "printWidth": 120,
+  "arrowParens": "avoid",
+  "endOfLine": "lf",
+  "insertFinalNewline": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "overrides": [
+    {
+      "files": ["*.json", "*.json5", "*.yml", "*.yaml", "*.toml"],
+      "options": {
+        "singleQuote": false
+      }
+    }
+  ],
+  "sortImports": {
+    "newlinesBetween": true,
+    "groups": [["value-builtin", "value-external"], ["value-parent", "value-sibling", "value-index"], "type-import"]
+  },
+  "ignorePatterns": ["target/", "CHANGELOG.md"]
+}

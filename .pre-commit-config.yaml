@@ -1,0 +1,53 @@
+# TODO: migrate to prek.toml once Renovate ships native prek manager
+# See: https://github.com/renovatebot/renovate/issues/41683
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v6.0.0"
+    hooks:
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  - repo: https://github.com/oxc-project/mirrors-oxfmt
+    rev: "v0.44.0"
+    hooks:
+      - id: oxfmt
+        types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css]
+
+  - repo: https://github.com/oxc-project/mirrors-oxlint
+    rev: "v1.59.0"
+    hooks:
+      - id: oxlint
+
+  - repo: local
+    hooks:
+      - id: fmt
+        name: fmt
+        description: Format files with cargo fmt.
+        entry: cargo fmt --all -- --check
+        language: rust
+        types: [rust]
+        pass_filenames: false
+      - id: cargo-check
+        name: cargo check
+        description: Check the package for errors.
+        entry: cargo check --workspace
+        language: rust
+        types: [rust]
+        pass_filenames: false
+      - id: clippy
+        name: clippy
+        entry: cargo clippy --workspace --all-targets
+        language: rust
+        args: ["--", "-D", "warnings"]
+        types: [rust]
+        pass_filenames: false

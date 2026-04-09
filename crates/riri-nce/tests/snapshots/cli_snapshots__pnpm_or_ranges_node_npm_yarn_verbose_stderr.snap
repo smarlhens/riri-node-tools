@@ -1,0 +1,17 @@
+---
+source: crates/riri-nce/tests/cli_snapshots.rs
+expression: stderr
+---
+  Detecting lockfile...
+  Detected pnpm-lock.yaml
+  Reading package.json...
+  Read package.json
+  Parsing lockfile...
+  Parsed lockfile
+  Computing engine constraints...
+  Computed engine constraints
+  node  *  →  ^14.17.0 || ^16.10.0 || >=17.0.0
+  npm   *  →  >=6.0.0
+  yarn  *  →  ^1.22.4
+
+  Run nce -v -u to upgrade package.json.

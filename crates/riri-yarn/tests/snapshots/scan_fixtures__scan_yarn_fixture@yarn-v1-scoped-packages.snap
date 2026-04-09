@@ -1,0 +1,6 @@
+---
+source: crates/riri-yarn/tests/scan_fixtures.rs
+expression: snapshot
+---
+@fake-scope/fake-lib-a: {node: >=14.0.0}
+fake-lib-b: {node: >=16.0.0}

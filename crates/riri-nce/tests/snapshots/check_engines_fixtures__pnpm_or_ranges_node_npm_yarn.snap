@@ -1,0 +1,10 @@
+---
+source: crates/riri-nce/tests/check_engines_fixtures.rs
+expression: result
+---
+computed node: ^14.17.0 || ^16.10.0 || >=17.0.0
+computed npm: >=6.0.0
+computed yarn: ^1.22.4
+change node: * → ^14.17.0 || ^16.10.0 || >=17.0.0
+change npm: * → >=6.0.0
+change yarn: * → ^1.22.4

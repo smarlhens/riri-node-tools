@@ -1,0 +1,10 @@
+---
+source: crates/riri-pnpm/tests/parse_fixtures.rs
+expression: snapshot
+---
+all@1.0.0: {node: *}
+arr@1.0.0: {node: >= 7}
+bar@1.0.0: {node: >=12.22.0}
+complex1@1.0.0: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+complex2@1.0.0: {node: >=16.0.0||^14.17.0}
+foo@1.0.0: {node: >=6.9.0}

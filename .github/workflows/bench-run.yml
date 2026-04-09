@@ -1,0 +1,112 @@
+name: bench-run
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref to benchmark
+        required: true
+        type: string
+      baseline-name:
+        description: Criterion baseline name
+        required: true
+        type: string
+      artifact-name:
+        description: Name for the uploaded artifact
+        required: true
+        type: string
+      save-rust-cache:
+        description: Whether to save the Rust build cache
+        required: false
+        type: boolean
+        default: false
+      rust-cache-prefix:
+        description: Prefix key for the Rust cache
+        required: false
+        type: string
+        default: bench-v1
+    outputs:
+      binary-sizes:
+        description: JSON object of binary sizes in bytes
+        value: ${{ jobs.bench.outputs.binary-sizes }}
+      test-count:
+        description: Number of tests
+        value: ${{ jobs.bench.outputs.test-count }}
+      peak-rss-kb:
+        description: Peak RSS in KB
+        value: ${{ jobs.bench.outputs.peak-rss-kb }}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  bench:
+    runs-on: ubuntu-24.04
+    outputs:
+      binary-sizes: ${{ steps.sizes.outputs.json }}
+      test-count: ${{ steps.tests.outputs.count }}
+      peak-rss-kb: ${{ steps.rss.outputs.rss_kb }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Install Rust
+        run: rustup update stable && rustup default stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: ${{ inputs.rust-cache-prefix }}
+          save-if: ${{ inputs.save-rust-cache }}
+
+      - name: Build release binaries
+        run: cargo build --release --workspace
+
+      - name: Record binary sizes
+        id: sizes
+        run: |
+          sizes="{}"
+          for bin in riri-nce riri-npd; do
+            if [ -f "target/release/$bin" ]; then
+              s=$(stat --format='%s' "target/release/$bin")
+              sizes=$(echo "$sizes" | jq -c --arg k "$bin" --argjson v "$s" '. + {($k): $v}')
+            fi
+          done
+          echo "json=$sizes" >> "$GITHUB_OUTPUT"
+
+      - name: Count tests
+        id: tests
+        run: |
+          count=$(cargo test --workspace -- --list 2>&1 | grep -c ': test$' || echo "0")
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Measure peak RSS
+        id: rss
+        run: |
+          rss=$( { /usr/bin/time -v ../../target/release/riri-nce --quiet 2>&1 1>/dev/null; } 2>&1 \
+            | grep 'Maximum resident set size' | grep -oP '\d+' || echo "0" )
+          echo "rss_kb=$rss" >> "$GITHUB_OUTPUT"
+        working-directory: fixtures/npm-v3-500-deps
+
+      - name: Discover bench targets
+        id: discover
+        run: |
+          targets=$(grep -r '^\[\[bench\]\]' crates/*/Cargo.toml -A1 \
+            | grep 'name =' | sed 's/.*name = "\(.*\)"/--bench \1/' | tr '\n' ' ')
+          echo "targets=$targets" >> "$GITHUB_OUTPUT"
+          echo "Discovered bench targets: $targets"
+
+      - name: Run benchmarks
+        env:
+          BENCH_TARGETS: ${{ steps.discover.outputs.targets }}
+          BASELINE_NAME: ${{ inputs.baseline-name }}
+        run: cargo bench $BENCH_TARGETS -- --save-baseline "$BASELINE_NAME"
+
+      - name: Upload criterion baselines
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: target/criterion
+          retention-days: 1

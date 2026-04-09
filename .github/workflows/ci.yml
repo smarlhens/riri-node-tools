@@ -1,0 +1,127 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      bench: ${{ steps.filter.outputs.bench }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Detect changes
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            bench:
+              - "crates/**"
+              - "Cargo.toml"
+              - "Cargo.lock"
+              - "fixtures/**"
+              - "scripts/**"
+              - "rustfmt.toml"
+              - ".github/workflows/ci.yml"
+              - ".github/workflows/bench-run.yml"
+
+  rust:
+    runs-on: ubuntu-24.04
+    outputs:
+      prs_created: ${{ steps.release.outputs.prs_created }}
+      pr_branch: ${{ steps.release.outputs.prs_created == 'true' && fromJson(steps.release.outputs.prs)[0].headBranchName || '' }}
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v6
+      - name: Install Rust
+        run: rustup update stable && rustup default stable
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Check errors
+        run: cargo check --workspace
+      - name: Lint
+        run: cargo clippy --workspace --all-targets
+      - name: Test
+        run: cargo test --workspace --verbose
+      - name: Set release-please variables
+        run: |
+          echo "skip_github_pull_request=${{ startsWith(github.event.head_commit.message, 'chore(main): release') }}" >> $GITHUB_ENV
+          echo "skip_github_release=${{ !startsWith(github.event.head_commit.message, 'chore(main): release') }}" >> $GITHUB_ENV
+      - name: Prepare release
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          skip-github-pull-request: ${{ env.skip_github_pull_request }}
+          skip-github-release: ${{ env.skip_github_release }}
+          token: ${{ secrets.PAT }}
+
+  update-lockfile:
+    needs: rust
+    if: needs.rust.outputs.prs_created == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout release PR branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.rust.outputs.pr_branch }}
+      - name: Install Rust
+        run: rustup update stable && rustup default stable
+      - name: Update Cargo.lock
+        run: cargo update --workspace
+      - name: Commit Cargo.lock
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_options: "--amend --no-edit"
+          push_options: "--force-with-lease"
+          file_pattern: Cargo.lock
+
+  bench-baseline:
+    needs: changes
+    if: needs.changes.outputs.bench == 'true'
+    uses: ./.github/workflows/bench-run.yml
+    with:
+      ref: ${{ github.sha }}
+      baseline-name: base
+      artifact-name: criterion-base
+      save-rust-cache: true
+      rust-cache-prefix: bench-v1
+
+  cache-baseline:
+    needs: [changes, bench-baseline]
+    if: needs.changes.outputs.bench == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download criterion baselines
+        uses: actions/download-artifact@v8
+        with:
+          name: criterion-base
+          path: /tmp/bench-baseline/criterion
+
+      - name: Save baseline metadata
+        run: |
+          echo '${{ needs.bench-baseline.outputs.binary-sizes }}' > /tmp/bench-baseline/binary-sizes.json
+          echo '${{ needs.bench-baseline.outputs.test-count }}' > /tmp/bench-baseline/test-count.txt
+          echo '${{ needs.bench-baseline.outputs.peak-rss-kb }}' > /tmp/bench-baseline/peak-rss-kb.txt
+
+      - name: Cache baseline results
+        uses: actions/cache/save@v5
+        with:
+          path: /tmp/bench-baseline
+          key: bench-baseline-${{ github.sha }}

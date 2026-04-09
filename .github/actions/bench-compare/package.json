@@ -1,0 +1,29 @@
+{
+  "name": "bench-compare-action",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bundle": "rolldown -c rolldown.config.ts",
+    "fmt:check": "oxfmt --check",
+    "fmt:write": "oxfmt",
+    "lint:check": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@actions/core": "3.0.0",
+    "@actions/github": "9.1.0",
+    "markdown-table": "3.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.2",
+    "oxfmt": "0.44.0",
+    "oxlint": "1.59.0",
+    "rolldown": "1.0.0-rc.15",
+    "typescript": "6.0.2"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
