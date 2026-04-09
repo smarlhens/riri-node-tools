@@ -13,14 +13,14 @@
   },
   "dependencies": {
     "@actions/core": "3.0.0",
-    "@actions/github": "9.0.0",
+    "@actions/github": "9.1.0",
     "markdown-table": "3.0.4"
   },
   "devDependencies": {
     "@types/node": "24.12.2",
     "oxfmt": "0.44.0",
     "oxlint": "1.59.0",
-    "rolldown": "1.0.0-rc.13",
+    "rolldown": "1.0.0-rc.15",
     "typescript": "6.0.2"
   },
   "engines": {
