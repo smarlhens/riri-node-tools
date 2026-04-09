@@ -18,6 +18,7 @@
   "packages": {
     "crates/riri-napi": {
       "package-name": "@smarlhens/npm-check-engines",
+      "include-paths": ["crates/"],
       "extra-files": [
         {
           "type": "json",
