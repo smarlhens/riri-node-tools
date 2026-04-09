@@ -15,17 +15,20 @@
     { "type": "chore", "section": "Chores", "hidden": false },
     { "type": "revert", "section": "Reverts", "hidden": false }
   ],
-  "plugins": [{ "type": "cargo-workspace" }],
-  "packages": {
-    ".": {
-      "changelog-path": "CHANGELOG.md"
-    }
-  },
   "extra-files": [
     {
       "type": "json",
       "path": "crates/riri-napi/package.json",
       "jsonpath": "$.version"
     }
-  ]
+  ],
+  "packages": {
+    "crates/riri-napi": {
+      "changelog-path": "../../CHANGELOG.md",
+      "package-name": "@smarlhens/npm-check-engines",
+      "prerelease": true,
+      "prerelease-type": "rc",
+      "release-as": "1.0.0-rc.0"
+    }
+  }
 }
