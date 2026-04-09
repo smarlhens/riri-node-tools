@@ -1,0 +1,33 @@
+name: GitHub Actions Security Analysis with zizmor
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/**"
+  pull_request:
+    branches: ["**"]
+    paths:
+      - ".github/workflows/**"
+
+permissions: {}
+
+jobs:
+  zizmor:
+    name: Run zizmor
+    runs-on: ubuntu-24.04
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@v0.5.2
+        with:
+          inputs: |
+            .github/workflows/
