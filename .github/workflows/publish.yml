@@ -125,5 +125,16 @@ jobs:
       - name: Move artifacts
         run: npx napi artifacts --output-dir artifacts
 
+      - name: Determine npm tag
+        id: tag
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if echo "$VERSION" | grep -q "-"; then
+            TAG=$(echo "$VERSION" | sed 's/.*-\([a-z]*\).*/\1/')
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish
-        run: npm publish --access public --provenance
+        run: npm publish --access public --provenance --tag ${{ steps.tag.outputs.tag }}
