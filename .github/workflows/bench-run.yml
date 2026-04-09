@@ -99,7 +99,10 @@ jobs:
           echo "Discovered bench targets: $targets"
 
       - name: Run benchmarks
-        run: cargo bench ${{ steps.discover.outputs.targets }} -- --save-baseline ${{ inputs.baseline-name }}
+        env:
+          BENCH_TARGETS: ${{ steps.discover.outputs.targets }}
+          BASELINE_NAME: ${{ inputs.baseline-name }}
+        run: cargo bench $BENCH_TARGETS -- --save-baseline "$BASELINE_NAME"
 
       - name: Upload criterion baselines
         uses: actions/upload-artifact@v7

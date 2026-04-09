@@ -16,6 +16,9 @@ on:
       - ".oxfmtrc.json"
       - "oxlintrc.json"
 
+permissions:
+  contents: read
+
 env:
   ACTION_DIR: .github/actions/bench-compare
 

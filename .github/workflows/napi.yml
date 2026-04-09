@@ -24,6 +24,9 @@ on:
       - "crates/riri-yarn/**"
       - ".github/workflows/napi.yml"
 
+permissions:
+  contents: read
+
 env:
   APP_NAME: npm-check-engines
   MACOSX_DEPLOYMENT_TARGET: "10.13"
