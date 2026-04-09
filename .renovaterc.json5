@@ -10,6 +10,7 @@
   ],
   labels: ["dependencies"],
   enabledManagers: ["cargo", "github-actions", "npm", "pre-commit"],
+  ignorePaths: ["fixtures/**"],
   "pre-commit": {
     enabled: true,
   },
