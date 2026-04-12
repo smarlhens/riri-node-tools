@@ -5,6 +5,14 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
+[[bin]]
+name = "nce"
+path = "src/main.rs"
+
+[[bin]]
+name = "npm-check-engines"
+path = "src/main.rs"
+
 [dependencies]
 riri-common = { workspace = true, features = ["sort"] }
 riri-npm = { workspace = true }
