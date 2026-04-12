@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0-rc.1](https://github.com/smarlhens/riri-node-tools/compare/v1.0.0-rc.0...v1.0.0-rc.1) (2026-04-09)
+
+
+### Chores
+
+* **npm:** update deps ([95da1ee](https://github.com/smarlhens/riri-node-tools/commit/95da1ee1182dd31139593e436ebfcfebbe13ce37))
+
 ## [1.0.0-rc.0](https://github.com/smarlhens/riri-node-tools/compare/v0.1.0...v1.0.0-rc.0) (2026-04-09)
 
 

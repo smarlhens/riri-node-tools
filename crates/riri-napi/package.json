@@ -1,6 +1,6 @@
 {
   "name": "@smarlhens/npm-check-engines",
-  "version": "1.0.0-rc.0",
+  "version": "1.0.0-rc.1",
   "description": "Check and update Node.js engine constraints in package.json",
   "license": "BlueOak-1.0.0",
   "author": "Samuel MARLHENS <samuel.marlhens@proton.me>",
