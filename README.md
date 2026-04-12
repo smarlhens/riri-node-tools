@@ -9,7 +9,6 @@
 ## Table of Contents
 
 - [Development][development]
-- [TODO][todo]
 
 ---
 
@@ -46,20 +45,7 @@
    prek install
    ```
 
----
-
-## TODO
-
-- [ ] write unit tests
-- [ ] dynamic display mode
-- [ ] binary alias (npd / npm-pin-dependencies)
-- [ ] expose binary inside Docker for multi-stage usage
-- [ ] convert to node using wasm
-- [ ] benchmark vs TS/JS
-- [ ] create GitHub Actions
-
 [development]: #development
-[todo]: #todo
 [prek]: https://prek.j178.dev/
 [prek-shield]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/j178/prek/master/docs/assets/badge-v0.json
 [rustc]: https://www.rust-lang.org/tools/install
