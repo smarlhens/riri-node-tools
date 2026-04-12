@@ -1,0 +1,32 @@
+[workspace]
+members = ["cargo:."]
+
+[dist]
+cargo-dist-version = "0.31.0"
+ci = "github"
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "x86_64-unknown-linux-musl",
+    "aarch64-unknown-linux-gnu",
+    "aarch64-unknown-linux-musl",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+    "x86_64-pc-windows-msvc",
+]
+installers = ["shell", "powershell"]
+install-path = "CARGO_HOME"
+pr-run-mode = "skip"
+dispatch-releases = true
+allow-dirty = ["ci"]
+
+[[dist.extra-artifacts]]
+artifacts = [
+    "completions/nce.bash",
+    "completions/nce.zsh",
+    "completions/nce.fish",
+    "completions/_nce.ps1",
+]
+build = [
+    "sh", "-c",
+    "mkdir -p completions && cargo run --release --bin nce -- --completions bash > completions/nce.bash && cargo run --release --bin nce -- --completions zsh > completions/nce.zsh && cargo run --release --bin nce -- --completions fish > completions/nce.fish && cargo run --release --bin nce -- --completions powershell > completions/_nce.ps1",
+]

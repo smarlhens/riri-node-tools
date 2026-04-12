@@ -6,6 +6,7 @@ members = ["crates/*"]
 edition = "2024"
 authors = ["Samuel MARLHENS <samuel.marlhens@proton.me>"]
 license = "BlueOak-1.0.0"
+repository = "https://github.com/smarlhens/riri-node-tools"
 
 [workspace.lints.clippy]
 pedantic = "deny"
@@ -62,3 +63,8 @@ riri-semver-range = { path = "crates/riri-semver-range" }
 riri-nce = { path = "crates/riri-nce" }
 riri-npd = { path = "crates/riri-npd" }
 riri-task-runner = { path = "crates/riri-task-runner" }
+
+# cargo-dist build profile
+[profile.dist]
+inherits = "release"
+lto = "thin"
