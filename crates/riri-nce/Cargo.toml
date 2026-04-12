@@ -4,6 +4,15 @@ version = "0.1.0"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "nce"
+path = "src/main.rs"
+
+[[bin]]
+name = "npm-check-engines"
+path = "src/main.rs"
 
 [dependencies]
 riri-common = { workspace = true, features = ["sort"] }
@@ -14,6 +23,7 @@ riri-yarn = { workspace = true }
 riri-task-runner = { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true }
+clap_complete = { workspace = true }
 comfy-table = { workspace = true }
 console = { workspace = true }
 serde_json = { workspace = true }
