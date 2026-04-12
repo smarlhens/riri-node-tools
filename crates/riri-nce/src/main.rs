@@ -1,7 +1,8 @@
 #![allow(clippy::missing_panics_doc)]
 
 use anyhow::{Context, Result};
-use clap::Parser;
+use clap::{CommandFactory, Parser};
+use clap_complete::Shell;
 use comfy_table::{Table, presets};
 use console::style;
 use riri_common::{
@@ -58,6 +59,10 @@ struct Args {
     /// Non-zero components are never dropped.
     #[arg(long, value_enum, default_value_t = PrecisionArg::Patch)]
     precision: PrecisionArg,
+
+    /// Generate shell completions and exit.
+    #[arg(long, hide = true, value_name = "SHELL")]
+    completions: Option<Shell>,
 }
 
 #[derive(Debug, Clone, Copy, clap::ValueEnum)]
@@ -315,6 +320,13 @@ fn generate_update_hint(args: &Args) -> String {
 
 fn main() -> ExitCode {
     let args = Args::parse();
+
+    if let Some(shell) = args.completions {
+        let mut cmd = Args::command();
+        clap_complete::generate(shell, &mut cmd, "nce", &mut std::io::stdout());
+        return ExitCode::SUCCESS;
+    }
+
     match run(&args) {
         Ok(code) => code,
         Err(e) => {

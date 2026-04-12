@@ -22,6 +22,7 @@ riri-yarn = { workspace = true }
 riri-task-runner = { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true }
+clap_complete = { workspace = true }
 comfy-table = { workspace = true }
 console = { workspace = true }
 serde_json = { workspace = true }
