@@ -39,7 +39,7 @@ thiserror = "2.0.18"
 tracing-subscriber = "0.3.23"
 
 # napi
-napi = { version = "3.8.4", default-features = false, features = ["napi6", "serde-json"] }
+napi = { version = "3.8.5", default-features = false, features = ["napi6", "serde-json"] }
 napi-derive = { version = "3.5.3", features = ["type-def"] }
 
 # test infrastructure
