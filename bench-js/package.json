@@ -7,6 +7,6 @@
   },
   "dependencies": {
     "@smarlhens/npm-check-engines": "0.14.4",
-    "tinybench": "6.0.0"
+    "tinybench": "6.0.1"
   }
 }
