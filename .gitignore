@@ -24,3 +24,6 @@ dhat-heap.json
 
 # Node
 node_modules/
+
+# Git worktrees
+.worktrees/
