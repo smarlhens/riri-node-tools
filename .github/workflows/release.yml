@@ -31,7 +31,7 @@ jobs:
       - name: Test
         run: cargo test --workspace --verbose
       - name: Release
-        uses: googleapis/release-please-action@v4
+        uses: googleapis/release-please-action@v5
         with:
           skip-github-pull-request: true
           token: ${{ secrets.PAT }}
