@@ -20,6 +20,7 @@ unwrap_used = "deny"
 
 [workspace.dependencies]
 anyhow = "1.0.102"
+chrono = { version = "0.4.44", default-features = false, features = ["clock", "std", "serde"] }
 clap = { version = "4.6.1", features = ["derive"] }
 clap-verbosity-flag = "3.0.4"
 comfy-table = "7.2.2"
@@ -59,5 +60,6 @@ riri-yarn = { path = "crates/riri-yarn" }
 riri-bun = { path = "crates/riri-bun" }
 riri-semver-range = { path = "crates/riri-semver-range" }
 riri-nce = { path = "crates/riri-nce" }
+riri-node-lifecycle = { path = "crates/riri-node-lifecycle" }
 riri-npd = { path = "crates/riri-npd" }
 riri-task-runner = { path = "crates/riri-task-runner" }
