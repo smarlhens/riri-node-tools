@@ -1,0 +1,49 @@
+name: refresh-node-data
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refresh-node-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: rustup update stable && rustup default stable
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+      - name: Refresh data
+        run: cargo run -p xtask --release -- refresh-node-data
+      - name: Detect changes
+        id: diff
+        run: |
+          if git diff --quiet -- crates/riri-node-lifecycle/data/node-versions.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create PR
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/refresh-node-data
+          title: "chore(node-lifecycle): refresh bundled data"
+          commit-message: "chore(node-lifecycle): refresh bundled data"
+          body: "Automated weekly refresh of `crates/riri-node-lifecycle/data/node-versions.json`."
+          add-paths: crates/riri-node-lifecycle/data/node-versions.json
+          delete-branch: true
