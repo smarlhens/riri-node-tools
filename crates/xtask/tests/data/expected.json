@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "majors": {
+    "20": {
+      "major": 20,
+      "lts_codename": "Iron",
+      "start": "2023-04-18",
+      "lts_start": "2023-10-24",
+      "maintenance_start": "2024-10-22",
+      "end": "2026-04-30",
+      "lowest": "20.0.0",
+      "highest": "20.19.5",
+      "npm_at_lowest": "9.6.4",
+      "npm_at_highest": "10.8.2",
+      "npm_min_in_major": "9.6.4",
+      "releases": [
+        { "version": "20.0.0", "npm": "9.6.4", "date": "2023-04-18" },
+        { "version": "20.10.0", "npm": "10.2.3", "date": "2023-11-22" },
+        { "version": "20.19.5", "npm": "10.8.2", "date": "2025-12-01" }
+      ]
+    },
+    "22": {
+      "major": 22,
+      "lts_codename": "Jod",
+      "start": "2024-04-24",
+      "lts_start": "2024-10-29",
+      "maintenance_start": null,
+      "end": "2027-04-30",
+      "lowest": "22.0.0",
+      "highest": "22.12.0",
+      "npm_at_lowest": "10.5.1",
+      "npm_at_highest": "10.9.0",
+      "npm_min_in_major": "10.5.1",
+      "releases": [
+        { "version": "22.0.0", "npm": "10.5.1", "date": "2024-04-24" },
+        { "version": "22.12.0", "npm": "10.9.0", "date": "2024-12-03" }
+      ]
+    }
+  }
+}
