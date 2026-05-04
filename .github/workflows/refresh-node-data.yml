@@ -39,7 +39,7 @@ jobs:
           fi
       - name: Create PR
         if: steps.diff.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: chore/refresh-node-data
           title: "chore(node-lifecycle): refresh bundled data"
