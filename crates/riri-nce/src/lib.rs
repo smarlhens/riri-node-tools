@@ -5,9 +5,11 @@
 
 mod compute;
 mod mutate;
+mod policy;
 
 pub use compute::{
     CheckEnginesInput, CheckEnginesOutput, EngineRangeToSet, check_engines,
     compute_engines_constraint, get_constraint_from_engines,
 };
 pub use mutate::{apply_engines_to_lockfile, apply_engines_update};
+pub use policy::{EolWarning, PolicyContext, PolicyResult, RewriteError, rewrite_node_range};
