@@ -1411,6 +1411,7 @@ name = "riri-nce"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "clap",
  "comfy-table",
  "console",
@@ -1418,11 +1419,13 @@ dependencies = [
  "dhat",
  "insta",
  "riri-common",
+ "riri-node-lifecycle",
  "riri-npm",
  "riri-pnpm",
  "riri-semver-range",
  "riri-task-runner",
  "riri-yarn",
+ "semver",
  "serde_json",
  "tempfile",
  "thiserror",

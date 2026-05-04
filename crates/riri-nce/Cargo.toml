@@ -7,15 +7,18 @@ license.workspace = true
 
 [dependencies]
 riri-common = { workspace = true, features = ["sort"] }
+riri-node-lifecycle = { workspace = true }
 riri-npm = { workspace = true }
 riri-pnpm = { workspace = true }
 riri-semver-range = { workspace = true }
 riri-yarn = { workspace = true }
 riri-task-runner = { workspace = true }
 anyhow = { workspace = true }
+chrono = { workspace = true }
 clap = { workspace = true }
 comfy-table = { workspace = true }
 console = { workspace = true }
+semver = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 

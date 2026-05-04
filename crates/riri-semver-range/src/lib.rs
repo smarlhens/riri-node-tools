@@ -1,9 +1,10 @@
-pub(crate) mod helpers;
+pub mod helpers;
 mod humanize;
 mod intersection;
 mod parse;
 pub(crate) mod subset;
 
+pub use helpers::split_by_major;
 pub use intersection::restrictive_range;
 pub use parse::ParsedRange;
 pub use subset::{intersects, is_subset_of};
