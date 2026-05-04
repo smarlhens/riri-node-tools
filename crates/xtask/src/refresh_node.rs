@@ -62,10 +62,35 @@ pub fn run(args: &Args) -> anyhow::Result<()> {
     if let Some(parent) = output_path.parent() {
         std::fs::create_dir_all(parent)?;
     }
+    let existing = std::fs::read_to_string(&output_path).ok();
+    if !data_changed(&aggregated, existing.as_deref())? {
+        println!("no data changes, skipping write {}", output_path.display());
+        return Ok(());
+    }
     let json = serde_json::to_string_pretty(&aggregated)? + "\n";
     std::fs::write(&output_path, json)?;
     println!("wrote {}", output_path.display());
     Ok(())
+}
+
+/// Returns `true` when the new aggregate differs from the on-disk file in any
+/// way other than the volatile `fetched_at` timestamp. A missing or unparseable
+/// existing file always counts as changed.
+pub fn data_changed(new: &AggregatedData, existing: Option<&str>) -> anyhow::Result<bool> {
+    let Some(existing) = existing else {
+        return Ok(true);
+    };
+    let Ok(mut existing_value) = serde_json::from_str::<serde_json::Value>(existing) else {
+        return Ok(true);
+    };
+    let mut new_value = serde_json::to_value(new)?;
+    if let Some(obj) = existing_value.as_object_mut() {
+        obj.remove("fetched_at");
+    }
+    if let Some(obj) = new_value.as_object_mut() {
+        obj.remove("fetched_at");
+    }
+    Ok(existing_value != new_value)
 }
 
 fn default_out_path() -> PathBuf {
@@ -167,5 +192,76 @@ fn derive_status_from_schedule(s: &ScheduleEntry, today: NaiveDate) -> Status {
         Status::Active
     } else {
         Status::Current
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    fn sample_aggregate() -> AggregatedData {
+        let fixtures = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests")
+            .join("data");
+        let index_raw = std::fs::read_to_string(fixtures.join("index.sample.json"))
+            .expect("read index fixture");
+        let schedule_raw = std::fs::read_to_string(fixtures.join("schedule.sample.json"))
+            .expect("read schedule fixture");
+        aggregate_offline(&index_raw, &schedule_raw).expect("aggregate")
+    }
+
+    #[test]
+    fn data_changed_true_when_no_existing_file() {
+        let new = sample_aggregate();
+        assert!(data_changed(&new, None).expect("compare"));
+    }
+
+    #[test]
+    fn data_changed_true_when_existing_is_unparseable() {
+        let new = sample_aggregate();
+        assert!(data_changed(&new, Some("not json")).expect("compare"));
+    }
+
+    #[test]
+    fn data_changed_false_when_only_fetched_at_differs() {
+        let new = sample_aggregate();
+        let mut value = serde_json::to_value(&new).expect("serialize");
+        value.as_object_mut().expect("object").insert(
+            "fetched_at".into(),
+            serde_json::json!("2000-01-01T00:00:00Z"),
+        );
+        let existing = serde_json::to_string(&value).expect("string");
+        assert!(!data_changed(&new, Some(&existing)).expect("compare"));
+    }
+
+    #[test]
+    fn data_changed_true_when_majors_differ() {
+        let new = sample_aggregate();
+        let mut value = serde_json::to_value(&new).expect("serialize");
+        value
+            .get_mut("majors")
+            .and_then(|m| m.as_object_mut())
+            .expect("majors")
+            .clear();
+        let existing = serde_json::to_string(&value).expect("string");
+        assert!(data_changed(&new, Some(&existing)).expect("compare"));
+    }
+
+    #[test]
+    fn data_changed_true_when_status_differs() {
+        let new = sample_aggregate();
+        let mut value = serde_json::to_value(&new).expect("serialize");
+        let majors = value
+            .get_mut("majors")
+            .and_then(|m| m.as_object_mut())
+            .expect("majors");
+        let first = majors.values_mut().next().expect("at least one major");
+        first
+            .as_object_mut()
+            .expect("major object")
+            .insert("status".into(), serde_json::json!("pending"));
+        let existing = serde_json::to_string(&value).expect("string");
+        assert!(data_changed(&new, Some(&existing)).expect("compare"));
     }
 }
