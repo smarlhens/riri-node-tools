@@ -17,9 +17,6 @@ on:
         type: boolean
         default: false
 
-permissions:
-  contents: read
-
 env:
   MACOSX_DEPLOYMENT_TARGET: "10.13"
 
@@ -219,8 +216,6 @@ jobs:
     defaults:
       run:
         working-directory: ${{ inputs.crate-dir }}
-    permissions:
-      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
