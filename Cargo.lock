@@ -1435,12 +1435,14 @@ dependencies = [
 name = "riri-node-lifecycle"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "chrono",
  "semver",
  "serde",
  "serde_json",
  "tempfile",
  "thiserror",
+ "ureq",
 ]
 
 [[package]]
@@ -2498,10 +2500,7 @@ dependencies = [
  "chrono",
  "clap",
  "riri-node-lifecycle",
- "semver",
- "serde",
  "serde_json",
- "ureq",
 ]
 
 [[package]]

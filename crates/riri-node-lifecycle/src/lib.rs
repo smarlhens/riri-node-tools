@@ -7,6 +7,8 @@
 mod cache;
 mod data;
 mod major;
+#[cfg(feature = "refresh")]
+pub mod refresh;
 mod schema;
 
 pub use cache::CacheError;

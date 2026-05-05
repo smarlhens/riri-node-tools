@@ -22,6 +22,10 @@ semver = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 
+[features]
+default = ["refresh"]
+refresh = ["riri-node-lifecycle/refresh"]
+
 [dev-dependencies]
 criterion = { workspace = true }
 dhat = "0.3.3"

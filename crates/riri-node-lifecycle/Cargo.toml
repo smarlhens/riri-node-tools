@@ -6,14 +6,24 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
+anyhow = { workspace = true, optional = true }
 chrono = { workspace = true }
 semver = { workspace = true, features = ["serde"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+ureq = { workspace = true, optional = true }
+
+[features]
+default = []
+refresh = ["dep:anyhow", "dep:ureq"]
 
 [dev-dependencies]
 tempfile = { workspace = true }
+
+[[test]]
+name = "aggregate"
+required-features = ["refresh"]
 
 [lints]
 workspace = true
