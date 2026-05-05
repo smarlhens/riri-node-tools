@@ -196,22 +196,24 @@ jobs:
 
       - name: Test (glibc)
         if: contains(matrix.target, 'gnu')
-        uses: addnab/docker-run-action@v3
-        with:
-          image: node:lts-slim
-          options: >-
-            --platform ${{ contains(matrix.target, 'aarch64') && 'linux/arm64' || 'linux/amd64' }}
-            -v ${{ github.workspace }}:/work
-            -w /work/crates/riri-napi
-          run: node test.mjs
+        env:
+          DOCKER_PLATFORM: ${{ contains(matrix.target, 'aarch64') && 'linux/arm64' || 'linux/amd64' }}
+        run: |
+          docker run --rm \
+            --platform "$DOCKER_PLATFORM" \
+            -v "$GITHUB_WORKSPACE":/work \
+            -w /work/crates/riri-napi \
+            node:lts-slim \
+            node test.mjs
 
       - name: Test (musl)
         if: contains(matrix.target, 'musl')
-        uses: addnab/docker-run-action@v3
-        with:
-          image: node:lts-alpine
-          options: >-
-            --platform ${{ contains(matrix.target, 'aarch64') && 'linux/arm64' || 'linux/amd64' }}
-            -v ${{ github.workspace }}:/work
-            -w /work/crates/riri-napi
-          run: node test.mjs
+        env:
+          DOCKER_PLATFORM: ${{ contains(matrix.target, 'aarch64') && 'linux/arm64' || 'linux/amd64' }}
+        run: |
+          docker run --rm \
+            --platform "$DOCKER_PLATFORM" \
+            -v "$GITHUB_WORKSPACE":/work \
+            -w /work/crates/riri-napi \
+            node:lts-alpine \
+            node test.mjs
