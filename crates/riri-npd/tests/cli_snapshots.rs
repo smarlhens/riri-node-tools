@@ -139,9 +139,40 @@ fn cli_yarn_no_node_modules_errors() {
 }
 
 #[test]
+fn cli_enable_save_exact_creates_npmrc() {
+    let tmp = copy_fixture_to_tmp("npd-npm-v3-already-pinned");
+    let output = npd_binary()
+        .current_dir(tmp.path())
+        .args(["--enable-save-exact"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code().unwrap_or(-1), 0);
+    let npmrc = std::fs::read_to_string(tmp.path().join(".npmrc")).unwrap();
+    assert_eq!(npmrc, "save-exact=true\n");
+}
+
+#[test]
+fn cli_enable_save_exact_skips_when_already_set() {
+    let tmp = copy_fixture_to_tmp("npd-npm-v3-already-pinned");
+    std::fs::write(tmp.path().join(".npmrc"), "save-exact=true\n").unwrap();
+    let output = npd_binary()
+        .current_dir(tmp.path())
+        .args(["--enable-save-exact"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code().unwrap_or(-1), 0);
+    let npmrc = std::fs::read_to_string(tmp.path().join(".npmrc")).unwrap();
+    assert_eq!(npmrc, "save-exact=true\n");
+}
+
+#[test]
 fn cli_help_lists_core_flags() {
     let output = npd_binary().arg("--help").output().unwrap();
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("--update"), "should show --update");
     assert!(stdout.contains("--json"), "should show --json");
+    assert!(
+        stdout.contains("--enable-save-exact"),
+        "should show --enable-save-exact"
+    );
 }

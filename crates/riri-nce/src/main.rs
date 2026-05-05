@@ -178,6 +178,8 @@ fn run(args: &Args) -> Result<ExitCode> {
     let runner = TaskRunner::new(mode);
     let cwd = std::env::current_dir().context("failed to get current directory")?;
 
+    maybe_enable_engine_strict(args, &runner, &cwd)?;
+
     // Detect lockfile
     let task = runner.task("Detecting lockfile...");
     match detect_lockfile(&cwd) {
@@ -383,25 +385,29 @@ fn run(args: &Args) -> Result<ExitCode> {
         );
     }
 
-    // Enable engine-strict in .npmrc
-    if args.enable_engine_strict {
-        let task = runner.task("Enabling engine-strict in .npmrc...");
-        let npmrc_path = cwd.join(".npmrc");
-        let content = std::fs::read_to_string(&npmrc_path).unwrap_or_default();
-        if content.contains("engine-strict=true") {
+    Ok(ExitCode::from(1))
+}
+
+fn maybe_enable_engine_strict(
+    args: &Args,
+    runner: &TaskRunner,
+    cwd: &std::path::Path,
+) -> Result<()> {
+    if !args.enable_engine_strict {
+        return Ok(());
+    }
+    let task = runner.task("Enabling engine-strict in .npmrc...");
+    match riri_common::upsert_npmrc_flag(cwd, "engine-strict=true")
+        .context("failed to write .npmrc")?
+    {
+        riri_common::NpmrcOutcome::AlreadySet => {
             task.skip("Enabling engine-strict in .npmrc", "already enabled");
-        } else {
-            let new_content = if content.is_empty() {
-                "engine-strict=true\n".to_string()
-            } else {
-                format!("{content}engine-strict=true\n")
-            };
-            std::fs::write(&npmrc_path, new_content).context("failed to write .npmrc")?;
+        }
+        riri_common::NpmrcOutcome::Added => {
             task.complete("Enabled engine-strict in .npmrc");
         }
     }
-
-    Ok(ExitCode::from(1))
+    Ok(())
 }
 
 const DEFAULT_MAX_DATA_AGE_DAYS: i64 = 180;

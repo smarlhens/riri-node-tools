@@ -42,6 +42,10 @@ struct Args {
     /// Sort package.json keys on write (uses sort-package-json conventions).
     #[arg(long)]
     sort: bool,
+
+    /// Create or update .npmrc with save-exact=true.
+    #[arg(long)]
+    enable_save_exact: bool,
 }
 
 fn renderer_mode(args: &Args) -> RendererMode {
@@ -89,6 +93,8 @@ fn run(args: &Args) -> Result<ExitCode> {
     let mode = renderer_mode(args);
     let runner = TaskRunner::new(mode);
     let cwd = std::env::current_dir().context("failed to get current directory")?;
+
+    maybe_enable_save_exact(args, &runner, &cwd)?;
 
     let task = runner.task("Detecting lockfile...");
     let lockfile_result = match detect_lockfile(&cwd) {
@@ -202,6 +208,24 @@ fn run(args: &Args) -> Result<ExitCode> {
     }
 
     Ok(ExitCode::from(1))
+}
+
+fn maybe_enable_save_exact(args: &Args, runner: &TaskRunner, cwd: &Path) -> Result<()> {
+    if !args.enable_save_exact {
+        return Ok(());
+    }
+    let task = runner.task("Enabling save-exact in .npmrc...");
+    match riri_common::upsert_npmrc_flag(cwd, "save-exact=true")
+        .context("failed to write .npmrc")?
+    {
+        riri_common::NpmrcOutcome::AlreadySet => {
+            task.skip("Enabling save-exact in .npmrc", "already enabled");
+        }
+        riri_common::NpmrcOutcome::Added => {
+            task.complete("Enabled save-exact in .npmrc");
+        }
+    }
+    Ok(())
 }
 
 fn apply_pins(pkg_file: &mut PackageJsonFile, pins: &[VersionToPin]) {
