@@ -1,39 +1,27 @@
-name: napi
+name: napi (reusable)
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "crates/riri-napi-nce/**"
-      - "crates/riri-nce/**"
-      - "crates/riri-semver-range/**"
-      - "crates/riri-common/**"
-      - "crates/riri-npm/**"
-      - "crates/riri-pnpm/**"
-      - "crates/riri-yarn/**"
-      - ".github/workflows/napi.yml"
-  pull_request:
-    paths:
-      - "crates/riri-napi-nce/**"
-      - "crates/riri-nce/**"
-      - "crates/riri-semver-range/**"
-      - "crates/riri-common/**"
-      - "crates/riri-npm/**"
-      - "crates/riri-pnpm/**"
-      - "crates/riri-yarn/**"
-      - ".github/workflows/napi.yml"
+  workflow_call:
+    inputs:
+      crate-dir:
+        description: Path to the napi crate (e.g. crates/riri-napi-nce)
+        required: true
+        type: string
+      app-name:
+        description: napi binaryName (matches package.json `napi.binaryName`)
+        required: true
+        type: string
+      run-publish:
+        description: When true, runs the publish job after build (release flow).
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 env:
-  APP_NAME: npm-check-engines
   MACOSX_DEPLOYMENT_TARGET: "10.13"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
 
 jobs:
   build:
@@ -73,7 +61,7 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     defaults:
       run:
-        working-directory: crates/riri-napi-nce
+        working-directory: ${{ inputs.crate-dir }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -83,17 +71,18 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: crates/riri-napi-nce/.nvmrc
+          node-version-file: ${{ inputs.crate-dir }}/.nvmrc
           cache: npm
-          cache-dependency-path: crates/riri-napi-nce/package-lock.json
+          cache-dependency-path: ${{ inputs.crate-dir }}/package-lock.json
 
       - name: Install Rust
         run: rustup update stable && rustup default stable && rustup target add ${{ matrix.settings.target }}
 
       - name: Rust cache
+        if: ${{ !inputs.run-publish }}
         uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: napi-${{ matrix.settings.target }}
+          prefix-key: napi-${{ inputs.app-name }}-${{ matrix.settings.target }}
 
       - name: Install zig (musl targets)
         if: contains(matrix.settings.target, 'musl')
@@ -114,12 +103,13 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: bindings-${{ matrix.settings.target }}
-          path: crates/riri-napi-nce/${{ env.APP_NAME }}.*.node
+          name: bindings-${{ inputs.app-name }}-${{ matrix.settings.target }}
+          path: ${{ inputs.crate-dir }}/${{ inputs.app-name }}.*.node
           if-no-files-found: error
           retention-days: 1
 
   test-native:
+    if: ${{ !inputs.run-publish }}
     name: test - ${{ matrix.settings.target }}
     needs: build
     strategy:
@@ -141,7 +131,7 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     defaults:
       run:
-        working-directory: crates/riri-napi-nce
+        working-directory: ${{ inputs.crate-dir }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -151,19 +141,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: crates/riri-napi-nce/.nvmrc
+          node-version-file: ${{ inputs.crate-dir }}/.nvmrc
           architecture: ${{ matrix.settings.architecture }}
 
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
-          name: bindings-${{ matrix.settings.target }}
-          path: crates/riri-napi-nce
+          name: bindings-${{ inputs.app-name }}-${{ matrix.settings.target }}
+          path: ${{ inputs.crate-dir }}
 
       - name: Run tests
         run: node test.mjs
 
   test-linux:
+    if: ${{ !inputs.run-publish }}
     name: test - ${{ matrix.target }}
     needs: build
     strategy:
@@ -185,8 +176,8 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
-          name: bindings-${{ matrix.target }}
-          path: crates/riri-napi-nce
+          name: bindings-${{ inputs.app-name }}-${{ matrix.target }}
+          path: ${{ inputs.crate-dir }}
 
       - name: Set up QEMU (arm64)
         if: contains(matrix.target, 'aarch64')
@@ -198,11 +189,12 @@ jobs:
         if: contains(matrix.target, 'gnu')
         env:
           DOCKER_PLATFORM: ${{ contains(matrix.target, 'aarch64') && 'linux/arm64' || 'linux/amd64' }}
+          CRATE_DIR: ${{ inputs.crate-dir }}
         run: |
           docker run --rm \
             --platform "$DOCKER_PLATFORM" \
             -v "$GITHUB_WORKSPACE":/work \
-            -w /work/crates/riri-napi-nce \
+            -w "/work/$CRATE_DIR" \
             node:lts-slim \
             node test.mjs
 
@@ -210,10 +202,63 @@ jobs:
         if: contains(matrix.target, 'musl')
         env:
           DOCKER_PLATFORM: ${{ contains(matrix.target, 'aarch64') && 'linux/arm64' || 'linux/amd64' }}
+          CRATE_DIR: ${{ inputs.crate-dir }}
         run: |
           docker run --rm \
             --platform "$DOCKER_PLATFORM" \
             -v "$GITHUB_WORKSPACE":/work \
-            -w /work/crates/riri-napi-nce \
+            -w "/work/$CRATE_DIR" \
             node:lts-alpine \
             node test.mjs
+
+  publish:
+    if: ${{ inputs.run-publish }}
+    name: publish
+    needs: build
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ${{ inputs.crate-dir }}
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ${{ inputs.crate-dir }}/.nvmrc
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create npm dirs
+        run: npx napi create-npm-dirs
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: ${{ inputs.crate-dir }}/artifacts
+          pattern: bindings-${{ inputs.app-name }}-*
+
+      - name: Move artifacts
+        run: npx napi artifacts --output-dir artifacts
+
+      - name: Determine npm tag
+        id: tag
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if echo "$VERSION" | grep -q "-"; then
+            TAG=$(echo "$VERSION" | sed 's/.*-\([a-z]*\).*/\1/')
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish
+        env:
+          NPM_TAG: ${{ steps.tag.outputs.tag }}
+        run: npm publish --access public --provenance --tag "$NPM_TAG"

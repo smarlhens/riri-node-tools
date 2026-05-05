@@ -1,0 +1,43 @@
+name: napi-nce
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "crates/riri-napi-nce/**"
+      - "crates/riri-nce/**"
+      - "crates/riri-semver-range/**"
+      - "crates/riri-common/**"
+      - "crates/riri-npm/**"
+      - "crates/riri-pnpm/**"
+      - "crates/riri-yarn/**"
+      - "crates/riri-node-lifecycle/**"
+      - ".github/workflows/napi-nce.yml"
+      - ".github/workflows/napi.yml"
+  pull_request:
+    paths:
+      - "crates/riri-napi-nce/**"
+      - "crates/riri-nce/**"
+      - "crates/riri-semver-range/**"
+      - "crates/riri-common/**"
+      - "crates/riri-npm/**"
+      - "crates/riri-pnpm/**"
+      - "crates/riri-yarn/**"
+      - "crates/riri-node-lifecycle/**"
+      - ".github/workflows/napi-nce.yml"
+      - ".github/workflows/napi.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  napi:
+    uses: ./.github/workflows/napi.yml
+    with:
+      crate-dir: crates/riri-napi-nce
+      app-name: npm-check-engines

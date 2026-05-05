@@ -1,0 +1,39 @@
+name: napi-npd
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "crates/riri-napi-npd/**"
+      - "crates/riri-npd/**"
+      - "crates/riri-common/**"
+      - "crates/riri-npm/**"
+      - "crates/riri-pnpm/**"
+      - "crates/riri-yarn/**"
+      - ".github/workflows/napi-npd.yml"
+      - ".github/workflows/napi.yml"
+  pull_request:
+    paths:
+      - "crates/riri-napi-npd/**"
+      - "crates/riri-npd/**"
+      - "crates/riri-common/**"
+      - "crates/riri-npm/**"
+      - "crates/riri-pnpm/**"
+      - "crates/riri-yarn/**"
+      - ".github/workflows/napi-npd.yml"
+      - ".github/workflows/napi.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  napi:
+    uses: ./.github/workflows/napi.yml
+    with:
+      crate-dir: crates/riri-napi-npd
+      app-name: npm-pin-dependencies
