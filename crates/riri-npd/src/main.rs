@@ -9,6 +9,8 @@ use riri_npd::{DependencyKind, VersionToPin, pin_dependencies};
 use riri_npm::NpmPackageLock;
 use riri_pnpm::PnpmLockfile;
 use riri_task_runner::{RendererMode, TaskRunner};
+use riri_yarn::YarnProject;
+use std::path::Path;
 use std::process::ExitCode;
 
 /// Pin range-based dependency specifiers to the exact versions resolved by
@@ -54,19 +56,30 @@ fn renderer_mode(args: &Args) -> RendererMode {
     }
 }
 
-fn parse_lockfile(manager: &PackageManager, content: &str) -> Result<Box<dyn LockfileVersions>> {
+fn load_lockfile(
+    manager: &PackageManager,
+    lockfile_path: &Path,
+) -> Result<Box<dyn LockfileVersions>> {
     match manager {
         PackageManager::Npm => {
+            let content = std::fs::read_to_string(lockfile_path)
+                .with_context(|| format!("failed to read {}", lockfile_path.display()))?;
             let lock =
-                NpmPackageLock::parse(content).context("failed to parse package-lock.json")?;
+                NpmPackageLock::parse(&content).context("failed to parse package-lock.json")?;
             Ok(Box::new(lock))
         }
         PackageManager::Pnpm => {
-            let lock = PnpmLockfile::parse(content).context("failed to parse pnpm-lock.yaml")?;
+            let content = std::fs::read_to_string(lockfile_path)
+                .with_context(|| format!("failed to read {}", lockfile_path.display()))?;
+            let lock = PnpmLockfile::parse(&content).context("failed to parse pnpm-lock.yaml")?;
             Ok(Box::new(lock))
         }
         PackageManager::Yarn => {
-            anyhow::bail!("yarn support is not yet wired into npd; track it in Phase 9.x")
+            let project_dir = lockfile_path.parent().unwrap_or_else(|| Path::new("."));
+            let project = YarnProject::scan(project_dir).with_context(|| {
+                format!("failed to scan {}/node_modules", project_dir.display())
+            })?;
+            Ok(Box::new(project))
         }
     }
 }
@@ -110,9 +123,7 @@ fn run(args: &Args) -> Result<ExitCode> {
     };
 
     let task = runner.task("Parsing lockfile...");
-    let lockfile_content =
-        std::fs::read_to_string(&lockfile_result.path).context("failed to read lockfile")?;
-    let lockfile = match parse_lockfile(&lockfile_result.package_manager, &lockfile_content) {
+    let lockfile = match load_lockfile(&lockfile_result.package_manager, &lockfile_result.path) {
         Ok(lock) => {
             task.complete("Parsed lockfile");
             lock

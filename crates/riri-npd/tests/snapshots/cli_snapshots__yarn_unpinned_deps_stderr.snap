@@ -1,0 +1,17 @@
+---
+source: crates/riri-npd/tests/cli_snapshots.rs
+expression: stderr
+---
+  Detecting lockfile...
+  Detected yarn.lock
+  Reading package.json...
+  Read package.json
+  Parsing lockfile...
+  Parsed lockfile
+  Computing dependency pins...
+  Computed dependency pins
+  bar  ~18.2.0   →  18.2.0
+  foo  ^4.17.21  →  4.17.21
+  baz  ^1.0.0    →  1.6.0
+
+  Run npd -v -u to upgrade package.json.

@@ -1429,6 +1429,7 @@ dependencies = [
  "riri-npm",
  "riri-pnpm",
  "riri-task-runner",
+ "riri-yarn",
  "semver",
  "serde_json",
  "tempfile",
