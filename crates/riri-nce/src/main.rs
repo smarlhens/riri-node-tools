@@ -273,6 +273,10 @@ fn run(args: &Args) -> Result<ExitCode> {
         .map_err(|e| anyhow::anyhow!("lifecycle rewrite failed: {e}"))?;
     task.complete("Computed engine constraints");
 
+    if let Some(code) = check_data_freshness(args, &lifecycle_data, today) {
+        return Ok(code);
+    }
+
     emit_eol_warnings(args, &lifecycle);
 
     // JSON output mode
@@ -377,6 +381,44 @@ fn run(args: &Args) -> Result<ExitCode> {
     }
 
     Ok(ExitCode::from(1))
+}
+
+const DEFAULT_MAX_DATA_AGE_DAYS: i64 = 180;
+
+fn max_data_age_days() -> i64 {
+    std::env::var("RIRI_NCE_MAX_DATA_AGE_DAYS")
+        .ok()
+        .and_then(|s| s.parse::<i64>().ok())
+        .filter(|n| *n >= 0)
+        .unwrap_or(DEFAULT_MAX_DATA_AGE_DAYS)
+}
+
+fn data_age_days(fetched_at: chrono::DateTime<Utc>, today: NaiveDate) -> i64 {
+    today
+        .signed_duration_since(fetched_at.date_naive())
+        .num_days()
+}
+
+fn check_data_freshness(args: &Args, data: &LifecycleData, today: NaiveDate) -> Option<ExitCode> {
+    let age = data_age_days(data.fetched_at, today);
+    let max = max_data_age_days();
+    let warn_threshold = max / 2;
+    if age > max && args.update {
+        if !args.quiet {
+            eprintln!(
+                "\n  {} lifecycle data is {age} days old (max {max}). Run `nce --refresh` to update.",
+                style("error:").red().bold(),
+            );
+        }
+        return Some(ExitCode::from(1));
+    }
+    if age > warn_threshold && !args.quiet {
+        eprintln!(
+            "  {} lifecycle data is {age} days old. Consider running `nce --refresh`.",
+            style("warning:").yellow().bold(),
+        );
+    }
+    None
 }
 
 fn load_lifecycle_data(args: &Args, today: NaiveDate) -> Result<LifecycleData> {
