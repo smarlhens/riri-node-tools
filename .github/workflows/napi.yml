@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "crates/riri-napi/**"
+      - "crates/riri-napi-nce/**"
       - "crates/riri-nce/**"
       - "crates/riri-semver-range/**"
       - "crates/riri-common/**"
@@ -15,7 +15,7 @@ on:
       - ".github/workflows/napi.yml"
   pull_request:
     paths:
-      - "crates/riri-napi/**"
+      - "crates/riri-napi-nce/**"
       - "crates/riri-nce/**"
       - "crates/riri-semver-range/**"
       - "crates/riri-common/**"
@@ -73,7 +73,7 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     defaults:
       run:
-        working-directory: crates/riri-napi
+        working-directory: crates/riri-napi-nce
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -83,9 +83,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: crates/riri-napi/.nvmrc
+          node-version-file: crates/riri-napi-nce/.nvmrc
           cache: npm
-          cache-dependency-path: crates/riri-napi/package-lock.json
+          cache-dependency-path: crates/riri-napi-nce/package-lock.json
 
       - name: Install Rust
         run: rustup update stable && rustup default stable && rustup target add ${{ matrix.settings.target }}
@@ -115,7 +115,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: crates/riri-napi/${{ env.APP_NAME }}.*.node
+          path: crates/riri-napi-nce/${{ env.APP_NAME }}.*.node
           if-no-files-found: error
           retention-days: 1
 
@@ -141,7 +141,7 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     defaults:
       run:
-        working-directory: crates/riri-napi
+        working-directory: crates/riri-napi-nce
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -151,14 +151,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: crates/riri-napi/.nvmrc
+          node-version-file: crates/riri-napi-nce/.nvmrc
           architecture: ${{ matrix.settings.architecture }}
 
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: crates/riri-napi
+          path: crates/riri-napi-nce
 
       - name: Run tests
         run: node test.mjs
@@ -186,7 +186,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: bindings-${{ matrix.target }}
-          path: crates/riri-napi
+          path: crates/riri-napi-nce
 
       - name: Set up QEMU (arm64)
         if: contains(matrix.target, 'aarch64')
@@ -202,7 +202,7 @@ jobs:
           docker run --rm \
             --platform "$DOCKER_PLATFORM" \
             -v "$GITHUB_WORKSPACE":/work \
-            -w /work/crates/riri-napi \
+            -w /work/crates/riri-napi-nce \
             node:lts-slim \
             node test.mjs
 
@@ -214,6 +214,6 @@ jobs:
           docker run --rm \
             --platform "$DOCKER_PLATFORM" \
             -v "$GITHUB_WORKSPACE":/work \
-            -w /work/crates/riri-napi \
+            -w /work/crates/riri-napi-nce \
             node:lts-alpine \
             node test.mjs

@@ -1,3 +1,4 @@
 {
-  "crates/riri-napi": "1.0.0-rc.1"
+  "crates/riri-napi-nce": "1.0.0-rc.1",
+  "crates/riri-napi-npd": "0.1.0"
 }

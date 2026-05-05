@@ -1361,7 +1361,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "riri-napi"
+name = "riri-napi-nce"
 version = "1.0.0-rc.1"
 dependencies = [
  "napi",
@@ -1374,6 +1374,20 @@ dependencies = [
  "riri-semver-range",
  "riri-yarn",
  "semver",
+ "serde_json",
+]
+
+[[package]]
+name = "riri-napi-npd"
+version = "0.1.0"
+dependencies = [
+ "napi",
+ "napi-build",
+ "napi-derive",
+ "riri-common",
+ "riri-npd",
+ "riri-npm",
+ "riri-pnpm",
  "serde_json",
 ]
 

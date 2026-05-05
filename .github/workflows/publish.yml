@@ -54,7 +54,7 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     defaults:
       run:
-        working-directory: crates/riri-napi
+        working-directory: crates/riri-napi-nce
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -64,9 +64,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: crates/riri-napi/.nvmrc
+          node-version-file: crates/riri-napi-nce/.nvmrc
           cache: npm
-          cache-dependency-path: crates/riri-napi/package-lock.json
+          cache-dependency-path: crates/riri-napi-nce/package-lock.json
 
       - name: Install Rust
         run: rustup update stable && rustup default stable && rustup target add ${{ matrix.settings.target }}
@@ -91,7 +91,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: crates/riri-napi/${{ env.APP_NAME }}.*.node
+          path: crates/riri-napi-nce/${{ env.APP_NAME }}.*.node
           if-no-files-found: error
           retention-days: 1
 
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-24.04
     defaults:
       run:
-        working-directory: crates/riri-napi
+        working-directory: crates/riri-napi-nce
     permissions:
       id-token: write
     steps:
@@ -113,7 +113,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: crates/riri-napi/.nvmrc
+          node-version-file: crates/riri-napi-nce/.nvmrc
 
       - name: Install dependencies
         run: npm ci
@@ -124,7 +124,7 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v8
         with:
-          path: crates/riri-napi/artifacts
+          path: crates/riri-napi-nce/artifacts
 
       - name: Move artifacts
         run: npx napi artifacts --output-dir artifacts

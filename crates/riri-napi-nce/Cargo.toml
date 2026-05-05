@@ -1,5 +1,5 @@
 [package]
-name = "riri-napi"
+name = "riri-napi-nce"
 version = "1.0.0-rc.1"
 edition.workspace = true
 authors.workspace = true
