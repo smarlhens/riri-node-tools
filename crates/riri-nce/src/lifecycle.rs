@@ -242,11 +242,14 @@ mod tests {
             check_engines_with_lifecycle(&input, &cfg(&data, Policy::Supported, false))
                 .expect("lifecycle");
 
-        assert_eq!(output.computed_engines[&EngineConstraintKey::Node], ">=20");
+        assert_eq!(
+            output.computed_engines[&EngineConstraintKey::Node],
+            "^20 || >=22"
+        );
         assert!(lifecycle.warnings.is_empty());
         assert_eq!(
             lifecycle.bumped_disjuncts,
-            vec![(">=18".to_string(), ">=20".to_string())]
+            vec![(">=18".to_string(), "^20 || >=22".to_string())]
         );
     }
 

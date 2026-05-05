@@ -63,9 +63,9 @@ pub fn rewrite_node_range(
     for input_part in &parsed.parts {
         let original = humanize_part(input_part, ctx.precision);
         let contributions = if is_wildcard(input_part) {
-            allowed.iter().copied().map(caret_from_major).collect()
+            expand_from_major(0, &allowed, ctx.policy)
         } else {
-            filter_split(input_part, &allowed)
+            filter_split(input_part, &allowed, ctx.policy)
         };
 
         if contributions.is_empty() {
@@ -125,23 +125,26 @@ pub fn rewrite_node_range(
     })
 }
 
-fn filter_split(input_part: &RangePart, allowed: &[u32]) -> Vec<RangePart> {
+fn filter_split(input_part: &RangePart, allowed: &[u32], policy: Policy) -> Vec<RangePart> {
     if input_part.max.is_none() {
         let Ok(min_major) = u32::try_from(input_part.min.major) else {
             return Vec::new();
         };
-        let Some(smallest) = allowed.iter().copied().find(|&m| m >= min_major) else {
-            return Vec::new();
-        };
-        if smallest == min_major {
-            return vec![input_part.clone()];
+        if matches!(policy, Policy::Any | Policy::Stable) {
+            let Some(smallest) = allowed.iter().copied().find(|&m| m >= min_major) else {
+                return Vec::new();
+            };
+            if smallest == min_major {
+                return vec![input_part.clone()];
+            }
+            return vec![RangePart {
+                min: Version::new(u64::from(smallest), 0, 0),
+                min_op: Op::Gte,
+                max: None,
+                max_op: None,
+            }];
         }
-        return vec![RangePart {
-            min: Version::new(u64::from(smallest), 0, 0),
-            min_op: Op::Gte,
-            max: None,
-            max_op: None,
-        }];
+        return expand_from_major(min_major, allowed, policy);
     }
 
     split_by_major(input_part)
@@ -152,6 +155,36 @@ fn filter_split(input_part: &RangePart, allowed: &[u32]) -> Vec<RangePart> {
                 .is_some_and(|m| allowed.contains(&m))
         })
         .collect()
+}
+
+/// Expands `>=min_major.0.0` into the allowed-major caret list under `policy`.
+///
+/// Under `Supported`, the highest allowed caret is replaced with an open `>=M.0.0`
+/// to keep the range forward-compatible with the next current major. Under `Lts` and
+/// `Maintenance`, every contribution stays caret-bounded.
+fn expand_from_major(min_major: u32, allowed: &[u32], policy: Policy) -> Vec<RangePart> {
+    let mut filtered: Vec<u32> = allowed
+        .iter()
+        .copied()
+        .filter(|m| *m >= min_major)
+        .collect();
+    if filtered.is_empty() {
+        return Vec::new();
+    }
+    let keep_open_tail = matches!(policy, Policy::Supported);
+    let last = filtered.pop().expect("non-empty after is_empty check");
+    let mut parts: Vec<RangePart> = filtered.into_iter().map(caret_from_major).collect();
+    if keep_open_tail {
+        parts.push(RangePart {
+            min: Version::new(u64::from(last), 0, 0),
+            min_op: Op::Gte,
+            max: None,
+            max_op: None,
+        });
+    } else {
+        parts.push(caret_from_major(last));
+    }
+    parts
 }
 
 fn is_wildcard(part: &RangePart) -> bool {
@@ -281,14 +314,11 @@ mod tests {
         let result =
             rewrite_node_range("^20.19.0 || ^22.12.0 || >=23.0.0", &ctx(&data, Policy::Lts))
                 .expect("rewrite");
-        assert_eq!(
-            result.rewritten.as_deref(),
-            Some("^20.19 || ^22.12 || >=24")
-        );
+        assert_eq!(result.rewritten.as_deref(), Some("^20.19 || ^22.12 || ^24"));
         assert!(result.dropped_disjuncts.is_empty());
         assert_eq!(result.bumped_disjuncts.len(), 1);
         assert_eq!(result.bumped_disjuncts[0].0, ">=23");
-        assert_eq!(result.bumped_disjuncts[0].1, ">=24");
+        assert_eq!(result.bumped_disjuncts[0].1, "^24");
         assert!(!result.unsatisfiable);
         assert!(result.eol_warnings.is_empty());
     }
@@ -330,10 +360,10 @@ mod tests {
     fn lts_lifts_open_eol_lower_bound() {
         let data = fixture();
         let result = rewrite_node_range(">=18.0.0", &ctx(&data, Policy::Lts)).expect("rewrite");
-        assert_eq!(result.rewritten.as_deref(), Some(">=20"));
+        assert_eq!(result.rewritten.as_deref(), Some("^20 || ^22 || ^24"));
         assert_eq!(
             result.bumped_disjuncts,
-            vec![(">=18".to_string(), ">=20".to_string())]
+            vec![(">=18".to_string(), "^20 || ^22 || ^24".to_string())]
         );
     }
 

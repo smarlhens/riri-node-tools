@@ -246,7 +246,10 @@ fn cli_npm_bump_floor() {
 
 #[test]
 fn cli_no_bump_npm_flag() {
-    let (stdout, stderr, code) = run_in_fixture("nce-no-bump-npm-flag", &["-v", "--no-bump-npm"]);
+    let (stdout, stderr, code) = run_in_fixture(
+        "nce-no-bump-npm-flag",
+        &["-v", "--node-policy=any", "--no-bump-npm"],
+    );
     assert_eq!(code, 0);
     assert!(stdout.is_empty());
     insta::assert_snapshot!("no_bump_npm_flag_stderr", stderr);
@@ -357,7 +360,8 @@ fn cli_update_writes_lifecycle_rewrite() {
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(code, 1);
     let written = std::fs::read_to_string(tmp.path().join("package.json")).unwrap();
-    assert!(written.contains("\">=20.0.0\""), "package.json: {written}");
+    assert!(written.contains("^20.0.0"), "package.json: {written}");
+    assert!(written.contains(">=25.0.0"), "package.json: {written}");
     assert!(!written.contains("\">=18.0.0\""), "package.json: {written}");
 }
 
@@ -473,7 +477,8 @@ fn cli_cache_override_takes_precedence_over_bundled() {
     let code = output.status.code().unwrap_or(-1);
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert_eq!(code, 1, "stderr: {stderr}");
-    assert!(stderr.contains(">=20.0.0"), "stderr: {stderr}");
+    assert!(stderr.contains("^20.0.0"), "stderr: {stderr}");
+    assert!(stderr.contains(">=25.0.0"), "stderr: {stderr}");
 }
 
 #[test]
