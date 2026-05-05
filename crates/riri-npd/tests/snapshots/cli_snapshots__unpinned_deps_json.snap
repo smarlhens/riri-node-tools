@@ -5,19 +5,19 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
 {
   "pins": [
     {
-      "name": "lodash",
-      "kind": "dependencies",
-      "from": "^4.17.21",
-      "to": "4.17.21"
-    },
-    {
-      "name": "react",
+      "name": "bar",
       "kind": "dependencies",
       "from": "~18.2.0",
       "to": "18.2.0"
     },
     {
-      "name": "vitest",
+      "name": "foo",
+      "kind": "dependencies",
+      "from": "^4.17.21",
+      "to": "4.17.21"
+    },
+    {
+      "name": "baz",
       "kind": "devDependencies",
       "from": "^1.0.0",
       "to": "1.6.0"

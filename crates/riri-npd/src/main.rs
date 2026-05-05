@@ -7,6 +7,7 @@ use console::style;
 use riri_common::{LockfileVersions, PackageJsonFile, PackageManager, detect_lockfile};
 use riri_npd::{DependencyKind, VersionToPin, pin_dependencies};
 use riri_npm::NpmPackageLock;
+use riri_pnpm::PnpmLockfile;
 use riri_task_runner::{RendererMode, TaskRunner};
 use std::process::ExitCode;
 
@@ -61,7 +62,8 @@ fn parse_lockfile(manager: &PackageManager, content: &str) -> Result<Box<dyn Loc
             Ok(Box::new(lock))
         }
         PackageManager::Pnpm => {
-            anyhow::bail!("pnpm support is not yet wired into npd; track it in Phase 9.x")
+            let lock = PnpmLockfile::parse(content).context("failed to parse pnpm-lock.yaml")?;
+            Ok(Box::new(lock))
         }
         PackageManager::Yarn => {
             anyhow::bail!("yarn support is not yet wired into npd; track it in Phase 9.x")

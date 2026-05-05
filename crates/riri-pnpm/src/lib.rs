@@ -3,7 +3,7 @@
 //! Parses the lockfile and exposes engine constraints per dependency
 //! via the [`LockfileEngines`] trait.
 
-use riri_common::{Engines, LockfileEngines};
+use riri_common::{Engines, LockfileEngines, LockfileVersions};
 use serde::Deserialize;
 use std::collections::HashMap;
 
@@ -32,18 +32,59 @@ pub enum PnpmLockfile {
     /// Keys: `/name/version` or `/@scope/name/version`.
     V5 {
         packages: HashMap<String, PnpmPackageEntry>,
+        importers: HashMap<String, PnpmImporter>,
     },
     /// v6 format (lockfileVersion 6.x — pnpm v8).
     /// Keys: `/name@version(peers)` or `/@scope/name@version(peers)`.
     V6 {
         packages: HashMap<String, PnpmPackageEntry>,
+        importers: HashMap<String, PnpmImporter>,
     },
     /// v9 format (lockfileVersion 9.x — pnpm v9/v10/v11).
     /// Engines in `packages` (keyed `name@version`, no leading `/`).
     /// `snapshots` holds per-peer-context data (not needed for engines).
     V9 {
         packages: HashMap<String, PnpmPackageEntry>,
+        importers: HashMap<String, PnpmImporter>,
     },
+}
+
+/// One importer (workspace member) entry — most projects only have `.`.
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct PnpmImporter {
+    #[serde(default)]
+    pub dependencies: HashMap<String, ImporterDep>,
+    #[serde(default, rename = "devDependencies")]
+    pub dev_dependencies: HashMap<String, ImporterDep>,
+    #[serde(default, rename = "optionalDependencies")]
+    pub optional_dependencies: HashMap<String, ImporterDep>,
+}
+
+/// Either a v5 plain version string (`"1.2.3"`) or a v6+ object with
+/// `specifier` + `version` fields. The `version` is what the lockfile
+/// resolved to (used for pinning).
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum ImporterDep {
+    /// v5: value is just the resolved version string.
+    Version(String),
+    /// v6+: object form. `version` may carry peer suffix like `1.2.3(peer@18.0.0)`.
+    Object {
+        #[serde(default)]
+        specifier: Option<String>,
+        version: String,
+    },
+}
+
+impl ImporterDep {
+    /// Returns the resolved version, stripped of any pnpm peer-context suffix.
+    #[must_use]
+    pub fn version(&self) -> &str {
+        let raw = match self {
+            Self::Version(v) | Self::Object { version: v, .. } => v.as_str(),
+        };
+        raw.split_once('(').map_or(raw, |(v, _)| v)
+    }
 }
 
 impl PnpmLockfile {
@@ -87,18 +128,21 @@ impl PnpmLockfile {
                 let lock: PnpmLockPackages = serde_saphyr::from_str(yaml_content)?;
                 Ok(Self::V5 {
                     packages: lock.packages,
+                    importers: lock.importers,
                 })
             }
             6 => {
                 let lock: PnpmLockPackages = serde_saphyr::from_str(yaml_content)?;
                 Ok(Self::V6 {
                     packages: lock.packages,
+                    importers: lock.importers,
                 })
             }
             9 => {
                 let lock: PnpmLockPackages = serde_saphyr::from_str(yaml_content)?;
                 Ok(Self::V9 {
                     packages: lock.packages,
+                    importers: lock.importers,
                 })
             }
             _ => Err(PnpmParseError::UnsupportedVersion(version_str)),
@@ -109,8 +153,22 @@ impl PnpmLockfile {
     #[must_use]
     pub fn entries(&self) -> &HashMap<String, PnpmPackageEntry> {
         match self {
-            Self::V5 { packages } | Self::V6 { packages } | Self::V9 { packages } => packages,
+            Self::V5 { packages, .. } | Self::V6 { packages, .. } | Self::V9 { packages, .. } => {
+                packages
+            }
         }
+    }
+
+    /// Returns the root importer (`.`), which lists the directly-declared
+    /// dependencies of `package.json` and their resolved versions.
+    #[must_use]
+    pub fn root_importer(&self) -> Option<&PnpmImporter> {
+        let importers = match self {
+            Self::V5 { importers, .. }
+            | Self::V6 { importers, .. }
+            | Self::V9 { importers, .. } => importers,
+        };
+        importers.get(".")
     }
 }
 
@@ -121,6 +179,79 @@ impl LockfileEngines for PnpmLockfile {
                 .iter()
                 .filter_map(|(name, entry)| entry.engines.as_ref().map(|e| (name.as_str(), e))),
         )
+    }
+}
+
+impl LockfileVersions for PnpmLockfile {
+    fn version_for(&self, name: &str) -> Option<&str> {
+        let importer = self.root_importer()?;
+        importer
+            .dependencies
+            .get(name)
+            .or_else(|| importer.dev_dependencies.get(name))
+            .or_else(|| importer.optional_dependencies.get(name))
+            .map(ImporterDep::version)
+    }
+}
+
+#[cfg(test)]
+mod versions_tests {
+    use super::*;
+
+    #[test]
+    fn version_strips_pnpm_peer_suffix() {
+        let dep = ImporterDep::Object {
+            specifier: Some("^1.0.0".into()),
+            version: "1.6.0(qux@20.0.0)".into(),
+        };
+        assert_eq!(dep.version(), "1.6.0");
+    }
+
+    #[test]
+    fn version_returns_plain_v5_string_unchanged() {
+        let dep = ImporterDep::Version("4.17.21".into());
+        assert_eq!(dep.version(), "4.17.21");
+    }
+
+    #[test]
+    fn version_for_resolves_dev_and_optional() {
+        let v9 = "
+lockfileVersion: '9.0'
+importers:
+  .:
+    dependencies:
+      foo:
+        specifier: ^4.0.0
+        version: 4.17.21
+    devDependencies:
+      baz:
+        specifier: ^1.0.0
+        version: 1.6.0
+    optionalDependencies:
+      qux:
+        specifier: ^2.3.0
+        version: 2.3.3
+packages: {}
+";
+        let lock = PnpmLockfile::parse(v9).expect("parse");
+        assert_eq!(lock.version_for("foo"), Some("4.17.21"));
+        assert_eq!(lock.version_for("baz"), Some("1.6.0"));
+        assert_eq!(lock.version_for("qux"), Some("2.3.3"));
+        assert_eq!(lock.version_for("missing"), None);
+    }
+
+    #[test]
+    fn version_for_handles_v5_string_form() {
+        let v5 = "
+lockfileVersion: 5.4
+importers:
+  .:
+    dependencies:
+      foo: 4.17.21
+packages: {}
+";
+        let lock = PnpmLockfile::parse(v5).expect("parse");
+        assert_eq!(lock.version_for("foo"), Some("4.17.21"));
     }
 }
 
@@ -147,11 +278,13 @@ struct VersionDetect {
     lockfile_version: VersionValue,
 }
 
-/// Shared struct for all lockfile versions — we only need `packages`.
+/// Shared struct for all lockfile versions.
 /// `#[serde(deny_unknown_fields)]` is NOT used so extra fields
-/// (like `snapshots`, `settings`, `importers`) are silently ignored.
+/// (like `snapshots`, `settings`) are silently ignored.
 #[derive(Deserialize)]
 struct PnpmLockPackages {
     #[serde(default)]
     packages: HashMap<String, PnpmPackageEntry>,
+    #[serde(default)]
+    importers: HashMap<String, PnpmImporter>,
 }
