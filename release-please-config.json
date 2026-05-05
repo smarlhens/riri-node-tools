@@ -24,9 +24,7 @@
           "path": "package.json",
           "jsonpath": "$.version"
         }
-      ],
-      "prerelease": true,
-      "prerelease-type": "rc"
+      ]
     }
   }
 }
