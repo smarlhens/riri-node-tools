@@ -131,6 +131,16 @@ fn to_policy(arg: NodePolicyArg) -> Policy {
     }
 }
 
+fn policy_label(p: Policy) -> &'static str {
+    match p {
+        Policy::Any => "any",
+        Policy::Stable => "stable",
+        Policy::Supported => "supported",
+        Policy::Lts => "lts",
+        Policy::Maintenance => "maintenance",
+    }
+}
+
 fn bump_npm_enabled(args: &Args) -> bool {
     !args.no_bump_npm
 }
@@ -278,13 +288,16 @@ fn run(args: &Args) -> Result<ExitCode> {
                     "to": c.range_to_set,
                 }))
                 .collect::<Vec<_>>(),
+            "lifecycle": lifecycle_json(&lifecycle),
+            "npm_bump": npm_bump_json(lifecycle.npm_bump.as_ref()),
         });
         println!("{}", serde_json::to_string_pretty(&json_output)?);
-        return if output.engines_range_to_set.is_empty() {
-            Ok(ExitCode::SUCCESS)
-        } else {
-            Ok(ExitCode::from(1))
-        };
+        return Ok(exit_code_for(&output, &lifecycle));
+    }
+
+    if lifecycle.unsatisfiable {
+        emit_unsatisfiable(args, &lifecycle);
+        return Ok(ExitCode::from(3));
     }
 
     // Display results
@@ -384,6 +397,59 @@ fn resolve_today(args: &Args) -> Result<NaiveDate> {
             .with_context(|| format!("--today must be YYYY-MM-DD, got {s}"))
     } else {
         Ok(Utc::now().date_naive())
+    }
+}
+
+fn lifecycle_json(lifecycle: &LifecycleOutput) -> serde_json::Value {
+    serde_json::json!({
+        "policy": lifecycle.policy.map(policy_label),
+        "data_fetched_at": lifecycle.data_fetched_at,
+        "warnings": lifecycle.warnings.iter().map(|w| serde_json::json!({
+            "kind": "eol",
+            "engine": "node",
+            "major": w.major,
+            "since": w.since,
+        })).collect::<Vec<_>>(),
+        "dropped_disjuncts": lifecycle.dropped_disjuncts,
+        "bumped_disjuncts": lifecycle.bumped_disjuncts.iter().map(|(from, to)| serde_json::json!({
+            "from": from,
+            "to": to,
+        })).collect::<Vec<_>>(),
+        "unsatisfiable": lifecycle.unsatisfiable,
+    })
+}
+
+fn npm_bump_json(bump: Option<&riri_nce::NpmBumpResult>) -> serde_json::Value {
+    bump.map_or(serde_json::Value::Null, |b| {
+        serde_json::json!({
+            "target": b.target_floor.to_string(),
+            "applied": b.apply,
+            "reason": b.reason,
+        })
+    })
+}
+
+fn exit_code_for(output: &riri_nce::CheckEnginesOutput, lifecycle: &LifecycleOutput) -> ExitCode {
+    if lifecycle.unsatisfiable {
+        ExitCode::from(3)
+    } else if output.engines_range_to_set.is_empty() && lifecycle.warnings.is_empty() {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::from(1)
+    }
+}
+
+fn emit_unsatisfiable(args: &Args, lifecycle: &LifecycleOutput) {
+    if args.quiet {
+        return;
+    }
+    eprintln!(
+        "\n  {} --node-policy={} unsatisfiable",
+        style("error:").red().bold(),
+        policy_label(lifecycle.policy.unwrap_or(Policy::Supported))
+    );
+    if !lifecycle.dropped_disjuncts.is_empty() {
+        eprintln!("  dropped: {}", lifecycle.dropped_disjuncts.join(", "));
     }
 }
 

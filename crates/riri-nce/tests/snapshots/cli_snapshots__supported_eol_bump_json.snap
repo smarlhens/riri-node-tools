@@ -11,7 +11,7 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
   "changes": [
     {
       "engine": "node",
-      "from": "*",
+      "from": ">=18.0.0",
       "to": ">=20.0.0"
     },
     {
@@ -24,13 +24,10 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
     "policy": "supported",
     "data_fetched_at": "2026-04-29T00:00:00Z",
     "warnings": [],
-    "dropped_disjuncts": [
-      "^14.17.0",
-      "^16.10.0"
-    ],
+    "dropped_disjuncts": [],
     "bumped_disjuncts": [
       {
-        "from": ">=17.0.0",
+        "from": ">=18.0.0",
         "to": ">=20.0.0"
       }
     ],

@@ -1,0 +1,15 @@
+---
+source: crates/riri-nce/tests/cli_snapshots.rs
+expression: stderr
+---
+  Detecting lockfile...
+  Detected package-lock.json
+  Reading package.json...
+  Read package.json
+  Parsing lockfile...
+  Parsed lockfile
+  Computing engine constraints...
+  Computed engine constraints
+
+  error: --node-policy=maintenance unsatisfiable
+  dropped: ^18.0.0
