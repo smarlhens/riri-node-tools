@@ -19,5 +19,26 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
       "from": "*",
       "to": ">=9.6.4"
     }
-  ]
+  ],
+  "lifecycle": {
+    "policy": "supported",
+    "data_fetched_at": "2026-04-29T00:00:00Z",
+    "warnings": [],
+    "dropped_disjuncts": [
+      "^14.17.0",
+      "^16.10.0"
+    ],
+    "bumped_disjuncts": [
+      {
+        "from": ">=17.0.0",
+        "to": ">=20.0.0"
+      }
+    ],
+    "unsatisfiable": false
+  },
+  "npm_bump": {
+    "target": "9.6.4",
+    "applied": true,
+    "reason": "declared npm 0.0.0 below floor 9.6.4"
+  }
 }

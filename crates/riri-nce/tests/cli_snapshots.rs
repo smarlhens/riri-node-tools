@@ -363,6 +363,43 @@ fn cli_update_writes_lifecycle_rewrite() {
 }
 
 #[test]
+fn cli_policy_unsatisfiable() {
+    let (stdout, stderr, code) = run_in_fixture(
+        "nce-policy-unsatisfiable",
+        &["-v", "--node-policy=maintenance"],
+    );
+    assert_eq!(code, 3);
+    assert!(stdout.is_empty());
+    assert!(stderr.contains("unsatisfiable"), "stderr: {stderr}");
+    insta::assert_snapshot!("policy_unsatisfiable_stderr", stderr);
+}
+
+#[test]
+fn cli_policy_unsatisfiable_json() {
+    let (stdout, _stderr, code) = run_in_fixture(
+        "nce-policy-unsatisfiable",
+        &["--json", "--node-policy=maintenance"],
+    );
+    assert_eq!(code, 3);
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    insta::assert_snapshot!(
+        "policy_unsatisfiable_json",
+        serde_json::to_string_pretty(&json).unwrap()
+    );
+}
+
+#[test]
+fn cli_supported_eol_bump_json() {
+    let (stdout, _stderr, code) = run_in_fixture("nce-policy-supported-eol-bump", &["--json"]);
+    assert_eq!(code, 1);
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    insta::assert_snapshot!(
+        "supported_eol_bump_json",
+        serde_json::to_string_pretty(&json).unwrap()
+    );
+}
+
+#[test]
 fn cli_yarn_no_node_modules() {
     let (stdout, stderr, code) = run_in_fixture("yarn-v1-no-node-modules", &["-v"]);
     assert_eq!(code, 2);

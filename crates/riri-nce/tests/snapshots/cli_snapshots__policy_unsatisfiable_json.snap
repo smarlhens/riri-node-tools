@@ -1,0 +1,33 @@
+---
+source: crates/riri-nce/tests/cli_snapshots.rs
+expression: "serde_json::to_string_pretty(&json).unwrap()"
+---
+{
+  "computed": {
+    "node": "^18.0.0",
+    "npm": ">=8.5",
+    "yarn": "*"
+  },
+  "changes": [
+    {
+      "engine": "npm",
+      "from": "*",
+      "to": ">=8.5"
+    }
+  ],
+  "lifecycle": {
+    "policy": "maintenance",
+    "data_fetched_at": "2026-04-29T00:00:00Z",
+    "warnings": [],
+    "dropped_disjuncts": [
+      "^18.0.0"
+    ],
+    "bumped_disjuncts": [],
+    "unsatisfiable": true
+  },
+  "npm_bump": {
+    "target": "8.5.0",
+    "applied": true,
+    "reason": "declared npm 0.0.0 below floor 8.5.0"
+  }
+}
