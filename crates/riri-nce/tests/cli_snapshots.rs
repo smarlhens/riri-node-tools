@@ -19,13 +19,12 @@ fn frozen_data_path() -> String {
 }
 
 fn pin_lifecycle(extra_args: &[&str]) -> Vec<String> {
+    pin_lifecycle_with_today("2026-04-29", extra_args)
+}
+
+fn pin_lifecycle_with_today(today: &str, extra_args: &[&str]) -> Vec<String> {
     let frozen = frozen_data_path();
-    let mut args: Vec<String> = vec![
-        "--today".into(),
-        "2026-04-29".into(),
-        "--node-data".into(),
-        frozen,
-    ];
+    let mut args: Vec<String> = vec!["--today".into(), today.into(), "--node-data".into(), frozen];
     args.extend(extra_args.iter().map(|s| (*s).to_string()));
     args
 }
@@ -397,6 +396,61 @@ fn cli_supported_eol_bump_json() {
         "supported_eol_bump_json",
         serde_json::to_string_pretty(&json).unwrap()
     );
+}
+
+#[test]
+fn cli_stale_data_refuses_write_with_update() {
+    let tmp = copy_fixture_to_tmp("nce-stale-data-refuses-write");
+    let pinned = pin_lifecycle_with_today("2027-01-01", &["-u"]);
+    let output = nce_binary()
+        .current_dir(tmp.path())
+        .args(&pinned)
+        .output()
+        .unwrap();
+    let code = output.status.code().unwrap_or(-1);
+    assert_eq!(code, 1);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("error:"), "stderr: {stderr}");
+    assert!(stderr.contains("days old"), "stderr: {stderr}");
+    assert!(stderr.contains("--refresh"), "stderr: {stderr}");
+    let pkg = std::fs::read_to_string(tmp.path().join("package.json")).unwrap();
+    assert!(pkg.contains("\">=20.0.0\""), "pkg unchanged: {pkg}");
+}
+
+#[test]
+fn cli_stale_data_warns_only_without_update() {
+    let pinned =
+        pin_lifecycle_with_today("2026-09-01", &["-v", "--node-policy=any", "--no-bump-npm"]);
+    let fixture_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures/nce-stale-data-refuses-write");
+    let output = nce_binary()
+        .current_dir(&fixture_path)
+        .args(&pinned)
+        .output()
+        .unwrap();
+    let code = output.status.code().unwrap_or(-1);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("warning:"), "stderr: {stderr}");
+    assert!(stderr.contains("days old"), "stderr: {stderr}");
+    assert!(!stderr.contains("error:"), "stderr: {stderr}");
+    assert_eq!(code, 0, "stderr: {stderr}");
+}
+
+#[test]
+fn cli_stale_data_env_override_lowers_threshold() {
+    let tmp = copy_fixture_to_tmp("nce-stale-data-refuses-write");
+    let pinned = pin_lifecycle_with_today("2026-05-15", &["-u"]);
+    let output = nce_binary()
+        .current_dir(tmp.path())
+        .env("RIRI_NCE_MAX_DATA_AGE_DAYS", "5")
+        .args(&pinned)
+        .output()
+        .unwrap();
+    let code = output.status.code().unwrap_or(-1);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(code, 1, "stderr: {stderr}");
+    assert!(stderr.contains("error:"), "stderr: {stderr}");
+    assert!(stderr.contains("max 5"), "stderr: {stderr}");
 }
 
 #[test]
