@@ -141,4 +141,6 @@ jobs:
           fi
 
       - name: Publish
-        run: npm publish --access public --provenance --tag ${{ steps.tag.outputs.tag }}
+        env:
+          NPM_TAG: ${{ steps.tag.outputs.tag }}
+        run: npm publish --access public --provenance --tag "$NPM_TAG"

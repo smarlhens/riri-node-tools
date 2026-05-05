@@ -118,10 +118,14 @@ jobs:
           path: /tmp/bench-baseline/criterion
 
       - name: Save baseline metadata
+        env:
+          BINARY_SIZES: ${{ needs.bench-baseline.outputs.binary-sizes }}
+          TEST_COUNT: ${{ needs.bench-baseline.outputs.test-count }}
+          PEAK_RSS_KB: ${{ needs.bench-baseline.outputs.peak-rss-kb }}
         run: |
-          echo '${{ needs.bench-baseline.outputs.binary-sizes }}' > /tmp/bench-baseline/binary-sizes.json
-          echo '${{ needs.bench-baseline.outputs.test-count }}' > /tmp/bench-baseline/test-count.txt
-          echo '${{ needs.bench-baseline.outputs.peak-rss-kb }}' > /tmp/bench-baseline/peak-rss-kb.txt
+          printf '%s' "$BINARY_SIZES" > /tmp/bench-baseline/binary-sizes.json
+          printf '%s' "$TEST_COUNT" > /tmp/bench-baseline/test-count.txt
+          printf '%s' "$PEAK_RSS_KB" > /tmp/bench-baseline/peak-rss-kb.txt
 
       - name: Cache baseline results
         uses: actions/cache/save@v5
