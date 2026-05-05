@@ -10,5 +10,6 @@ expression: stderr
   Parsed lockfile
   Computing engine constraints...
   Computed engine constraints
+  warning: node 6 reached end-of-life on 2019-04-30
 
   All computed engines range constraints are up-to-date :)

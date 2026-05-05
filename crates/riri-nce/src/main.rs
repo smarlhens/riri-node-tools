@@ -1,18 +1,24 @@
 #![allow(clippy::missing_panics_doc)]
 
 use anyhow::{Context, Result};
+use chrono::{NaiveDate, Utc};
 use clap::Parser;
 use comfy_table::{Table, presets};
 use console::style;
 use riri_common::{
     EngineConstraintKey, LockfileEngines, PackageJsonFile, PackageManager, detect_lockfile,
 };
-use riri_nce::{CheckEnginesInput, apply_engines_to_lockfile, apply_engines_update, check_engines};
+use riri_nce::{
+    CheckEnginesInput, LifecycleConfig, LifecycleOutput, apply_engines_to_lockfile,
+    apply_engines_update, check_engines_with_lifecycle,
+};
+use riri_node_lifecycle::{LifecycleData, Policy};
 use riri_npm::NpmPackageLock;
 use riri_pnpm::PnpmLockfile;
 use riri_semver_range::VersionPrecision;
 use riri_task_runner::{RendererMode, TaskRunner};
 use riri_yarn::YarnProject;
+use std::path::PathBuf;
 use std::process::ExitCode;
 
 /// Check and update Node.js engine constraints in package.json
@@ -58,6 +64,34 @@ struct Args {
     /// Non-zero components are never dropped.
     #[arg(long, value_enum, default_value_t = PrecisionArg::Patch)]
     precision: PrecisionArg,
+
+    /// Node.js lifecycle policy gate for engines.node.
+    #[arg(long, value_enum, default_value_t = NodePolicyArg::Supported)]
+    node_policy: NodePolicyArg,
+
+    /// Suppress EOL warnings (does not widen the policy).
+    #[arg(long)]
+    allow_eol: bool,
+
+    /// Bump engines.npm floor to match the lowest node major in range.
+    #[arg(long, overrides_with = "no_bump_npm")]
+    bump_npm: bool,
+
+    /// Disable the npm coupling pass.
+    #[arg(long, overrides_with = "bump_npm")]
+    no_bump_npm: bool,
+
+    /// Precision applied to the npm bump floor.
+    #[arg(long, value_enum, default_value_t = PrecisionArg::Major)]
+    npm_precision: PrecisionArg,
+
+    /// Override path to lifecycle data JSON (test/CI hook).
+    #[arg(long, hide = true)]
+    node_data: Option<PathBuf>,
+
+    /// Override "today" as YYYY-MM-DD (test hook).
+    #[arg(long, hide = true)]
+    today: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, clap::ValueEnum)]
@@ -70,12 +104,35 @@ enum PrecisionArg {
     Patch,
 }
 
+#[derive(Debug, Clone, Copy, clap::ValueEnum)]
+enum NodePolicyArg {
+    Any,
+    Stable,
+    Supported,
+    Lts,
+    Maintenance,
+}
+
 fn to_version_precision(arg: PrecisionArg) -> VersionPrecision {
     match arg {
         PrecisionArg::Major => VersionPrecision::Major,
         PrecisionArg::Minor => VersionPrecision::MajorMinor,
         PrecisionArg::Patch => VersionPrecision::Full,
     }
+}
+
+fn to_policy(arg: NodePolicyArg) -> Policy {
+    match arg {
+        NodePolicyArg::Any => Policy::Any,
+        NodePolicyArg::Stable => Policy::Stable,
+        NodePolicyArg::Supported => Policy::Supported,
+        NodePolicyArg::Lts => Policy::Lts,
+        NodePolicyArg::Maintenance => Policy::Maintenance,
+    }
+}
+
+fn bump_npm_enabled(args: &Args) -> bool {
+    !args.no_bump_npm
 }
 
 fn renderer_mode(args: &Args) -> RendererMode {
@@ -191,8 +248,22 @@ fn run(args: &Args) -> Result<ExitCode> {
         filter_engines,
         precision: to_version_precision(args.precision),
     };
-    let output = check_engines(&input);
+
+    let today = resolve_today(args)?;
+    let lifecycle_data = load_lifecycle_data(args, today)?;
+    let cfg = LifecycleConfig {
+        data: &lifecycle_data,
+        policy: to_policy(args.node_policy),
+        today,
+        allow_eol: args.allow_eol,
+        bump_npm: bump_npm_enabled(args),
+        npm_precision: to_version_precision(args.npm_precision),
+    };
+    let (output, lifecycle) = check_engines_with_lifecycle(&input, &cfg)
+        .map_err(|e| anyhow::anyhow!("lifecycle rewrite failed: {e}"))?;
     task.complete("Computed engine constraints");
+
+    emit_eol_warnings(args, &lifecycle);
 
     // JSON output mode
     if args.json {
@@ -293,6 +364,41 @@ fn run(args: &Args) -> Result<ExitCode> {
     }
 
     Ok(ExitCode::from(1))
+}
+
+fn load_lifecycle_data(args: &Args, today: NaiveDate) -> Result<LifecycleData> {
+    let mut data = if let Some(path) = &args.node_data {
+        let raw = std::fs::read_to_string(path)
+            .with_context(|| format!("failed to read {}", path.display()))?;
+        LifecycleData::parse(&raw).with_context(|| format!("failed to parse {}", path.display()))?
+    } else {
+        LifecycleData::bundled().clone()
+    };
+    data.resolve_statuses(today);
+    Ok(data)
+}
+
+fn resolve_today(args: &Args) -> Result<NaiveDate> {
+    if let Some(s) = &args.today {
+        NaiveDate::parse_from_str(s, "%Y-%m-%d")
+            .with_context(|| format!("--today must be YYYY-MM-DD, got {s}"))
+    } else {
+        Ok(Utc::now().date_naive())
+    }
+}
+
+fn emit_eol_warnings(args: &Args, lifecycle: &LifecycleOutput) {
+    if args.quiet || args.allow_eol {
+        return;
+    }
+    for w in &lifecycle.warnings {
+        eprintln!(
+            "  {} node {} reached end-of-life on {}",
+            style("warning:").yellow().bold(),
+            w.major,
+            w.since
+        );
+    }
 }
 
 fn generate_update_hint(args: &Args) -> String {
