@@ -11,14 +11,34 @@ fn nce_binary() -> Command {
     cmd
 }
 
+fn frozen_data_path() -> String {
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/data/lifecycle-2026-04-29.json")
+        .to_string_lossy()
+        .into_owned()
+}
+
+fn pin_lifecycle(extra_args: &[&str]) -> Vec<String> {
+    let frozen = frozen_data_path();
+    let mut args: Vec<String> = vec![
+        "--today".into(),
+        "2026-04-29".into(),
+        "--node-data".into(),
+        frozen,
+    ];
+    args.extend(extra_args.iter().map(|s| (*s).to_string()));
+    args
+}
+
 fn run_in_fixture(fixture: &str, extra_args: &[&str]) -> (String, String, i32) {
     let fixture_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
         .join(fixture);
 
+    let pinned = pin_lifecycle(extra_args);
     let output = nce_binary()
         .current_dir(&fixture_path)
-        .args(extra_args)
+        .args(&pinned)
         .output()
         .unwrap();
 
@@ -47,7 +67,10 @@ fn cli_npm_or_ranges_node_npm_yarn_verbose() {
 
 #[test]
 fn cli_npm_up_to_date_verbose() {
-    let (stdout, stderr, code) = run_in_fixture("npm-v1-deps-field", &["-v"]);
+    let (stdout, stderr, code) = run_in_fixture(
+        "npm-v1-deps-field",
+        &["-v", "--node-policy=any", "--no-bump-npm"],
+    );
     assert_eq!(code, 0);
     insta::assert_snapshot!("npm_up_to_date_verbose_stderr", stderr);
     assert!(stdout.is_empty());
@@ -163,7 +186,10 @@ fn cli_yarn_json_output() {
 
 #[test]
 fn cli_yarn_up_to_date_verbose() {
-    let (stdout, stderr, code) = run_in_fixture("yarn-v1-up-to-date", &["-v"]);
+    let (stdout, stderr, code) = run_in_fixture(
+        "yarn-v1-up-to-date",
+        &["-v", "--node-policy=any", "--no-bump-npm"],
+    );
     assert_eq!(code, 0);
     insta::assert_snapshot!("yarn_up_to_date_verbose_stderr", stderr);
     assert!(stdout.is_empty());

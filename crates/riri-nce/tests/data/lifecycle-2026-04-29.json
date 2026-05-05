@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "fetched_at": "2026-04-29T00:00:00Z",
+  "majors": {
+    "6": {
+      "major": 6,
+      "status": "end-of-life",
+      "lts_codename": "Boron",
+      "start": "2016-04-26",
+      "lts_start": "2016-10-18",
+      "maintenance_start": "2018-04-30",
+      "end": "2019-04-30",
+      "lowest": "6.0.0",
+      "highest": "6.17.1",
+      "npm_at_lowest": "3.8.6",
+      "npm_at_highest": "3.10.10",
+      "npm_min_in_major": "3.8.6",
+      "releases": [
+        { "version": "6.0.0", "npm": "3.8.6", "date": "2016-04-26" },
+        { "version": "6.17.1", "npm": "3.10.10", "date": "2019-04-05" }
+      ]
+    },
+    "8": {
+      "major": 8,
+      "status": "end-of-life",
+      "lts_codename": "Carbon",
+      "start": "2017-05-30",
+      "lts_start": "2017-10-31",
+      "maintenance_start": "2019-01-01",
+      "end": "2019-12-31",
+      "lowest": "8.0.0",
+      "highest": "8.17.0",
+      "npm_at_lowest": "5.0.0",
+      "npm_at_highest": "6.13.4",
+      "npm_min_in_major": "5.0.0",
+      "releases": [
+        { "version": "8.0.0", "npm": "5.0.0", "date": "2017-05-30" },
+        { "version": "8.17.0", "npm": "6.13.4", "date": "2019-12-17" }
+      ]
+    },
+    "10": {
+      "major": 10,
+      "status": "end-of-life",
+      "lts_codename": "Dubnium",
+      "start": "2018-04-24",
+      "lts_start": "2018-10-30",
+      "maintenance_start": "2020-05-19",
+      "end": "2021-04-30",
+      "lowest": "10.0.0",
+      "highest": "10.24.1",
+      "npm_at_lowest": "5.6.0",
+      "npm_at_highest": "6.14.12",
+      "npm_min_in_major": "5.6.0",
+      "releases": [
+        { "version": "10.0.0", "npm": "5.6.0", "date": "2018-04-24" },
+        { "version": "10.24.1", "npm": "6.14.12", "date": "2021-04-06" }
+      ]
+    },
+    "12": {
+      "major": 12,
+      "status": "end-of-life",
+      "lts_codename": "Erbium",
+      "start": "2019-04-23",
+      "lts_start": "2019-10-21",
+      "maintenance_start": "2020-10-20",
+      "end": "2022-04-30",
+      "lowest": "12.0.0",
+      "highest": "12.22.12",
+      "npm_at_lowest": "6.9.0",
+      "npm_at_highest": "6.14.16",
+      "npm_min_in_major": "6.9.0",
+      "releases": [
+        { "version": "12.0.0", "npm": "6.9.0", "date": "2019-04-23" },
+        { "version": "12.22.12", "npm": "6.14.16", "date": "2022-04-05" }
+      ]
+    },
+    "14": {
+      "major": 14,
+      "status": "end-of-life",
+      "lts_codename": "Fermium",
+      "start": "2020-04-21",
+      "lts_start": "2020-10-27",
+      "maintenance_start": "2021-10-19",
+      "end": "2023-04-30",
+      "lowest": "14.0.0",
+      "highest": "14.21.3",
+      "npm_at_lowest": "6.14.4",
+      "npm_at_highest": "6.14.18",
+      "npm_min_in_major": "6.14.4",
+      "releases": [
+        { "version": "14.0.0", "npm": "6.14.4", "date": "2020-04-21" },
+        { "version": "14.21.3", "npm": "6.14.18", "date": "2023-02-16" }
+      ]
+    },
+    "16": {
+      "major": 16,
+      "status": "end-of-life",
+      "lts_codename": "Gallium",
+      "start": "2021-04-20",
+      "lts_start": "2021-10-26",
+      "maintenance_start": "2022-10-18",
+      "end": "2023-09-11",
+      "lowest": "16.0.0",
+      "highest": "16.20.2",
+      "npm_at_lowest": "7.10.0",
+      "npm_at_highest": "8.19.4",
+      "npm_min_in_major": "7.10.0",
+      "releases": [
+        { "version": "16.0.0", "npm": "7.10.0", "date": "2021-04-20" },
+        { "version": "16.20.2", "npm": "8.19.4", "date": "2023-08-08" }
+      ]
+    },
+    "18": {
+      "major": 18,
+      "status": "end-of-life",
+      "lts_codename": "Hydrogen",
+      "start": "2022-04-19",
+      "lts_start": "2022-10-25",
+      "maintenance_start": "2023-10-18",
+      "end": "2025-04-30",
+      "lowest": "18.0.0",
+      "highest": "18.20.5",
+      "npm_at_lowest": "8.5.0",
+      "npm_at_highest": "10.8.2",
+      "npm_min_in_major": "8.5.0",
+      "releases": [
+        { "version": "18.0.0", "npm": "8.5.0", "date": "2022-04-19" },
+        { "version": "18.20.5", "npm": "10.8.2", "date": "2024-11-12" }
+      ]
+    },
+    "20": {
+      "major": 20,
+      "status": "maintenance",
+      "lts_codename": "Iron",
+      "start": "2023-04-18",
+      "lts_start": "2023-10-24",
+      "maintenance_start": "2024-10-22",
+      "end": "2026-04-30",
+      "lowest": "20.0.0",
+      "highest": "20.19.5",
+      "npm_at_lowest": "9.6.4",
+      "npm_at_highest": "10.8.2",
+      "npm_min_in_major": "9.6.4",
+      "releases": [
+        { "version": "20.0.0", "npm": "9.6.4", "date": "2023-04-18" },
+        { "version": "20.19.5", "npm": "10.8.2", "date": "2025-09-11" }
+      ]
+    },
+    "22": {
+      "major": 22,
+      "status": "active",
+      "lts_codename": "Jod",
+      "start": "2024-04-24",
+      "lts_start": "2024-10-29",
+      "maintenance_start": "2026-10-21",
+      "end": "2027-04-30",
+      "lowest": "22.0.0",
+      "highest": "22.12.0",
+      "npm_at_lowest": "10.5.1",
+      "npm_at_highest": "10.9.0",
+      "npm_min_in_major": "10.5.1",
+      "releases": [
+        { "version": "22.0.0", "npm": "10.5.1", "date": "2024-04-24" },
+        { "version": "22.12.0", "npm": "10.9.0", "date": "2024-12-03" }
+      ]
+    },
+    "24": {
+      "major": 24,
+      "status": "active",
+      "lts_codename": "Krypton",
+      "start": "2025-04-22",
+      "lts_start": "2025-10-28",
+      "maintenance_start": "2027-10-19",
+      "end": "2028-04-30",
+      "lowest": "24.0.0",
+      "highest": "24.6.0",
+      "npm_at_lowest": "11.0.0",
+      "npm_at_highest": "11.1.0",
+      "npm_min_in_major": "11.0.0",
+      "releases": [
+        { "version": "24.0.0", "npm": "11.0.0", "date": "2025-04-22" },
+        { "version": "24.6.0", "npm": "11.1.0", "date": "2026-02-11" }
+      ]
+    },
+    "25": {
+      "major": 25,
+      "status": "current",
+      "lts_codename": null,
+      "start": "2025-10-21",
+      "lts_start": null,
+      "maintenance_start": null,
+      "end": "2026-06-01",
+      "lowest": "25.0.0",
+      "highest": "25.3.0",
+      "npm_at_lowest": "11.0.0",
+      "npm_at_highest": "11.1.0",
+      "npm_min_in_major": "11.0.0",
+      "releases": [
+        { "version": "25.0.0", "npm": "11.0.0", "date": "2025-10-21" },
+        { "version": "25.3.0", "npm": "11.1.0", "date": "2026-02-11" }
+      ]
+    },
+    "26": {
+      "major": 26,
+      "status": "pending",
+      "lts_codename": null,
+      "start": "2026-10-20",
+      "lts_start": null,
+      "maintenance_start": null,
+      "end": "2029-04-30",
+      "lowest": "26.0.0",
+      "highest": "26.0.0",
+      "npm_at_lowest": "11.2.0",
+      "npm_at_highest": "11.2.0",
+      "npm_min_in_major": "11.2.0",
+      "releases": [{ "version": "26.0.0", "npm": "11.2.0", "date": "2026-10-20" }]
+    }
+  }
+}

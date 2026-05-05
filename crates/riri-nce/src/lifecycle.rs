@@ -10,6 +10,7 @@ use crate::policy::{EolWarning, PolicyContext, PolicyResult, RewriteError, rewri
 use chrono::{DateTime, NaiveDate, Utc};
 use riri_common::EngineConstraintKey;
 use riri_node_lifecycle::{LifecycleData, Policy};
+use riri_semver_range::{ParsedRange, VersionPrecision};
 
 #[derive(Debug, Clone)]
 pub struct LifecycleConfig<'a> {
@@ -18,6 +19,7 @@ pub struct LifecycleConfig<'a> {
     pub today: NaiveDate,
     pub allow_eol: bool,
     pub bump_npm: bool,
+    pub npm_precision: VersionPrecision,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -68,12 +70,15 @@ pub fn check_engines_with_lifecycle(
         lifecycle.unsatisfiable = pr.unsatisfiable;
     }
 
+    let npm_filtered_out = !input.filter_engines.is_empty()
+        && !input.filter_engines.contains(&EngineConstraintKey::Npm);
     if cfg.bump_npm
+        && !npm_filtered_out
         && let Some(node_final) = output
             .computed_engines
             .get(&EngineConstraintKey::Node)
             .cloned()
-        && let Ok(target) = derive_npm_floor(&node_final, cfg.data, input.precision)
+        && let Ok(target) = derive_npm_floor(&node_final, cfg.data, cfg.npm_precision)
     {
         let declared = output
             .computed_engines
@@ -81,7 +86,7 @@ pub fn check_engines_with_lifecycle(
             .cloned();
         let bump = maybe_bump_npm(declared.as_deref(), &target);
         if bump.apply {
-            let new_npm = format!(">={}", bump.target_floor);
+            let new_npm = format_npm_floor(&bump.target_floor, cfg.npm_precision);
             apply_npm_bump(&new_npm, &mut output, input);
         }
         lifecycle.npm_bump = Some(bump);
@@ -111,6 +116,13 @@ fn apply_policy_result(
         original_from(input, EngineConstraintKey::Node),
         rewritten,
     );
+}
+
+fn format_npm_floor(target: &semver::Version, precision: VersionPrecision) -> String {
+    let raw = format!(">={target}");
+    ParsedRange::parse(&raw)
+        .map(|r| r.humanize_with(precision))
+        .unwrap_or(raw)
 }
 
 fn apply_npm_bump(new_npm: &str, output: &mut CheckEnginesOutput, input: &CheckEnginesInput<'_>) {
@@ -212,6 +224,7 @@ mod tests {
             today: NaiveDate::from_ymd_opt(2026, 4, 29).expect("date"),
             allow_eol: false,
             bump_npm,
+            npm_precision: VersionPrecision::Major,
         }
     }
 

@@ -10,5 +10,6 @@ expression: stderr
   Scanned node_modules
   Computing engine constraints...
   Computed engine constraints
+  warning: node 16 reached end-of-life on 2023-09-11
 
   All computed engines range constraints are up-to-date :)
