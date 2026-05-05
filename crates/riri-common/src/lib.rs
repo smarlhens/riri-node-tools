@@ -92,3 +92,13 @@ pub trait LockfileEngines {
     /// Iterate over `(package_name, engines)` pairs from the lockfile.
     fn engines_iter(&self) -> Box<dyn Iterator<Item = (&str, &Engines)> + '_>;
 }
+
+/// Unified trait for resolving the locked version of a top-level dependency.
+///
+/// Used by `riri-npd` to look up "what version did the lockfile pin for `foo`?"
+/// regardless of the underlying package manager.
+pub trait LockfileVersions {
+    /// Returns the locked version for the given top-level `package.json`
+    /// dependency name, or `None` when the lockfile does not pin that name.
+    fn version_for(&self, name: &str) -> Option<&str>;
+}

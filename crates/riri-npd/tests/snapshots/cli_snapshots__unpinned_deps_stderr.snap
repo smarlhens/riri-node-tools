@@ -1,0 +1,17 @@
+---
+source: crates/riri-npd/tests/cli_snapshots.rs
+expression: stderr
+---
+  Detecting lockfile...
+  Detected package-lock.json
+  Reading package.json...
+  Read package.json
+  Parsing lockfile...
+  Parsed lockfile
+  Computing dependency pins...
+  Computed dependency pins
+  lodash  ^4.17.21  →  4.17.21
+  react   ~18.2.0   →  18.2.0
+  vitest  ^1.0.0    →  1.6.0
+
+  Run npd -v -u to upgrade package.json.
