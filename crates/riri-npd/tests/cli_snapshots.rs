@@ -76,9 +76,9 @@ fn cli_update_writes_pinned_versions() {
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(code, 1);
     let written = std::fs::read_to_string(tmp.path().join("package.json")).unwrap();
-    assert!(written.contains("\"lodash\": \"4.17.21\""), "{written}");
-    assert!(written.contains("\"react\": \"18.2.0\""), "{written}");
-    assert!(written.contains("\"vitest\": \"1.6.0\""), "{written}");
+    assert!(written.contains("\"foo\": \"4.17.21\""), "{written}");
+    assert!(written.contains("\"bar\": \"18.2.0\""), "{written}");
+    assert!(written.contains("\"baz\": \"1.6.0\""), "{written}");
     assert!(!written.contains("^4.17.21"), "{written}");
 }
 
@@ -92,6 +92,25 @@ fn cli_no_lockfile_returns_two() {
         .unwrap();
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(code, 2);
+}
+
+#[test]
+fn cli_pnpm_unpinned_deps_lists_pin_table() {
+    let (stdout, stderr, code) = run_in_fixture("npd-pnpm-v9-unpinned-deps", &["-v"]);
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("pnpm_unpinned_deps_stderr", stderr);
+}
+
+#[test]
+fn cli_pnpm_unpinned_deps_strips_peer_suffix() {
+    let (stdout, _stderr, code) = run_in_fixture("npd-pnpm-v9-unpinned-deps", &["--json"]);
+    assert_eq!(code, 1);
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let pins = json.get("pins").and_then(|v| v.as_array()).unwrap();
+    let baz = pins.iter().find(|p| p["name"] == "baz").unwrap();
+    // peer suffix `(qux@20.0.0)` must be stripped.
+    assert_eq!(baz["to"], "1.6.0", "json: {json}");
 }
 
 #[test]
