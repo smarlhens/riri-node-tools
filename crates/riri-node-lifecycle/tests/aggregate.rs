@@ -29,8 +29,8 @@ fn aggregate_offline_matches_expected() {
     )
     .expect("parse expected");
 
-    let aggregated =
-        xtask::refresh_node::aggregate_offline(&index_raw, &schedule_raw).expect("aggregate");
+    let aggregated = riri_node_lifecycle::refresh::aggregate_offline(&index_raw, &schedule_raw)
+        .expect("aggregate");
     let mut value: serde_json::Value =
         serde_json::to_value(&aggregated).expect("serialize aggregated");
 

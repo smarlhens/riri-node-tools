@@ -92,6 +92,15 @@ struct Args {
     /// Override "today" as YYYY-MM-DD (test hook).
     #[arg(long, hide = true)]
     today: Option<String>,
+
+    /// Fetch fresh lifecycle data from upstream and update the user cache.
+    /// Continues with the rest of the run after writing the cache.
+    #[arg(long)]
+    refresh: bool,
+
+    /// Override the user cache directory (test hook). Defaults to the OS cache.
+    #[arg(long, hide = true)]
+    cache_dir: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone, Copy, clap::ValueEnum)]
@@ -260,6 +269,18 @@ fn run(args: &Args) -> Result<ExitCode> {
     };
 
     let today = resolve_today(args)?;
+    if args.refresh {
+        let task = runner.task("Refreshing lifecycle cache...");
+        match refresh_user_cache(args) {
+            Ok(()) => task.complete("Refreshed lifecycle cache"),
+            Err(e) => {
+                task.fail("Refreshing lifecycle cache");
+                if !args.quiet {
+                    eprintln!("  {} {e:#}", style("warning:").yellow().bold());
+                }
+            }
+        }
+    }
     let lifecycle_data = load_lifecycle_data(args, today)?;
     let cfg = LifecycleConfig {
         data: &lifecycle_data,
@@ -422,15 +443,76 @@ fn check_data_freshness(args: &Args, data: &LifecycleData, today: NaiveDate) -> 
 }
 
 fn load_lifecycle_data(args: &Args, today: NaiveDate) -> Result<LifecycleData> {
-    let mut data = if let Some(path) = &args.node_data {
+    if let Some(path) = &args.node_data {
         let raw = std::fs::read_to_string(path)
             .with_context(|| format!("failed to read {}", path.display()))?;
-        LifecycleData::parse(&raw).with_context(|| format!("failed to parse {}", path.display()))?
-    } else {
-        LifecycleData::bundled().clone()
-    };
+        let mut data = LifecycleData::parse(&raw)
+            .with_context(|| format!("failed to parse {}", path.display()))?;
+        data.resolve_statuses(today);
+        return Ok(data);
+    }
+    if let Some(dir) = resolve_cache_dir(args).as_deref() {
+        return LifecycleData::load_with_cache_override(dir, today)
+            .context("failed to load lifecycle data with cache override");
+    }
+    let mut data = LifecycleData::bundled().clone();
     data.resolve_statuses(today);
     Ok(data)
+}
+
+fn resolve_cache_dir(args: &Args) -> Option<PathBuf> {
+    if let Some(dir) = &args.cache_dir {
+        return Some(dir.clone());
+    }
+    default_cache_dir()
+}
+
+fn default_cache_dir() -> Option<PathBuf> {
+    if let Ok(s) = std::env::var("XDG_CACHE_HOME")
+        && !s.is_empty()
+    {
+        return Some(PathBuf::from(s).join("riri"));
+    }
+    #[cfg(target_os = "windows")]
+    {
+        if let Ok(s) = std::env::var("LOCALAPPDATA")
+            && !s.is_empty()
+        {
+            return Some(PathBuf::from(s).join("riri"));
+        }
+    }
+    #[cfg(target_os = "macos")]
+    {
+        if let Ok(home) = std::env::var("HOME")
+            && !home.is_empty()
+        {
+            return Some(PathBuf::from(home).join("Library/Caches/riri"));
+        }
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
+    {
+        if let Ok(home) = std::env::var("HOME")
+            && !home.is_empty()
+        {
+            return Some(PathBuf::from(home).join(".cache/riri"));
+        }
+    }
+    None
+}
+
+fn refresh_user_cache(args: &Args) -> Result<()> {
+    let cache_dir = resolve_cache_dir(args).context("could not determine user cache directory")?;
+    std::fs::create_dir_all(&cache_dir)
+        .with_context(|| format!("failed to create {}", cache_dir.display()))?;
+    let aggregated = riri_node_lifecycle::refresh::fetch_remote()?;
+    let cache_path = cache_dir.join("node-versions.json");
+    let json = serde_json::to_string_pretty(&aggregated)? + "\n";
+    std::fs::write(&cache_path, json)
+        .with_context(|| format!("failed to write {}", cache_path.display()))?;
+    if !args.quiet {
+        eprintln!("  Refreshed lifecycle cache at {}", cache_path.display());
+    }
+    Ok(())
 }
 
 fn resolve_today(args: &Args) -> Result<NaiveDate> {

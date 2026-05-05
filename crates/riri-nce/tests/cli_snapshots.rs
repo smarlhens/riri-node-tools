@@ -454,6 +454,29 @@ fn cli_stale_data_env_override_lowers_threshold() {
 }
 
 #[test]
+fn cli_cache_override_takes_precedence_over_bundled() {
+    // Pre-seed user cache with a custom dataset. We expect the cache-loaded data
+    // to drive the lifecycle pass (no --node-data flag here).
+    let cache_dir = tempfile::TempDir::new().unwrap();
+    let frozen = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/data/lifecycle-2026-04-29.json");
+    std::fs::copy(&frozen, cache_dir.path().join("node-versions.json")).unwrap();
+
+    let fixture_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures/nce-policy-supported-eol-bump");
+    let cache_str = cache_dir.path().to_string_lossy().into_owned();
+    let output = nce_binary()
+        .current_dir(&fixture_path)
+        .args(["-v", "--today=2026-04-29", "--cache-dir", &cache_str])
+        .output()
+        .unwrap();
+    let code = output.status.code().unwrap_or(-1);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(code, 1, "stderr: {stderr}");
+    assert!(stderr.contains(">=20.0.0"), "stderr: {stderr}");
+}
+
+#[test]
 fn cli_yarn_no_node_modules() {
     let (stdout, stderr, code) = run_in_fixture("yarn-v1-no-node-modules", &["-v"]);
     assert_eq!(code, 2);

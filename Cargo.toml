@@ -60,7 +60,7 @@ riri-pnpm = { path = "crates/riri-pnpm" }
 riri-yarn = { path = "crates/riri-yarn" }
 riri-bun = { path = "crates/riri-bun" }
 riri-semver-range = { path = "crates/riri-semver-range" }
-riri-nce = { path = "crates/riri-nce" }
+riri-nce = { path = "crates/riri-nce", default-features = false }
 riri-node-lifecycle = { path = "crates/riri-node-lifecycle" }
 riri-npd = { path = "crates/riri-npd" }
 riri-task-runner = { path = "crates/riri-task-runner" }
