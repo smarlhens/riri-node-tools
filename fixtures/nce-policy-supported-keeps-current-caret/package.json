@@ -1,0 +1,8 @@
+{
+  "name": "fake",
+  "private": true,
+  "engines": {
+    "node": "^25.0.0",
+    "npm": ">=11.0.0"
+  }
+}

@@ -263,6 +263,106 @@ fn cli_npm_precision_minor() {
 }
 
 #[test]
+fn cli_policy_stable_keeps_eol_with_warning() {
+    let (stdout, stderr, code) = run_in_fixture(
+        "nce-policy-allow-eol-suppresses-warn",
+        &["-v", "--node-policy=stable", "--no-bump-npm"],
+    );
+    assert_eq!(code, 0);
+    assert!(stdout.is_empty());
+    assert!(stderr.contains("warning:"), "stderr: {stderr}");
+    insta::assert_snapshot!("policy_stable_keeps_eol_with_warning_stderr", stderr);
+}
+
+#[test]
+fn cli_policy_maintenance_drops_active() {
+    let (stdout, stderr, code) = run_in_fixture(
+        "nce-policy-maintenance-drops-active",
+        &["-v", "--node-policy=maintenance", "--no-bump-npm"],
+    );
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("policy_maintenance_drops_active_stderr", stderr);
+}
+
+#[test]
+fn cli_policy_supported_keeps_current_caret() {
+    let (stdout, stderr, code) =
+        run_in_fixture("nce-policy-supported-keeps-current-caret", &["-v"]);
+    assert_eq!(code, 0);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("policy_supported_keeps_current_caret_stderr", stderr);
+}
+
+#[test]
+fn cli_policy_supported_narrows_compound_bounded() {
+    let (stdout, stderr, code) = run_in_fixture("nce-policy-supported-narrows-compound", &["-v"]);
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("policy_supported_narrows_compound_stderr", stderr);
+}
+
+#[test]
+fn cli_policy_lts_expands_wildcard() {
+    let (stdout, stderr, code) = run_in_fixture(
+        "nce-policy-lts-expands-wildcard",
+        &["-v", "--node-policy=lts", "--no-bump-npm"],
+    );
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("policy_lts_expands_wildcard_stderr", stderr);
+}
+
+#[test]
+fn cli_npm_precision_patch_explicit() {
+    let (stdout, stderr, code) =
+        run_in_fixture("nce-npm-precision-minor", &["-v", "--npm-precision=patch"]);
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("npm_precision_patch_explicit_stderr", stderr);
+}
+
+#[test]
+fn cli_bump_npm_overrides_no_bump() {
+    let (stdout, stderr, code) = run_in_fixture(
+        "nce-no-bump-npm-flag",
+        &["-v", "--no-bump-npm", "--bump-npm"],
+    );
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("bump_npm_overrides_no_bump_stderr", stderr);
+}
+
+fn copy_fixture_to_tmp(fixture: &str) -> tempfile::TempDir {
+    let src = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join(fixture);
+    let tmp = tempfile::TempDir::new().unwrap();
+    for entry in std::fs::read_dir(&src).unwrap() {
+        let entry = entry.unwrap();
+        let to = tmp.path().join(entry.file_name());
+        std::fs::copy(entry.path(), to).unwrap();
+    }
+    tmp
+}
+
+#[test]
+fn cli_update_writes_lifecycle_rewrite() {
+    let tmp = copy_fixture_to_tmp("nce-policy-supported-eol-bump");
+    let pinned = pin_lifecycle(&["-u", "--no-bump-npm"]);
+    let output = nce_binary()
+        .current_dir(tmp.path())
+        .args(&pinned)
+        .output()
+        .unwrap();
+    let code = output.status.code().unwrap_or(-1);
+    assert_eq!(code, 1);
+    let written = std::fs::read_to_string(tmp.path().join("package.json")).unwrap();
+    assert!(written.contains("\">=20.0.0\""), "package.json: {written}");
+    assert!(!written.contains("\">=18.0.0\""), "package.json: {written}");
+}
+
+#[test]
 fn cli_yarn_no_node_modules() {
     let (stdout, stderr, code) = run_in_fixture("yarn-v1-no-node-modules", &["-v"]);
     assert_eq!(code, 2);

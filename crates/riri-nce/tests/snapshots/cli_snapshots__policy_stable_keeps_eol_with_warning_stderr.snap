@@ -1,0 +1,15 @@
+---
+source: crates/riri-nce/tests/cli_snapshots.rs
+expression: stderr
+---
+  Detecting lockfile...
+  Detected package-lock.json
+  Reading package.json...
+  Read package.json
+  Parsing lockfile...
+  Parsed lockfile
+  Computing engine constraints...
+  Computed engine constraints
+  warning: node 18 reached end-of-life on 2025-04-30
+
+  All computed engines range constraints are up-to-date :)
