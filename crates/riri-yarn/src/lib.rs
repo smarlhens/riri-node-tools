@@ -4,7 +4,7 @@
 //! Instead, this crate scans `node_modules/<pkg>/package.json` to extract
 //! engine constraints, then exposes them via the [`LockfileEngines`] trait.
 
-use riri_common::{Engines, LockfileEngines};
+use riri_common::{Engines, LockfileEngines, LockfileVersions};
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::path::Path;
@@ -26,17 +26,26 @@ pub enum YarnScanError {
     },
 }
 
-/// Minimal package.json representation for engine extraction.
+/// Minimal package.json representation for engine + version extraction.
 #[derive(Debug, Clone, Deserialize)]
 struct NodeModulePackageJson {
+    #[serde(default)]
+    version: Option<String>,
     #[serde(default)]
     engines: Option<Engines>,
 }
 
-/// Scanned yarn project with engine constraints from `node_modules`.
+/// One scanned `node_modules/<pkg>/package.json` entry.
+#[derive(Debug, Clone, Default)]
+struct ScannedPackage {
+    version: Option<String>,
+    engines: Option<Engines>,
+}
+
+/// Scanned yarn project with engine + version data from `node_modules`.
 #[derive(Debug, Clone)]
 pub struct YarnProject {
-    packages: HashMap<String, Engines>,
+    packages: HashMap<String, ScannedPackage>,
 }
 
 impl YarnProject {
@@ -110,9 +119,13 @@ impl YarnProject {
                     source: e,
                 })?;
 
-            if let Some(engines) = pkg.engines {
-                packages.insert(name, engines);
-            }
+            packages.insert(
+                name,
+                ScannedPackage {
+                    version: pkg.version,
+                    engines: pkg.engines,
+                },
+            );
         }
 
         Ok(Self { packages })
@@ -122,9 +135,15 @@ impl YarnProject {
 impl LockfileEngines for YarnProject {
     fn engines_iter(&self) -> Box<dyn Iterator<Item = (&str, &Engines)> + '_> {
         Box::new(
-            self.packages
-                .iter()
-                .map(|(name, engines)| (name.as_str(), engines)),
+            self.packages.iter().filter_map(|(name, pkg)| {
+                pkg.engines.as_ref().map(|engines| (name.as_str(), engines))
+            }),
         )
+    }
+}
+
+impl LockfileVersions for YarnProject {
+    fn version_for(&self, name: &str) -> Option<&str> {
+        self.packages.get(name)?.version.as_deref()
     }
 }

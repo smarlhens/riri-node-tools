@@ -114,6 +114,31 @@ fn cli_pnpm_unpinned_deps_strips_peer_suffix() {
 }
 
 #[test]
+fn cli_yarn_unpinned_deps_lists_pin_table() {
+    let (stdout, stderr, code) = run_in_fixture("npd-yarn-v1-unpinned-deps", &["-v"]);
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("yarn_unpinned_deps_stderr", stderr);
+}
+
+#[test]
+fn cli_yarn_no_node_modules_errors() {
+    // yarn.lock without node_modules → scan error → exit 2.
+    let tmp = tempfile::TempDir::new().unwrap();
+    std::fs::write(tmp.path().join("package.json"), b"{\"name\":\"x\"}\n").unwrap();
+    std::fs::write(tmp.path().join("yarn.lock"), b"# yarn lockfile v1\n").unwrap();
+    let output = npd_binary()
+        .current_dir(tmp.path())
+        .env("NO_COLOR", "1")
+        .output()
+        .unwrap();
+    let code = output.status.code().unwrap_or(-1);
+    assert_eq!(code, 2);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("node_modules"), "stderr: {stderr}");
+}
+
+#[test]
 fn cli_help_lists_core_flags() {
     let output = npd_binary().arg("--help").output().unwrap();
     let stdout = String::from_utf8_lossy(&output.stdout);
