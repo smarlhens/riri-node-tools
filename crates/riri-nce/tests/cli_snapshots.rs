@@ -196,6 +196,73 @@ fn cli_yarn_up_to_date_verbose() {
 }
 
 #[test]
+fn cli_policy_supported_eol_bump() {
+    let (stdout, stderr, code) = run_in_fixture("nce-policy-supported-eol-bump", &["-v"]);
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("policy_supported_eol_bump_stderr", stderr);
+}
+
+#[test]
+fn cli_policy_lts_eol_bump() {
+    let (stdout, stderr, code) =
+        run_in_fixture("nce-policy-lts-eol-bump", &["-v", "--node-policy=lts"]);
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("policy_lts_eol_bump_stderr", stderr);
+}
+
+#[test]
+fn cli_policy_eol_warning_under_any() {
+    let (stdout, stderr, code) = run_in_fixture(
+        "nce-policy-allow-eol-suppresses-warn",
+        &["-v", "--node-policy=any", "--no-bump-npm"],
+    );
+    assert_eq!(code, 0);
+    assert!(stdout.is_empty());
+    assert!(stderr.contains("warning:"), "stderr: {stderr}");
+    assert!(stderr.contains("end-of-life"), "stderr: {stderr}");
+    insta::assert_snapshot!("policy_eol_warning_under_any_stderr", stderr);
+}
+
+#[test]
+fn cli_policy_allow_eol_suppresses_warning() {
+    let (stdout, stderr, code) = run_in_fixture(
+        "nce-policy-allow-eol-suppresses-warn",
+        &["-v", "--node-policy=any", "--allow-eol", "--no-bump-npm"],
+    );
+    assert_eq!(code, 0);
+    assert!(stdout.is_empty());
+    assert!(!stderr.contains("warning:"), "stderr: {stderr}");
+    insta::assert_snapshot!("policy_allow_eol_suppresses_warning_stderr", stderr);
+}
+
+#[test]
+fn cli_npm_bump_floor() {
+    let (stdout, stderr, code) = run_in_fixture("nce-npm-bump-floor", &["-v"]);
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("npm_bump_floor_stderr", stderr);
+}
+
+#[test]
+fn cli_no_bump_npm_flag() {
+    let (stdout, stderr, code) = run_in_fixture("nce-no-bump-npm-flag", &["-v", "--no-bump-npm"]);
+    assert_eq!(code, 0);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("no_bump_npm_flag_stderr", stderr);
+}
+
+#[test]
+fn cli_npm_precision_minor() {
+    let (stdout, stderr, code) =
+        run_in_fixture("nce-npm-precision-minor", &["-v", "--npm-precision=minor"]);
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("npm_precision_minor_stderr", stderr);
+}
+
+#[test]
 fn cli_yarn_no_node_modules() {
     let (stdout, stderr, code) = run_in_fixture("yarn-v1-no-node-modules", &["-v"]);
     assert_eq!(code, 2);
