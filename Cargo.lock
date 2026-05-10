@@ -1444,6 +1444,7 @@ dependencies = [
  "riri-pnpm",
  "riri-task-runner",
  "riri-yarn",
+ "rstest",
  "semver",
  "serde_json",
  "tempfile",

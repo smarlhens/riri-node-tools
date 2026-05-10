@@ -2,6 +2,8 @@
 #![allow(clippy::unwrap_used)]
 //! CLI snapshot tests — run the `riri-npd` binary and snapshot its output.
 
+use rstest::rstest;
+use std::path::PathBuf;
 use std::process::Command;
 
 fn npd_binary() -> Command {
@@ -25,12 +27,26 @@ fn run_in_fixture(fixture: &str, extra_args: &[&str]) -> (String, String, i32) {
     (stdout, stderr, code)
 }
 
-#[test]
-fn cli_unpinned_deps_lists_pin_table() {
-    let (stdout, stderr, code) = run_in_fixture("npd-npm-v3-unpinned-deps", &["-v"]);
-    assert_eq!(code, 1);
-    assert!(stdout.is_empty());
-    insta::assert_snapshot!("unpinned_deps_stderr", stderr);
+#[rstest]
+fn cli_npd_fixture(#[files("../../fixtures/npd-*/package.json")] pkg_path: PathBuf) {
+    let fixture_dir = pkg_path.parent().unwrap();
+    let fixture_name = fixture_dir.file_name().unwrap().to_str().unwrap();
+    let output = npd_binary()
+        .current_dir(fixture_dir)
+        .arg("-v")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+    let code = output.status.code().unwrap_or(-1);
+    assert!(
+        stdout.is_empty(),
+        "fixture {fixture_name}: stdout should be empty, got: {stdout}"
+    );
+    let snapshot = format!("exit: {code}\n---\n{stderr}");
+    insta::with_settings!({snapshot_suffix => fixture_name}, {
+        insta::assert_snapshot!("cli_npd_fixture", snapshot);
+    });
 }
 
 #[test]
@@ -42,14 +58,6 @@ fn cli_unpinned_deps_json_output() {
         "unpinned_deps_json",
         serde_json::to_string_pretty(&json).unwrap()
     );
-}
-
-#[test]
-fn cli_already_pinned_returns_zero() {
-    let (stdout, stderr, code) = run_in_fixture("npd-npm-v3-already-pinned", &["-v"]);
-    assert_eq!(code, 0);
-    assert!(stdout.is_empty());
-    assert!(stderr.contains("already pinned"), "stderr: {stderr}");
 }
 
 fn copy_fixture_to_tmp(fixture: &str) -> tempfile::TempDir {
@@ -95,14 +103,6 @@ fn cli_no_lockfile_returns_two() {
 }
 
 #[test]
-fn cli_pnpm_unpinned_deps_lists_pin_table() {
-    let (stdout, stderr, code) = run_in_fixture("npd-pnpm-v9-unpinned-deps", &["-v"]);
-    assert_eq!(code, 1);
-    assert!(stdout.is_empty());
-    insta::assert_snapshot!("pnpm_unpinned_deps_stderr", stderr);
-}
-
-#[test]
 fn cli_pnpm_unpinned_deps_strips_peer_suffix() {
     let (stdout, _stderr, code) = run_in_fixture("npd-pnpm-v9-unpinned-deps", &["--json"]);
     assert_eq!(code, 1);
@@ -111,14 +111,6 @@ fn cli_pnpm_unpinned_deps_strips_peer_suffix() {
     let baz = pins.iter().find(|p| p["name"] == "baz").unwrap();
     // peer suffix `(qux@20.0.0)` must be stripped.
     assert_eq!(baz["to"], "1.6.0", "json: {json}");
-}
-
-#[test]
-fn cli_yarn_unpinned_deps_lists_pin_table() {
-    let (stdout, stderr, code) = run_in_fixture("npd-yarn-v1-unpinned-deps", &["-v"]);
-    assert_eq!(code, 1);
-    assert!(stdout.is_empty());
-    insta::assert_snapshot!("yarn_unpinned_deps_stderr", stderr);
 }
 
 #[test]
@@ -163,34 +155,6 @@ fn cli_enable_save_exact_skips_when_already_set() {
     assert_eq!(output.status.code().unwrap_or(-1), 0);
     let npmrc = std::fs::read_to_string(tmp.path().join(".npmrc")).unwrap();
     assert_eq!(npmrc, "save-exact=true\n");
-}
-
-#[test]
-fn cli_file_dependency_is_skipped() {
-    let (stdout, _stderr, code) = run_in_fixture("npd-npm-v3-file-dependency", &["--json"]);
-    assert_eq!(code, 1);
-    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
-    let pins = json.get("pins").and_then(|v| v.as_array()).unwrap();
-    let names: Vec<&str> = pins.iter().map(|p| p["name"].as_str().unwrap()).collect();
-    assert_eq!(names, vec!["foo"], "json: {json}");
-}
-
-#[test]
-fn cli_linked_package_is_skipped() {
-    let (stdout, _stderr, code) = run_in_fixture("npd-npm-v3-linked-package", &["--json"]);
-    assert_eq!(code, 1);
-    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
-    let pins = json.get("pins").and_then(|v| v.as_array()).unwrap();
-    let names: Vec<&str> = pins.iter().map(|p| p["name"].as_str().unwrap()).collect();
-    assert_eq!(names, vec!["foo"], "json: {json}");
-}
-
-#[test]
-fn cli_yarn_v2_unpinned_deps_lists_pin_table() {
-    let (stdout, stderr, code) = run_in_fixture("npd-yarn-v2-unpinned-deps", &["-v"]);
-    assert_eq!(code, 1);
-    assert!(stdout.is_empty());
-    insta::assert_snapshot!("yarn_v2_unpinned_deps_stderr", stderr);
 }
 
 #[test]

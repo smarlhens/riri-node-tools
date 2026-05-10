@@ -1,6 +1,8 @@
 ---
 source: crates/riri-npd/tests/cli_snapshots.rs
-expression: stderr
+expression: snapshot
+---
+exit: 1
 ---
   Detecting lockfile...
   Detected yarn.lock
