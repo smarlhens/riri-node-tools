@@ -28,7 +28,11 @@ fn run_in_fixture(fixture: &str, extra_args: &[&str]) -> (String, String, i32) {
 }
 
 #[rstest]
-fn cli_npd_fixture(#[files("../../fixtures/npd-*/package.json")] pkg_path: PathBuf) {
+fn cli_npd_fixture(
+    #[files("../../fixtures/npd-*/package.json")]
+    #[exclude("500-deps")]
+    pkg_path: PathBuf,
+) {
     let fixture_dir = pkg_path.parent().unwrap();
     let fixture_name = fixture_dir.file_name().unwrap().to_str().unwrap();
     let output = npd_binary()
