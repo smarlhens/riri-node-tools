@@ -1,0 +1,8 @@
+{
+  "name": "fake",
+  "private": true,
+  "dependencies": {
+    "foo": "^4.17.21",
+    "shared": "link:../shared"
+  }
+}
