@@ -1,0 +1,17 @@
+---
+source: crates/riri-npd/tests/cli_snapshots.rs
+expression: snapshot
+---
+exit: 1
+---
+  Detecting lockfile...
+  Detected package-lock.json
+  Reading package.json...
+  Read package.json
+  Parsing lockfile...
+  Parsed lockfile
+  Computing dependency pins...
+  Computed dependency pins
+  foo  ^4.17.21  →  4.17.21
+
+  Run npd -v -u to upgrade package.json.

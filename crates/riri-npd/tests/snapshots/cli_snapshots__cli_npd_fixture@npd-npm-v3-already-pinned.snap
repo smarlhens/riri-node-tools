@@ -1,0 +1,16 @@
+---
+source: crates/riri-npd/tests/cli_snapshots.rs
+expression: snapshot
+---
+exit: 0
+---
+  Detecting lockfile...
+  Detected package-lock.json
+  Reading package.json...
+  Read package.json
+  Parsing lockfile...
+  Parsed lockfile
+  Computing dependency pins...
+  Computed dependency pins
+
+  All dependencies are already pinned :)
