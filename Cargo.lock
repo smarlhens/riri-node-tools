@@ -1438,6 +1438,7 @@ dependencies = [
  "clap",
  "comfy-table",
  "console",
+ "criterion",
  "insta",
  "riri-common",
  "riri-npm",

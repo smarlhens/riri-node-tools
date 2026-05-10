@@ -32,13 +32,13 @@ inputs:
     required: false
     default: "0"
   pr-peak-rss-kb:
-    description: Peak RSS in KB for PR branch
+    description: 'JSON object of PR peak RSS in KB per binary, e.g. {"riri-nce": 1234}'
     required: false
-    default: "0"
+    default: "{}"
   base-peak-rss-kb:
-    description: Peak RSS in KB for base branch
+    description: 'JSON object of base peak RSS in KB per binary, e.g. {"riri-nce": 1234}'
     required: false
-    default: "0"
+    default: "{}"
   reference-prefix:
     description: "Comma-separated prefixes for reference benchmarks (excluded from regression, shown in cross-comparison)"
     required: false

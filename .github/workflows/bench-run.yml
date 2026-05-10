@@ -33,7 +33,7 @@ on:
         description: Number of tests
         value: ${{ jobs.bench.outputs.test-count }}
       peak-rss-kb:
-        description: Peak RSS in KB
+        description: JSON object of peak RSS in KB per binary
         value: ${{ jobs.bench.outputs.peak-rss-kb }}
 
 env:
@@ -86,10 +86,20 @@ jobs:
       - name: Measure peak RSS
         id: rss
         run: |
-          rss=$( { /usr/bin/time -v ../../target/release/riri-nce --quiet 2>&1 1>/dev/null; } 2>&1 \
-            | grep 'Maximum resident set size' | grep -oP '\d+' || echo "0" )
-          echo "rss_kb=$rss" >> "$GITHUB_OUTPUT"
-        working-directory: fixtures/npm-v3-500-deps
+          measure_in() {
+            local fixture="$1"
+            local binary="$2"
+            if [ ! -d "$fixture" ] || [ ! -x "$binary" ]; then
+              echo "0"
+              return
+            fi
+            (cd "$fixture" && { /usr/bin/time -v "../../$binary" --quiet 2>&1 1>/dev/null; } 2>&1 \
+              | grep 'Maximum resident set size' | grep -oP '\d+' || echo "0")
+          }
+          rss_nce=$(measure_in fixtures/npm-v3-500-deps target/release/riri-nce)
+          rss_npd=$(measure_in fixtures/npd-npm-v3-500-deps target/release/riri-npd)
+          json=$(jq -nc --argjson nce "$rss_nce" --argjson npd "$rss_npd" '{"riri-nce": $nce, "riri-npd": $npd}')
+          echo "rss_kb=$json" >> "$GITHUB_OUTPUT"
 
       - name: Discover bench targets
         id: discover
