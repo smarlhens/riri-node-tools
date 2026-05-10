@@ -92,6 +92,16 @@ test('pinDependencies rejects yarn (no string-content path)', () => {
   );
 });
 
+test('runCli with --version exits 0', () => {
+  const code = napi.runCli(['npd', '--version']);
+  assert.equal(code, 0);
+});
+
+test('runCli with bogus flag exits 2', () => {
+  const code = napi.runCli(['npd', '--definitely-not-a-flag']);
+  assert.equal(code, 2);
+});
+
 test('pinDependencies rejects unknown lockfile type', () => {
   assert.throws(
     () =>

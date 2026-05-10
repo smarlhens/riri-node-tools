@@ -8,7 +8,12 @@
     "type": "git",
     "url": "git+https://github.com/smarlhens/riri-node-tools.git"
   },
+  "bin": {
+    "npd": "bin/npd.js",
+    "npm-pin-dependencies": "bin/npd.js"
+  },
   "files": [
+    "bin",
     "index.d.ts",
     "index.js"
   ],
