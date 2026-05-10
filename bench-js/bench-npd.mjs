@@ -25,6 +25,13 @@ const fixtures = {
     iterations: 100,
     warmupIterations: 5,
   },
+  'npm large (500 deps)': {
+    dir: resolve(rootDir, 'fixtures/npd-npm-v3-500-deps'),
+    lockfileType: 'npm',
+    lockfileName: 'package-lock.json',
+    iterations: 3,
+    warmupIterations: 0,
+  },
 };
 
 const fixtureData = {};
