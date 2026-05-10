@@ -9,11 +9,11 @@ const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Find the .node binary for the current platform
-const napiDir = resolve(__dirname, '../crates/riri-napi');
+const napiDir = resolve(__dirname, '../crates/riri-napi-nce');
 const { readdirSync } = await import('node:fs');
 const nodeFile = readdirSync(napiDir).find(f => f.startsWith('npm-check-engines.') && f.endsWith('.node'));
 if (!nodeFile) {
-  console.error('No .node binary found. Run `cd crates/riri-napi && npx napi build --platform --release` first.');
+  console.error('No .node binary found. Run `cd crates/riri-napi-nce && npx napi build --platform --release` first.');
   process.exit(1);
 }
 const napi = require(resolve(napiDir, nodeFile));

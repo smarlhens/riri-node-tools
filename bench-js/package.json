@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "bench": "node bench.mjs",
+    "bench": "npm run bench-nce && npm run bench-npd",
+    "bench-nce": "node bench-nce.mjs",
+    "bench-npd": "node bench-npd.mjs",
     "cross-validate-nce": "node cross-validate-nce.mjs",
     "cross-validate-npd": "node cross-validate-npd.mjs"
   },
