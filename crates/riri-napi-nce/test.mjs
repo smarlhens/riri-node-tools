@@ -189,6 +189,20 @@ test('satisfies: invalid version throws', () => {
   }, /invalid version/);
 });
 
+// ── runCli ──────────────────────────────────────────────────────
+
+console.log('\nrunCli:');
+
+test('runCli with --version exits 0', () => {
+  const code = napi.runCli(['nce', '--version']);
+  assert.equal(code, 0);
+});
+
+test('runCli with bogus flag exits 2', () => {
+  const code = napi.runCli(['nce', '--definitely-not-a-flag']);
+  assert.equal(code, 2);
+});
+
 // ── Summary ─────────────────────────────────────────────────────
 
 console.log(`\n${passed} passed, ${failed} failed\n`);
