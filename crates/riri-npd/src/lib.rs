@@ -4,6 +4,8 @@
 //! `optionalDependencies` against the lockfile and reports any range
 //! specifier (e.g. `^1.2.3`) that should be pinned to the resolved version.
 
+pub mod cli;
+
 use riri_common::{LockfileVersions, PackageJson};
 use semver::Version;
 use thiserror::Error;

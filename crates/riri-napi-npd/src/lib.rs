@@ -54,6 +54,14 @@ fn parse_lockfile_versions(
     }
 }
 
+/// Run the `npd` CLI in-process. `argv` must include the program name at
+/// index 0 (e.g. `["npd", "--json"]`). Returns the exit code.
+#[napi]
+#[must_use]
+pub fn run_cli(argv: Vec<String>) -> i32 {
+    riri_npd::cli::run_cli(argv)
+}
+
 #[napi]
 pub fn pin_dependencies(options: PinDependenciesOptions) -> napi::Result<PinDependenciesResult> {
     let package_json: PackageJson =
