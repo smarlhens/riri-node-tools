@@ -6,3 +6,13 @@
 
 mod check_engines;
 mod semver;
+
+use napi_derive::napi;
+
+/// Run the `nce` CLI in-process. `argv` must include the program name at
+/// index 0 (e.g. `["nce", "--json"]`). Returns the exit code.
+#[napi]
+#[must_use]
+pub fn run_cli(argv: Vec<String>) -> i32 {
+    riri_nce::cli::run_cli(argv)
+}

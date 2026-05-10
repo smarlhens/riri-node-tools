@@ -8,7 +8,12 @@
     "type": "git",
     "url": "git+https://github.com/smarlhens/riri-node-tools.git"
   },
+  "bin": {
+    "nce": "bin/nce.js",
+    "npm-check-engines": "bin/nce.js"
+  },
   "files": [
+    "bin",
     "index.d.ts",
     "index.js"
   ],

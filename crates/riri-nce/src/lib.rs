@@ -3,6 +3,7 @@
 //! Computes the most restrictive engine constraints from a lockfile's
 //! dependency entries and compares them against the project's `package.json`.
 
+pub mod cli;
 mod compute;
 mod lifecycle;
 mod mutate;
