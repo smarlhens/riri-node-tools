@@ -3,10 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "bench": "node bench.mjs"
+    "bench": "node bench.mjs",
+    "cross-validate-nce": "node cross-validate-nce.mjs",
+    "cross-validate-npd": "node cross-validate-npd.mjs"
   },
   "dependencies": {
     "@smarlhens/npm-check-engines": "0.14.4",
+    "@smarlhens/npm-pin-dependencies": "0.11.1",
     "tinybench": "6.0.1"
   }
 }
