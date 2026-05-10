@@ -115,25 +115,38 @@ export const formatBinarySizeTable = (prSizes: Record<string, number>, baseSizes
   return markdownTable([['Binary', 'Base', 'PR', 'Diff', '%'], ...rows], { align: ['l', 'r', 'r', 'r', 'r'] });
 };
 
-export const formatRssTable = (prRssKilobytes: number, baseRssKilobytes: number): string => {
-  if (prRssKilobytes === 0 && baseRssKilobytes === 0) {
+export const formatRssTable = (
+  prRssKilobytes: Record<string, number>,
+  baseRssKilobytes: Record<string, number>,
+): string => {
+  const binaries = [...new Set([...Object.keys(prRssKilobytes), ...Object.keys(baseRssKilobytes)])].toSorted();
+
+  if (binaries.length === 0) {
     return '_No memory data._';
   }
 
-  const differenceKilobytes = prRssKilobytes - baseRssKilobytes;
-  const percentage = toPercentage(differenceKilobytes, baseRssKilobytes);
+  const rows = binaries.map(name => {
+    const prKilobytes = prRssKilobytes[name];
+    const baseKilobytes = baseRssKilobytes[name];
 
-  const rows = [
-    [
-      'Peak RSS',
-      formatBytes(baseRssKilobytes * BYTES_PER_KILOBYTE),
-      formatBytes(prRssKilobytes * BYTES_PER_KILOBYTE),
-      formatBytes(differenceKilobytes * BYTES_PER_KILOBYTE),
-      formatPercentage(percentage),
-    ],
-  ];
+    if (prKilobytes !== undefined && baseKilobytes !== undefined) {
+      const differenceKilobytes = prKilobytes - baseKilobytes;
+      const percentage = toPercentage(differenceKilobytes, baseKilobytes);
+      return [
+        `\`${name}\``,
+        formatBytes(baseKilobytes * BYTES_PER_KILOBYTE),
+        formatBytes(prKilobytes * BYTES_PER_KILOBYTE),
+        formatBytes(differenceKilobytes * BYTES_PER_KILOBYTE),
+        formatPercentage(percentage),
+      ];
+    }
+    if (prKilobytes !== undefined) {
+      return [`\`${name}\``, '_new_', formatBytes(prKilobytes * BYTES_PER_KILOBYTE), '-', '-'];
+    }
+    return [`\`${name}\``, formatBytes((baseKilobytes ?? 0) * BYTES_PER_KILOBYTE), '_removed_', '-', '-'];
+  });
 
-  return markdownTable([['Metric', 'Base', 'PR', 'Diff', '%'], ...rows], { align: ['l', 'r', 'r', 'r', 'r'] });
+  return markdownTable([['Binary', 'Base', 'PR', 'Diff', '%'], ...rows], { align: ['l', 'r', 'r', 'r', 'r'] });
 };
 
 export const formatTestCountTable = (prCount: number, baseCount: number): string => {

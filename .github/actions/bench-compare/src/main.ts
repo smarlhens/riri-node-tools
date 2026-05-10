@@ -26,8 +26,8 @@ export const run = async (): Promise<void> => {
     const baseBinarySizes: Record<string, number> = JSON.parse(core.getInput('base-binary-sizes'));
     const prTestCount = parseInt(core.getInput('pr-test-count'), RADIX_DECIMAL);
     const baseTestCount = parseInt(core.getInput('base-test-count'), RADIX_DECIMAL);
-    const prPeakRssKilobytes = parseInt(core.getInput('pr-peak-rss-kb'), RADIX_DECIMAL);
-    const basePeakRssKilobytes = parseInt(core.getInput('base-peak-rss-kb'), RADIX_DECIMAL);
+    const prPeakRssKilobytes: Record<string, number> = JSON.parse(core.getInput('pr-peak-rss-kb'));
+    const basePeakRssKilobytes: Record<string, number> = JSON.parse(core.getInput('base-peak-rss-kb'));
     const referencePrefixRaw = core.getInput('reference-prefix');
     const threshold = parseFloat(core.getInput('threshold'));
     const token = core.getInput('token');

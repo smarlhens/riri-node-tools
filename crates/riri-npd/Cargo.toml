@@ -20,9 +20,14 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
+criterion = { workspace = true }
 insta = { workspace = true }
 rstest = { workspace = true }
 tempfile = { workspace = true }
+
+[[bench]]
+name = "pin_dependencies"
+harness = false
 
 [lints]
 workspace = true
