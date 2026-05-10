@@ -166,6 +166,16 @@ fn cli_enable_save_exact_skips_when_already_set() {
 }
 
 #[test]
+fn cli_file_dependency_is_skipped() {
+    let (stdout, _stderr, code) = run_in_fixture("npd-npm-v3-file-dependency", &["--json"]);
+    assert_eq!(code, 1);
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let pins = json.get("pins").and_then(|v| v.as_array()).unwrap();
+    let names: Vec<&str> = pins.iter().map(|p| p["name"].as_str().unwrap()).collect();
+    assert_eq!(names, vec!["foo"], "json: {json}");
+}
+
+#[test]
 fn cli_help_lists_core_flags() {
     let output = npd_binary().arg("--help").output().unwrap();
     let stdout = String::from_utf8_lossy(&output.stdout);
