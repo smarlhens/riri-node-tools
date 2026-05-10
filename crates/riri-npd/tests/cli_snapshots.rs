@@ -186,6 +186,14 @@ fn cli_linked_package_is_skipped() {
 }
 
 #[test]
+fn cli_yarn_v2_unpinned_deps_lists_pin_table() {
+    let (stdout, stderr, code) = run_in_fixture("npd-yarn-v2-unpinned-deps", &["-v"]);
+    assert_eq!(code, 1);
+    assert!(stdout.is_empty());
+    insta::assert_snapshot!("yarn_v2_unpinned_deps_stderr", stderr);
+}
+
+#[test]
 fn cli_help_lists_core_flags() {
     let output = npd_binary().arg("--help").output().unwrap();
     let stdout = String::from_utf8_lossy(&output.stdout);
