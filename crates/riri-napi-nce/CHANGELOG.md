@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0-rc.1](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.0.0-rc.1...@smarlhens/npm-check-engines-v1.1.0-rc.1) (2026-05-11)
+
+
+### Features
+
+* **napi:** split into riri-napi-nce + riri-napi-npd, add pinDependencies binding ([5e682bc](https://github.com/smarlhens/riri-node-tools/commit/5e682bc1c329bcb062c56489812dcc39c8ed5f53))
+* **nce:** expose CLI via NAPI runCli + ship nce bin shim ([203aab5](https://github.com/smarlhens/riri-node-tools/commit/203aab57284983bc3f109cf5d858d1b102a9de70))
+
 ## [1.0.0-rc.1](https://github.com/smarlhens/riri-node-tools/compare/v1.0.0-rc.0...v1.0.0-rc.1) (2026-04-09)
 
 
