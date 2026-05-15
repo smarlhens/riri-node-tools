@@ -15,6 +15,7 @@
     { "type": "revert", "section": "Reverts", "hidden": false }
   ],
   "include-component-in-tag": true,
+  "separate-pull-requests": true,
   "packages": {
     "crates/riri-napi-nce": {
       "package-name": "@smarlhens/npm-check-engines",
