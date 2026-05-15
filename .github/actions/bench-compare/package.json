@@ -9,6 +9,9 @@
     "fmt:write": "oxfmt",
     "lint:check": "oxlint",
     "lint:fix": "oxlint --fix",
+    "ncu:apply": "ncu -u",
+    "ncu:check": "ncu",
+    "postncu:apply": "npm install --registry https://registry.npmjs.org && npm update --registry https://registry.npmjs.org",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -17,10 +20,11 @@
     "markdown-table": "3.0.4"
   },
   "devDependencies": {
-    "@types/node": "24.12.2",
-    "oxfmt": "0.47.0",
-    "oxlint": "1.62.0",
-    "rolldown": "1.0.0-rc.18",
+    "@types/node": "24.12.4",
+    "npm-check-updates": "22.2.0",
+    "oxfmt": "0.49.0",
+    "oxlint": "1.64.0",
+    "rolldown": "1.0.1",
     "typescript": "6.0.3"
   },
   "engines": {

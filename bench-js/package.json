@@ -7,11 +7,17 @@
     "bench-nce": "node bench-nce.mjs",
     "bench-npd": "node bench-npd.mjs",
     "cross-validate-nce": "node cross-validate-nce.mjs",
-    "cross-validate-npd": "node cross-validate-npd.mjs"
+    "cross-validate-npd": "node cross-validate-npd.mjs",
+    "ncu:apply": "ncu -u",
+    "ncu:check": "ncu",
+    "postncu:apply": "npm install --registry https://registry.npmjs.org && npm update --registry https://registry.npmjs.org"
   },
   "dependencies": {
     "@smarlhens/npm-check-engines": "0.14.4",
     "@smarlhens/npm-pin-dependencies": "0.11.1",
-    "tinybench": "6.0.1"
+    "tinybench": "6.0.2"
+  },
+  "devDependencies": {
+    "npm-check-updates": "22.2.0"
   }
 }
