@@ -1,6 +1,7 @@
 [package]
 name = "riri-napi-nce"
 version = "1.0.0-rc.1"
+description = "Check and update Node.js engine constraints in package.json"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
