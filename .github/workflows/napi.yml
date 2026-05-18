@@ -259,8 +259,8 @@ jobs:
           name: js-loader-${{ inputs.app-name }}
           path: ${{ inputs.crate-dir }}
 
-      - name: Copy README and LICENSE
-        run: cp ../../README.md ../../LICENSE.md .
+      - name: Copy LICENSE
+        run: cp ../../LICENSE.md .
 
       - name: Determine npm tag
         id: tag
