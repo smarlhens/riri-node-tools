@@ -42,9 +42,6 @@ jobs:
 
   rust:
     runs-on: ubuntu-24.04
-    outputs:
-      prs_created: ${{ steps.release.outputs.prs_created }}
-      pr_branch: ${{ steps.release.outputs.prs_created == 'true' && fromJson(steps.release.outputs.prs)[0].headBranchName || '' }}
     steps:
       - name: Checkout source code
         uses: actions/checkout@v6
@@ -80,27 +77,6 @@ jobs:
           skip-github-pull-request: ${{ env.skip_github_pull_request }}
           skip-github-release: ${{ env.skip_github_release }}
           token: ${{ secrets.PAT }}
-
-  update-lockfile:
-    needs: rust
-    if: needs.rust.outputs.prs_created == 'true'
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout release PR branch
-        uses: actions/checkout@v6 # zizmor: ignore[artipacked] needs persisted creds for git-auto-commit-action
-        with:
-          ref: ${{ needs.rust.outputs.pr_branch }}
-      - name: Install Rust
-        run: rustup update stable && rustup default stable
-      - name: Update Cargo.lock
-        run: cargo update --workspace
-      - name: Commit Cargo.lock
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: "chore: update Cargo.lock"
-          file_pattern: Cargo.lock
 
   bench-baseline:
     needs: changes

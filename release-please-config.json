@@ -24,6 +24,11 @@
           "type": "json",
           "path": "package.json",
           "jsonpath": "$.version"
+        },
+        {
+          "type": "toml",
+          "path": "/Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value=='riri-napi-nce')].version"
         }
       ]
     },
@@ -34,6 +39,11 @@
           "type": "json",
           "path": "package.json",
           "jsonpath": "$.version"
+        },
+        {
+          "type": "toml",
+          "path": "/Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value=='riri-napi-npd')].version"
         }
       ]
     }
