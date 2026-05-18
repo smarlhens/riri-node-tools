@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   napi:
-    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'npm-check-engines-') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, '@smarlhens/npm-check-engines-') }}
     uses: ./.github/workflows/napi.yml
     permissions:
       contents: read
