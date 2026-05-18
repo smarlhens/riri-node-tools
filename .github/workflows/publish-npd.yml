@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   napi:
-    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'npm-pin-dependencies-') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, '@smarlhens/npm-pin-dependencies-') }}
     uses: ./.github/workflows/napi.yml
     permissions:
       contents: read
