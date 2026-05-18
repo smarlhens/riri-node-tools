@@ -105,6 +105,17 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+      - name: Upload JS loader (target-agnostic)
+        if: matrix.settings.target == 'x86_64-unknown-linux-gnu'
+        uses: actions/upload-artifact@v7
+        with:
+          name: js-loader-${{ inputs.app-name }}
+          path: |
+            ${{ inputs.crate-dir }}/index.js
+            ${{ inputs.crate-dir }}/index.d.ts
+          if-no-files-found: error
+          retention-days: 1
+
   test-native:
     if: ${{ !inputs.run-publish }}
     name: test - ${{ matrix.settings.target }}
@@ -241,6 +252,15 @@ jobs:
 
       - name: Move artifacts
         run: npx napi artifacts --output-dir artifacts
+
+      - name: Download JS loader
+        uses: actions/download-artifact@v8
+        with:
+          name: js-loader-${{ inputs.app-name }}
+          path: ${{ inputs.crate-dir }}
+
+      - name: Copy README and LICENSE
+        run: cp ../../README.md ../../LICENSE.md .
 
       - name: Determine npm tag
         id: tag
