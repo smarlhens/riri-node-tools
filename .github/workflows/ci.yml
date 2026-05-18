@@ -67,11 +67,11 @@ jobs:
           HAS_RELEASE_COMMIT: "${{ contains(toJson(github.event.commits.*.message), 'chore(main): release') }}"
         run: |
           if [ "$HAS_RELEASE_COMMIT" = "true" ]; then
-            echo "skip_github_pull_request=true"  >> $GITHUB_ENV
-            echo "skip_github_release=false"      >> $GITHUB_ENV
+            echo "skip_github_pull_request=true"  >> "$GITHUB_ENV"
+            echo "skip_github_release=false"      >> "$GITHUB_ENV"
           else
-            echo "skip_github_pull_request=false" >> $GITHUB_ENV
-            echo "skip_github_release=true"       >> $GITHUB_ENV
+            echo "skip_github_pull_request=false" >> "$GITHUB_ENV"
+            echo "skip_github_release=true"       >> "$GITHUB_ENV"
           fi
       - name: Prepare release
         id: release
