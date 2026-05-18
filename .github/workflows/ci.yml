@@ -64,7 +64,7 @@ jobs:
         run: cargo test --workspace --verbose
       - name: Set release-please variables
         env:
-          HAS_RELEASE_COMMIT: ${{ contains(toJson(github.event.commits.*.message), 'chore(main): release') }}
+          HAS_RELEASE_COMMIT: "${{ contains(toJson(github.event.commits.*.message), 'chore(main): release') }}"
         run: |
           if [ "$HAS_RELEASE_COMMIT" = "true" ]; then
             echo "skip_github_pull_request=true"  >> $GITHUB_ENV

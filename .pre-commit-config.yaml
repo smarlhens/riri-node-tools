@@ -28,6 +28,11 @@ repos:
     hooks:
       - id: oxlint
 
+  - repo: https://github.com/rhysd/actionlint
+    rev: "v1.7.12"
+    hooks:
+      - id: actionlint
+
   - repo: local
     hooks:
       - id: fmt

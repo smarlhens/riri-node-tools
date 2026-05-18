@@ -1,0 +1,7 @@
+paths:
+  .github/workflows/pr-bench.yml:
+    # bench-compare is a JS action whose dist/ is built at runtime
+    # (npm ci && npm run bundle) in the workflow before invocation,
+    # so the static check for the bundle file is a false positive.
+    ignore:
+      - 'file "dist/index.js" does not exist'
