@@ -118,13 +118,17 @@ jobs:
           FALLBACK_RSS_KB: ${{ needs.bench-base.outputs.peak-rss-kb }}
         run: |
           if [ "$CACHE_HIT" = "true" ] && [ -d /tmp/bench-baseline ]; then
-            echo "sizes=$(cat /tmp/bench-baseline/binary-sizes.json)" >> "$GITHUB_OUTPUT"
-            echo "test_count=$(cat /tmp/bench-baseline/test-count.txt)" >> "$GITHUB_OUTPUT"
-            echo "rss_kb=$(cat /tmp/bench-baseline/peak-rss-kb.txt)" >> "$GITHUB_OUTPUT"
+            {
+              echo "sizes=$(cat /tmp/bench-baseline/binary-sizes.json)"
+              echo "test_count=$(cat /tmp/bench-baseline/test-count.txt)"
+              echo "rss_kb=$(cat /tmp/bench-baseline/peak-rss-kb.txt)"
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "sizes=$FALLBACK_SIZES" >> "$GITHUB_OUTPUT"
-            echo "test_count=$FALLBACK_TEST_COUNT" >> "$GITHUB_OUTPUT"
-            echo "rss_kb=$FALLBACK_RSS_KB" >> "$GITHUB_OUTPUT"
+            {
+              echo "sizes=$FALLBACK_SIZES"
+              echo "test_count=$FALLBACK_TEST_COUNT"
+              echo "rss_kb=$FALLBACK_RSS_KB"
+            } >> "$GITHUB_OUTPUT"
           fi
 
       - name: Install action dependencies
