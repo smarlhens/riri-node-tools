@@ -126,6 +126,7 @@ Options:
       --json               Output results as JSON
       --sort               Sort package.json keys (sort-package-json conventions); writes the file even without --update or pending pins
       --enable-save-exact  Create or update .npmrc with save-exact=true
+      --pin-catalog        Resolve and report pnpm catalog entries from `pnpm-workspace.yaml`. On `-u`, rewrites the catalog entries in place. Requires a pnpm project
   -h, --help               Print help
   -V, --version            Print version
 ```

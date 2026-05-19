@@ -1,0 +1,17 @@
+---
+source: crates/riri-npd/tests/cli_snapshots.rs
+expression: snapshot
+---
+exit: 1
+---
+  Detecting lockfile...
+  Detected pnpm-lock.yaml
+  Reading package.json...
+  Read package.json
+  Parsing lockfile...
+  Parsed lockfile
+  Computing dependency pins...
+  Computed dependency pins
+    foo  ^1.0.0  →  1.0.5
+
+  Run npd -v -u to upgrade package.json.

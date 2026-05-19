@@ -316,6 +316,12 @@ fn pnpm_or_ranges_node_npm_yarn() {
     insta::assert_snapshot!(result);
 }
 
+#[test]
+fn pnpm_catalog() {
+    let result = run_pnpm_fixture("pnpm-v9-catalog");
+    insta::assert_snapshot!(result);
+}
+
 // ── yarn fixtures ───────────────────────────────────────────────────
 
 fn run_yarn_fixture(fixture_dir: &str) -> String {

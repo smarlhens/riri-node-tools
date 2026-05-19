@@ -1,0 +1,5 @@
+---
+source: crates/riri-pnpm/tests/parse_fixtures.rs
+expression: snapshot
+---
+fake-lib-a@4.17.21: {node: >=6.9.0}

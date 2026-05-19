@@ -1635,9 +1635,11 @@ version = "0.1.0"
 dependencies = [
  "insta",
  "riri-common",
+ "riri-find-up",
  "rstest",
  "serde",
  "serde-saphyr",
+ "tempfile",
  "thiserror",
 ]
 
