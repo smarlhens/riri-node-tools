@@ -12,7 +12,7 @@ chrono = { workspace = true }
 clap = { workspace = true }
 riri-node-lifecycle = { workspace = true, features = ["refresh"] }
 serde_json = { workspace = true }
-similar = "2.7.0"
+similar = "3.1.0"
 tera = { workspace = true }
 
 [lib]
