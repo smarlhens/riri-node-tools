@@ -31,11 +31,11 @@ This package ships a native Rust core via [NAPI-RS](https://napi.rs/) as part of
 
 Supported platforms:
 
-| OS      | Arch                      |
-|---------|---------------------------|
+| OS      | Arch                                 |
+| ------- | ------------------------------------ |
 | Linux   | x64 (glibc/musl), arm64 (glibc/musl) |
-| macOS   | x64, arm64                |
-| Windows | x64                       |
+| macOS   | x64, arm64                           |
+| Windows | x64                                  |
 
 ---
 
@@ -169,12 +169,12 @@ Options:
           - major: Trim all trailing .0 (minimum 1 component)
           - minor: Trim trailing .0 patch only (minimum 2 components)
           - patch: Always show major.minor.patch
-          
+
           [default: patch]
 
       --node-policy <NODE_POLICY>
           Node.js lifecycle policy gate for engines.node
-          
+
           [default: supported]
           [possible values: any, stable, supported, lts, maintenance]
 
@@ -194,7 +194,7 @@ Options:
           - major: Trim all trailing .0 (minimum 1 component)
           - minor: Trim trailing .0 patch only (minimum 2 components)
           - patch: Always show major.minor.patch
-          
+
           [default: major]
 
       --refresh

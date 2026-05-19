@@ -31,11 +31,11 @@ This package ships a native Rust core via [NAPI-RS](https://napi.rs/) as part of
 
 Supported platforms:
 
-| OS      | Arch                      |
-|---------|---------------------------|
+| OS      | Arch                                 |
+| ------- | ------------------------------------ |
 | Linux   | x64 (glibc/musl), arm64 (glibc/musl) |
-| macOS   | x64, arm64                |
-| Windows | x64                       |
+| macOS   | x64, arm64                           |
+| Windows | x64                                  |
 
 ---
 
