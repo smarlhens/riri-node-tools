@@ -1,4 +1,5 @@
-import { checkEnginesFromString } from '@smarlhens/npm-check-engines';
+import { checkEnginesFromString as checkEnginesV0 } from '@smarlhens/npm-check-engines-v0';
+import { checkEngines as checkEnginesV1 } from '@smarlhens/npm-check-engines-v1';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve, dirname } from 'node:path';
@@ -8,7 +9,7 @@ import { Bench } from 'tinybench';
 const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Find the .node binary for the current platform
+// Load the local .node binary — represents the unpublished working-tree code.
 const napiDir = resolve(__dirname, '../crates/riri-napi-nce');
 const { readdirSync } = await import('node:fs');
 const nodeFile = readdirSync(napiDir).find(f => f.startsWith('npm-check-engines.') && f.endsWith('.node'));
@@ -16,7 +17,7 @@ if (!nodeFile) {
   console.error('No .node binary found. Run `cd crates/riri-napi-nce && npx napi build --platform --release` first.');
   process.exit(1);
 }
-const napi = require(resolve(napiDir, nodeFile));
+const napiLocal = require(resolve(napiDir, nodeFile));
 const rootDir = resolve(__dirname, '..');
 
 const fixtures = {
@@ -52,15 +53,23 @@ for (const [name, data] of Object.entries(fixtureData)) {
     warmupTime: 0,
   });
 
-  bench.add('js checkEnginesFromString', () => {
-    checkEnginesFromString({
+  bench.add('js v0.x (TS predecessor)', () => {
+    checkEnginesV0({
       packageJsonString: data.packageJsonString,
       packageLockString: data.packageLockString,
     });
   });
 
-  bench.add('napi checkEngines', () => {
-    napi.checkEngines({
+  bench.add('napi v1.x (published)', () => {
+    checkEnginesV1({
+      lockfileContent: data.packageLockString,
+      lockfileType: 'npm',
+      packageJson: data.packageJsonString,
+    });
+  });
+
+  bench.add('napi local (unpublished)', () => {
+    napiLocal.checkEngines({
       lockfileContent: data.packageLockString,
       lockfileType: 'npm',
       packageJson: data.packageJsonString,

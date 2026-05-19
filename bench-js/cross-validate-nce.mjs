@@ -5,7 +5,7 @@
 //! Only npm fixtures are cross-validated: the JS package has no pnpm/yarn
 //! string entry point.
 
-import { checkEnginesFromString } from '@smarlhens/npm-check-engines';
+import { checkEnginesFromString } from '@smarlhens/npm-check-engines-v0';
 import { readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
