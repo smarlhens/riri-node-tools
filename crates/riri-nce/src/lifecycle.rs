@@ -11,6 +11,7 @@ use chrono::{DateTime, NaiveDate, Utc};
 use riri_common::EngineConstraintKey;
 use riri_node_lifecycle::{LifecycleData, Policy};
 use riri_semver_range::{ParsedRange, VersionPrecision};
+use tracing::debug;
 
 #[derive(Debug, Clone)]
 pub struct LifecycleConfig<'a> {
@@ -62,7 +63,30 @@ pub fn check_engines_with_lifecycle(
             allow_eol: cfg.allow_eol,
             precision: input.precision,
         };
+        debug!(
+            target: "riri_nce::lifecycle",
+            policy = ?cfg.policy,
+            "Rewriting node range under policy gate: {node_to}"
+        );
         let pr = rewrite_node_range(&node_to, &ctx)?;
+        for dropped in &pr.dropped_disjuncts {
+            debug!(target: "riri_nce::lifecycle", "Dropped disjunct (no allowed majors): {dropped}");
+        }
+        for (from, to) in &pr.bumped_disjuncts {
+            debug!(target: "riri_nce::lifecycle", "Bumped disjunct: {from} → {to}");
+        }
+        for warning in &pr.eol_warnings {
+            debug!(
+                target: "riri_nce::lifecycle",
+                major = warning.major,
+                "EOL warning emitted for major {} (eol on {})", warning.major, warning.since
+            );
+        }
+        if pr.unsatisfiable {
+            debug!(target: "riri_nce::lifecycle", "Policy rewrite is unsatisfiable — no allowed majors intersect input");
+        } else if let Some(ref rewritten) = pr.rewritten {
+            debug!(target: "riri_nce::lifecycle", "Rewritten node range: {rewritten}");
+        }
         apply_policy_result(&pr, &node_to, &mut output, input);
         lifecycle.warnings = pr.eol_warnings;
         lifecycle.dropped_disjuncts = pr.dropped_disjuncts;
@@ -85,8 +109,16 @@ pub fn check_engines_with_lifecycle(
             .get(&EngineConstraintKey::Npm)
             .cloned();
         let bump = maybe_bump_npm(declared.as_deref(), &target);
+        debug!(
+            target: "riri_nce::lifecycle",
+            apply = bump.apply,
+            "npm floor derived from node range: target {} (declared: {:?})",
+            bump.target_floor,
+            declared
+        );
         if bump.apply {
             let new_npm = format_npm_floor(&bump.target_floor, cfg.npm_precision);
+            debug!(target: "riri_nce::lifecycle", "Bumping engines.npm floor to: {new_npm}");
             apply_npm_bump(&new_npm, &mut output, input);
         }
         lifecycle.npm_bump = Some(bump);

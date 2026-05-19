@@ -12,6 +12,6 @@ exit: 1
   Parsed lockfile
   Computing dependency pins...
   Computed dependency pins
-  foo  ^4.17.21  →  4.17.21
+    foo  ^4.17.21  →  4.17.21
 
   Run npd -v -u to upgrade package.json.

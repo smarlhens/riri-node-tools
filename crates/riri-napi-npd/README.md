@@ -67,9 +67,9 @@ npd
 Sample output (against `fixtures/npd-npm-v3-unpinned-deps`):
 
 ```text
-  bar  ~18.2.0   →  18.2.0
-  foo  ^4.17.21  →  4.17.21
-  baz  ^1.0.0    →  1.6.0
+    bar  ~18.2.0   →  18.2.0
+    foo  ^4.17.21  →  4.17.21
+    baz  ^1.0.0    →  1.6.0
 
   Run npd -u to upgrade package.json.
 ```
@@ -151,10 +151,13 @@ The `-d/--debug` flag enables detailed logging to stderr. No environment variabl
   ▸ Parsing lockfile......
   ✓ Parsed lockfile
   ▸ Computing dependency pins......
+    Pin ~18.2.0 → 18.2.0 bucket="dependencies" package=bar
+    Pin ^4.17.21 → 4.17.21 bucket="dependencies" package=foo
+    Pin ^1.0.0 → 1.6.0 bucket="devDependencies" package=baz
   ✓ Computed dependency pins
-  bar  ~18.2.0   →  18.2.0
-  foo  ^4.17.21  →  4.17.21
-  baz  ^1.0.0    →  1.6.0
+    bar  ~18.2.0   →  18.2.0
+    foo  ^4.17.21  →  4.17.21
+    baz  ^1.0.0    →  1.6.0
 
   Run npd -d -u to upgrade package.json.
 ```

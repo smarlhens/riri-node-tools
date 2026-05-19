@@ -10,7 +10,7 @@ expression: stderr
   Parsed lockfile
   Computing engine constraints...
   Computed engine constraints
-  node  >=20.0.0  →  ^20.0.0 || ^22.0.0 || ^24.0.0 || >=25.0.0
-  npm   >=8.0.0   →  >=9.6.4
+    node  >=20.0.0  →  ^20.0.0 || ^22.0.0 || ^24.0.0 || >=25.0.0
+    npm   >=8.0.0   →  >=9.6.4
 
   Run nce -v -u to upgrade package.json.
