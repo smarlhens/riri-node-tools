@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.0.0...@smarlhens/npm-check-engines-v1.1.0) (2026-05-19)
+
+
+### Features
+
+* **xtask:** add regen-readme with full tera templates + ci drift check ([1fa85cf](https://github.com/smarlhens/riri-node-tools/commit/1fa85cfe64d1e13f8a5759b5a6b5985933007f4c))
+
+
+### Bug Fixes
+
+* **napi:** add per-crate readme, drop readme copy from publish job ([09db420](https://github.com/smarlhens/riri-node-tools/commit/09db4207ed990baf8402afdf852cfb8832367aec))
+* **napi:** disable gh-release creation in prepublish to skip wrong-tag lookup ([36d01b0](https://github.com/smarlhens/riri-node-tools/commit/36d01b01fa9ae448b90ff02e597a6ede23051c9c))
+
 ## [1.0.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.0.0-rc.1...@smarlhens/npm-check-engines-v1.0.0) (2026-05-18)
 
 
