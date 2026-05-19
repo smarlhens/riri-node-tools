@@ -3,6 +3,7 @@
 use riri_common::{EngineConstraintKey, Engines};
 use riri_semver_range::{ParsedRange, VersionPrecision, restrictive_range};
 use std::collections::HashMap;
+use tracing::debug;
 
 /// Extract the constraint string for a given engine key from an `Engines` value.
 ///
@@ -35,35 +36,85 @@ pub fn compute_engines_constraint<'a>(
     let wildcard = ParsedRange::parse("*").expect("wildcard always parses");
     let mut most_restrictive = wildcard;
     let mut ignored_ranges: Vec<String> = Vec::new();
+    let engine = key.to_string();
 
-    for (_pkg_name, engines) in entries {
+    for (pkg_name, engines) in entries {
+        let pkg = if pkg_name.is_empty() {
+            "<root>"
+        } else {
+            pkg_name
+        };
         let Some(constraint) = get_constraint_from_engines(engines, key) else {
+            debug!(target: "riri_nce::compute", engine = %engine, package = %pkg, "Package has no engines");
             continue;
         };
 
         if constraint == "*" || constraint.is_empty() {
+            debug!(
+                target: "riri_nce::compute",
+                engine = %engine,
+                package = %pkg,
+                "Package has no constraints for current engine"
+            );
             continue;
         }
 
-        // Skip ranges already proven to be supersets of the current most restrictive range.
         if ignored_ranges.contains(&constraint) {
+            debug!(
+                target: "riri_nce::compute",
+                engine = %engine,
+                package = %pkg,
+                range = %constraint,
+                "Ignored range (already proven non-narrowing)"
+            );
             continue;
         }
 
         let Ok(range) = ParsedRange::parse(&constraint) else {
+            debug!(
+                target: "riri_nce::compute",
+                engine = %engine,
+                package = %pkg,
+                range = %constraint,
+                "Skipped unparseable range"
+            );
             continue;
         };
 
+        let current = most_restrictive.humanize();
+        debug!(
+            target: "riri_nce::compute",
+            engine = %engine,
+            package = %pkg,
+            "Compare: {current} and {constraint}"
+        );
+
         let new_most_restrictive = restrictive_range(&most_restrictive, &range);
-        if new_most_restrictive.humanize() == most_restrictive.humanize() {
-            // Range didn't narrow most restrictive range — it's a superset or non-intersecting. Cache it.
+        let next = new_most_restrictive.humanize();
+        if next == current {
+            debug!(
+                target: "riri_nce::compute",
+                engine = %engine,
+                "Range {constraint} did not narrow {current} — cached as ignored"
+            );
             ignored_ranges.push(constraint);
         } else {
+            debug!(
+                target: "riri_nce::compute",
+                engine = %engine,
+                "New most restrictive range: {next}"
+            );
             most_restrictive = new_most_restrictive;
         }
     }
 
-    most_restrictive.humanize_with(precision)
+    let final_range = most_restrictive.humanize();
+    let simplified = most_restrictive.humanize_with(precision);
+    debug!(target: "riri_nce::compute", engine = %engine, "Final computed engine range constraint: {final_range}");
+    if simplified != final_range {
+        debug!(target: "riri_nce::compute", engine = %engine, "Simplified computed engine range constraint: {simplified}");
+    }
+    simplified
 }
 
 /// Input for [`check_engines`].

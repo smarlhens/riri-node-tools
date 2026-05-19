@@ -9,6 +9,7 @@ pub mod cli;
 use riri_common::{LockfileVersions, PackageJson};
 use semver::Version;
 use thiserror::Error;
+use tracing::debug;
 
 /// A dependency whose `package.json` specifier is a range that the lockfile
 /// has resolved to a concrete version.
@@ -85,16 +86,46 @@ pub fn pin_dependencies(
 
     for (kind, deps) in buckets {
         let Some(deps) = deps else { continue };
-        for (name, current_range) in deps {
+        let mut entries: Vec<(&String, &String)> = deps.iter().collect();
+        entries.sort_by(|a, b| a.0.cmp(b.0));
+        for (name, current_range) in entries {
             if is_local_specifier(current_range) {
+                debug!(
+                    target: "riri_npd::pin",
+                    bucket = kind.as_str(),
+                    package = %name,
+                    spec = %current_range,
+                    "Skipped local specifier (file:/link:/workspace:)"
+                );
                 continue;
             }
             let Some(locked) = lockfile.version_for(name) else {
+                debug!(
+                    target: "riri_npd::pin",
+                    bucket = kind.as_str(),
+                    package = %name,
+                    spec = %current_range,
+                    "Skipped — not present in lockfile"
+                );
                 continue;
             };
             if is_already_pinned(current_range, locked) {
+                debug!(
+                    target: "riri_npd::pin",
+                    bucket = kind.as_str(),
+                    package = %name,
+                    spec = %current_range,
+                    locked = %locked,
+                    "Skipped — already pinned to lockfile version"
+                );
                 continue;
             }
+            debug!(
+                target: "riri_npd::pin",
+                bucket = kind.as_str(),
+                package = %name,
+                "Pin {current_range} → {locked}"
+            );
             result.push(VersionToPin {
                 name: name.clone(),
                 kind,

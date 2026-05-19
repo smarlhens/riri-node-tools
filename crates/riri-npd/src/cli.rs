@@ -96,6 +96,9 @@ fn load_lockfile(
 #[allow(clippy::too_many_lines)]
 fn run(args: &Args) -> Result<i32> {
     let mode = renderer_mode(args);
+    if args.debug {
+        install_debug_subscriber();
+    }
     let runner = TaskRunner::new(mode);
     let cwd = std::env::current_dir().context("failed to get current directory")?;
 
@@ -196,7 +199,7 @@ fn run(args: &Args) -> Result<i32> {
             ]);
         }
         for line in table.lines() {
-            eprintln!("  {}", line.trim());
+            eprintln!("    {}", line.trim());
         }
     }
 
@@ -229,6 +232,42 @@ fn run(args: &Args) -> Result<i32> {
     }
 
     Ok(EXIT_PINS_PENDING)
+}
+
+fn install_debug_subscriber() {
+    use std::io::IsTerminal;
+    use tracing_subscriber::EnvFilter;
+    use tracing_subscriber::layer::SubscriberExt;
+    use tracing_subscriber::util::SubscriberInitExt;
+    let filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("riri_npd=debug"));
+    let layer = tracing_subscriber::fmt::layer()
+        .event_format(IndentedFormat)
+        .with_ansi(std::io::stderr().is_terminal())
+        .with_writer(std::io::stderr);
+    let _ = tracing_subscriber::registry()
+        .with(filter)
+        .with(layer)
+        .try_init();
+}
+
+struct IndentedFormat;
+
+impl<S, N> tracing_subscriber::fmt::FormatEvent<S, N> for IndentedFormat
+where
+    S: tracing::Subscriber + for<'a> tracing_subscriber::registry::LookupSpan<'a>,
+    N: for<'a> tracing_subscriber::fmt::FormatFields<'a> + 'static,
+{
+    fn format_event(
+        &self,
+        ctx: &tracing_subscriber::fmt::FmtContext<'_, S, N>,
+        mut writer: tracing_subscriber::fmt::format::Writer<'_>,
+        event: &tracing::Event<'_>,
+    ) -> std::fmt::Result {
+        writer.write_str("    ")?;
+        ctx.field_format().format_fields(writer.by_ref(), event)?;
+        writeln!(writer)
+    }
 }
 
 fn maybe_enable_save_exact(args: &Args, runner: &TaskRunner, cwd: &Path) -> Result<()> {
