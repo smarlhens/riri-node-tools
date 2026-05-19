@@ -366,6 +366,31 @@ fn cli_update_writes_lifecycle_rewrite() {
 }
 
 #[test]
+fn cli_sort_writes_without_update_flag() {
+    let tmp = copy_fixture_to_tmp("nce-policy-supported-eol-bump");
+    let unsorted = "{\n  \"engines\": {\n    \"node\": \">=18.0.0\"\n  },\n  \"private\": true,\n  \"name\": \"fake\"\n}\n";
+    std::fs::write(tmp.path().join("package.json"), unsorted).unwrap();
+    let pinned = pin_lifecycle(&["--sort", "--no-bump-npm"]);
+    let output = nce_binary()
+        .current_dir(tmp.path())
+        .args(&pinned)
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code().unwrap_or(-1), 1);
+    let written = std::fs::read_to_string(tmp.path().join("package.json")).unwrap();
+    assert!(
+        written.contains("\">=18.0.0\""),
+        "engines.node should be unchanged without --update: {written}"
+    );
+    let name_pos = written.find("\"name\"").unwrap();
+    let engines_pos = written.find("\"engines\"").unwrap();
+    assert!(
+        name_pos < engines_pos,
+        "sort-package-json should place name before engines: {written}"
+    );
+}
+
+#[test]
 fn cli_policy_unsatisfiable() {
     let (stdout, stderr, code) = run_in_fixture(
         "nce-policy-unsatisfiable",

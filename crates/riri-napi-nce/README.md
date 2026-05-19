@@ -160,7 +160,7 @@ Options:
           Output results as JSON
 
       --sort
-          Sort package.json keys on write (uses sort-package-json conventions)
+          Sort package.json keys (sort-package-json conventions); writes the file even without --update or pending changes
 
       --precision <PRECISION>
           Version precision in output: major (e.g. >=24), minor (e.g. >=24.0), or patch (e.g. >=24.0.0). Trailing .0 components are trimmed accordingly. Non-zero components are never dropped

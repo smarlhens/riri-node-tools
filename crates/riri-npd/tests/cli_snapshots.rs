@@ -135,6 +135,26 @@ fn cli_yarn_no_node_modules_errors() {
 }
 
 #[test]
+fn cli_sort_writes_when_all_pinned() {
+    let tmp = copy_fixture_to_tmp("npd-npm-v3-already-pinned");
+    let unsorted = "{\n  \"dependencies\": {\n    \"foo\": \"4.17.21\"\n  },\n  \"private\": true,\n  \"name\": \"fake\"\n}\n";
+    std::fs::write(tmp.path().join("package.json"), unsorted).unwrap();
+    let output = npd_binary()
+        .current_dir(tmp.path())
+        .args(["--sort"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code().unwrap_or(-1), 0);
+    let written = std::fs::read_to_string(tmp.path().join("package.json")).unwrap();
+    let name_pos = written.find("\"name\"").unwrap();
+    let deps_pos = written.find("\"dependencies\"").unwrap();
+    assert!(
+        name_pos < deps_pos,
+        "sort-package-json should place name before dependencies: {written}"
+    );
+}
+
+#[test]
 fn cli_enable_save_exact_creates_npmrc() {
     let tmp = copy_fixture_to_tmp("npd-npm-v3-already-pinned");
     let output = npd_binary()
