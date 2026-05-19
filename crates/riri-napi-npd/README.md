@@ -124,7 +124,7 @@ Options:
   -d, --debug              Debug mode — detailed logging
   -u, --update             Update package.json with pinned versions
       --json               Output results as JSON
-      --sort               Sort package.json keys on write (uses sort-package-json conventions)
+      --sort               Sort package.json keys (sort-package-json conventions); writes the file even without --update or pending pins
       --enable-save-exact  Create or update .npmrc with save-exact=true
   -h, --help               Print help
   -V, --version            Print version

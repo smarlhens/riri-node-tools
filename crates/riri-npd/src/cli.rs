@@ -44,7 +44,7 @@ pub struct Args {
     #[arg(long)]
     pub json: bool,
 
-    /// Sort package.json keys on write (uses sort-package-json conventions).
+    /// Sort package.json keys (sort-package-json conventions); writes the file even without --update or pending pins.
     #[arg(long)]
     pub sort: bool,
 
@@ -174,6 +174,13 @@ fn run(args: &Args) -> Result<i32> {
                 style(":)").green()
             );
         }
+        if args.sort {
+            let task = runner.task("Sorting package.json...");
+            pkg_file
+                .write_sorted()
+                .context("failed to write package.json")?;
+            task.complete("Sorted package.json");
+        }
         return Ok(EXIT_OK);
     }
 
@@ -204,12 +211,21 @@ fn run(args: &Args) -> Result<i32> {
             pkg_file.write().context("failed to write package.json")?;
         }
         task.complete("Updated package.json");
-    } else if !args.quiet {
-        let hint = generate_update_hint(args);
-        eprintln!(
-            "\n  Run {} to upgrade package.json.",
-            style(hint).bold().cyan()
-        );
+    } else {
+        if args.sort {
+            let task = runner.task("Sorting package.json...");
+            pkg_file
+                .write_sorted()
+                .context("failed to write package.json")?;
+            task.complete("Sorted package.json");
+        }
+        if !args.quiet {
+            let hint = generate_update_hint(args);
+            eprintln!(
+                "\n  Run {} to upgrade package.json.",
+                style(hint).bold().cyan()
+            );
+        }
     }
 
     Ok(EXIT_PINS_PENDING)
