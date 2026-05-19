@@ -1,0 +1,36 @@
+lockfileVersion: '9.0'
+
+importers:
+
+  .:
+    dependencies:
+      foo:
+        specifier: ^1.0.0
+        version: 1.0.5
+      fizz:
+        specifier: ^18.0.0
+        version: 18.2.0
+      quux:
+        specifier: ^3.4.0
+        version: 3.4.21
+      buzz:
+        specifier: 4.17.21
+        version: 4.17.21
+
+packages:
+
+  foo@1.0.5:
+    resolution:
+      integrity: sha512-placeholder
+
+  fizz@18.2.0:
+    resolution:
+      integrity: sha512-placeholder
+
+  quux@3.4.21:
+    resolution:
+      integrity: sha512-placeholder
+
+  buzz@4.17.21:
+    resolution:
+      integrity: sha512-placeholder

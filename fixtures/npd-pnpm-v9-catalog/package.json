@@ -1,0 +1,9 @@
+{
+  "name": "fake-catalog",
+  "private": true,
+  "dependencies": {
+    "fizz": "catalog:",
+    "foo": "^1.0.0",
+    "quux": "catalog:set1"
+  }
+}

@@ -25,6 +25,19 @@ pub struct VersionToPin {
     pub pinned_version: String,
 }
 
+/// A catalog dependency pin, emitted in parallel with regular pins.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CatalogPin {
+    /// The dependency name as it appears in the catalog map.
+    pub dep_name: String,
+    /// `None` for the default catalog, `Some(name)` for a named catalog.
+    pub catalog_name: Option<String>,
+    /// The current value in `pnpm-workspace.yaml`.
+    pub from: String,
+    /// The version the lockfile resolved.
+    pub to: String,
+}
+
 /// The `package.json` dependency category a [`VersionToPin`] originated from.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DependencyKind {
@@ -145,11 +158,70 @@ pub fn pin_dependencies(
 }
 
 fn is_local_specifier(spec: &str) -> bool {
-    spec.starts_with("file:") || spec.starts_with("link:") || spec.starts_with("workspace:")
+    spec.starts_with("file:")
+        || spec.starts_with("link:")
+        || spec.starts_with("workspace:")
+        || spec.starts_with("catalog:")
+        || spec == "catalog"
 }
 
 fn is_already_pinned(spec: &str, locked: &str) -> bool {
     Version::parse(spec).is_ok_and(|parsed| parsed.to_string() == locked)
+}
+
+/// Compute catalog pins by iterating both the default and named catalogs
+/// and resolving each entry against the lockfile.
+///
+/// Skip rules:
+///   - Entries already at the lockfile version.
+///   - Entries with no matching lockfile entry.
+#[must_use]
+pub fn pin_catalog_entries(
+    catalog: &riri_pnpm::catalog::PnpmCatalog,
+    lockfile: &dyn LockfileVersions,
+) -> Vec<CatalogPin> {
+    let mut result = Vec::new();
+
+    for (dep_name, from) in &catalog.default {
+        if let Some(to) = resolved_pin(lockfile, dep_name, from) {
+            result.push(CatalogPin {
+                dep_name: dep_name.clone(),
+                catalog_name: None,
+                from: from.clone(),
+                to,
+            });
+        }
+    }
+
+    for (name, entries) in &catalog.named {
+        for (dep_name, from) in entries {
+            if let Some(to) = resolved_pin(lockfile, dep_name, from) {
+                result.push(CatalogPin {
+                    dep_name: dep_name.clone(),
+                    catalog_name: Some(name.clone()),
+                    from: from.clone(),
+                    to,
+                });
+            }
+        }
+    }
+
+    result.sort_by(|a, b| {
+        a.catalog_name
+            .as_deref()
+            .unwrap_or("")
+            .cmp(b.catalog_name.as_deref().unwrap_or(""))
+            .then(a.dep_name.cmp(&b.dep_name))
+    });
+    result
+}
+
+fn resolved_pin(lockfile: &dyn LockfileVersions, dep_name: &str, from: &str) -> Option<String> {
+    let locked = lockfile.version_for(dep_name)?;
+    if is_already_pinned(from, locked) {
+        return None;
+    }
+    Some(locked.to_string())
 }
 
 #[cfg(test)]
@@ -235,6 +307,13 @@ mod tests {
     }
 
     #[test]
+    fn skips_catalog_specifiers() {
+        let pkg = pkg(&[("react", "catalog:"), ("vue", "catalog:vue3")]);
+        let lock = locked(&[("react", "18.2.0"), ("vue", "3.4.21")]);
+        assert!(pin_dependencies(&pkg, &lock).expect("ok").is_empty());
+    }
+
+    #[test]
     fn skips_dependency_absent_from_lockfile() {
         let pkg = pkg(&[("missing", "^1.0.0")]);
         let lock = locked(&[]);
@@ -261,5 +340,72 @@ mod tests {
         assert!(kinds.contains(&DependencyKind::Dependencies));
         assert!(kinds.contains(&DependencyKind::DevDependencies));
         assert!(kinds.contains(&DependencyKind::OptionalDependencies));
+    }
+
+    #[test]
+    fn pin_catalog_entries_default() {
+        use riri_pnpm::catalog::PnpmCatalog;
+        let yaml = "catalog:\n  react: ^18.0.0\n  lodash: ^4.17.21\n";
+        let catalog = PnpmCatalog::parse(yaml).expect("parse");
+        let lock = locked(&[("react", "18.2.0"), ("lodash", "4.17.21")]);
+        let pins = pin_catalog_entries(&catalog, &lock);
+        assert_eq!(pins.len(), 2);
+
+        let by_name: std::collections::HashMap<_, _> =
+            pins.iter().map(|p| (p.dep_name.as_str(), p)).collect();
+
+        let react = by_name.get("react").expect("react pin");
+        assert!(react.catalog_name.is_none());
+        assert_eq!(react.from, "^18.0.0");
+        assert_eq!(react.to, "18.2.0");
+
+        let lodash = by_name.get("lodash").expect("lodash pin");
+        assert!(lodash.catalog_name.is_none());
+        assert_eq!(lodash.from, "^4.17.21");
+        assert_eq!(lodash.to, "4.17.21");
+    }
+
+    #[test]
+    fn pin_catalog_entries_skips_already_pinned_exact() {
+        use riri_pnpm::catalog::PnpmCatalog;
+        let yaml = "catalog:\n  react: 18.2.0\n";
+        let catalog = PnpmCatalog::parse(yaml).expect("parse");
+        let lock = locked(&[("react", "18.2.0")]);
+        assert!(pin_catalog_entries(&catalog, &lock).is_empty());
+    }
+
+    #[test]
+    fn pin_catalog_entries_named() {
+        use riri_pnpm::catalog::PnpmCatalog;
+        let yaml = "catalogs:\n  vue3:\n    vue: ^3.4.0\n";
+        let catalog = PnpmCatalog::parse(yaml).expect("parse");
+        let lock = locked(&[("vue", "3.4.21")]);
+        let pins = pin_catalog_entries(&catalog, &lock);
+        assert_eq!(pins.len(), 1);
+        assert_eq!(pins[0].dep_name, "vue");
+        assert_eq!(pins[0].catalog_name.as_deref(), Some("vue3"));
+        assert_eq!(pins[0].from, "^3.4.0");
+        assert_eq!(pins[0].to, "3.4.21");
+    }
+
+    #[test]
+    fn pin_catalog_entries_skips_absent_lockfile_entry() {
+        use riri_pnpm::catalog::PnpmCatalog;
+        let yaml = "catalog:\n  react: ^18.0.0\n";
+        let catalog = PnpmCatalog::parse(yaml).expect("parse");
+        let lock = locked(&[]);
+        assert!(pin_catalog_entries(&catalog, &lock).is_empty());
+    }
+
+    #[test]
+    fn pin_catalog_entries_sorted_default_then_named() {
+        use riri_pnpm::catalog::PnpmCatalog;
+        let yaml = "catalog:\n  react: ^18.0.0\ncatalogs:\n  vue3:\n    vue: ^3.4.0\n";
+        let catalog = PnpmCatalog::parse(yaml).expect("parse");
+        let lock = locked(&[("react", "18.2.0"), ("vue", "3.4.21")]);
+        let pins = pin_catalog_entries(&catalog, &lock);
+        assert_eq!(pins.len(), 2);
+        assert!(pins[0].catalog_name.is_none()); // default first
+        assert_eq!(pins[1].catalog_name.as_deref(), Some("vue3"));
     }
 }

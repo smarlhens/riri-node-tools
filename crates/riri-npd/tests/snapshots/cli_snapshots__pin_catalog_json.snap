@@ -1,0 +1,28 @@
+---
+source: crates/riri-npd/tests/cli_snapshots.rs
+expression: serde_json::to_string_pretty(&json).unwrap()
+---
+{
+  "pins": [
+    {
+      "name": "foo",
+      "kind": "dependencies",
+      "from": "^1.0.0",
+      "to": "1.0.5"
+    },
+    {
+      "name": "fizz",
+      "kind": "catalog",
+      "catalog": null,
+      "from": "^18.0.0",
+      "to": "18.2.0"
+    },
+    {
+      "name": "quux",
+      "kind": "catalog",
+      "catalog": "set1",
+      "from": "^3.4.0",
+      "to": "3.4.21"
+    }
+  ]
+}

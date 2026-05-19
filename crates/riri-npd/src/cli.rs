@@ -10,9 +10,22 @@ use riri_npm::NpmPackageLock;
 use riri_pnpm::PnpmLockfile;
 use riri_task_runner::{RendererMode, TaskRunner};
 use riri_yarn::YarnProject;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-use crate::{DependencyKind, VersionToPin, pin_dependencies};
+use crate::{CatalogPin, DependencyKind, VersionToPin, pin_dependencies};
+
+/// Resolved catalog state for one `npd` invocation.
+struct CatalogPlan {
+    pins: Vec<CatalogPin>,
+    /// `None` when `--pin-catalog` is off, the project isn't pnpm, or there
+    /// is no `pnpm-workspace.yaml`. Required for write-back on `-u`.
+    source: Option<CatalogSource>,
+}
+
+struct CatalogSource {
+    path: PathBuf,
+    raw: String,
+}
 
 const EXIT_OK: i32 = 0;
 const EXIT_PINS_PENDING: i32 = 1;
@@ -51,6 +64,11 @@ pub struct Args {
     /// Create or update .npmrc with save-exact=true.
     #[arg(long)]
     pub enable_save_exact: bool,
+
+    /// Resolve and report pnpm catalog entries from `pnpm-workspace.yaml`.
+    /// On `-u`, rewrites the catalog entries in place. Requires a pnpm project.
+    #[arg(long)]
+    pub pin_catalog: bool,
 }
 
 fn renderer_mode(args: &Args) -> RendererMode {
@@ -153,24 +171,49 @@ fn run(args: &Args) -> Result<i32> {
         .map_err(|e| anyhow::anyhow!("pin_dependencies failed: {e}"))?;
     task.complete("Computed dependency pins");
 
+    let CatalogPlan {
+        pins: catalog_pins,
+        source: catalog_source,
+    } = if args.pin_catalog {
+        resolve_catalog_pins(args, &runner, &lockfile_result, &cwd, lockfile.as_ref())?
+    } else {
+        CatalogPlan {
+            pins: Vec::new(),
+            source: None,
+        }
+    };
+
     if args.json {
-        let json_output = serde_json::json!({
-            "pins": pins.iter().map(|p| serde_json::json!({
-                "name": p.name,
-                "kind": p.kind.as_str(),
-                "from": p.current_range,
-                "to": p.pinned_version,
-            })).collect::<Vec<_>>(),
-        });
+        let mut all_pins: Vec<serde_json::Value> = pins
+            .iter()
+            .map(|p| {
+                serde_json::json!({
+                    "name": p.name,
+                    "kind": p.kind.as_str(),
+                    "from": p.current_range,
+                    "to": p.pinned_version,
+                })
+            })
+            .collect();
+        for cp in &catalog_pins {
+            all_pins.push(serde_json::json!({
+                "name": cp.dep_name,
+                "kind": "catalog",
+                "catalog": cp.catalog_name,
+                "from": cp.from,
+                "to": cp.to,
+            }));
+        }
+        let json_output = serde_json::json!({ "pins": all_pins });
         println!("{}", serde_json::to_string_pretty(&json_output)?);
-        return Ok(if pins.is_empty() {
+        return Ok(if pins.is_empty() && catalog_pins.is_empty() {
             EXIT_OK
         } else {
             EXIT_PINS_PENDING
         });
     }
 
-    if pins.is_empty() {
+    if pins.is_empty() && catalog_pins.is_empty() {
         if !args.quiet {
             eprintln!(
                 "\n  All dependencies are already pinned {}",
@@ -196,6 +239,20 @@ fn run(args: &Args) -> Result<i32> {
                 pin.current_range.clone(),
                 "\u{2192}".to_string(),
                 pin.pinned_version.clone(),
+                String::new(),
+            ]);
+        }
+        for cp in &catalog_pins {
+            let origin = match &cp.catalog_name {
+                None => "(catalog)".to_string(),
+                Some(name) => format!("(catalog:{name})"),
+            };
+            table.add_row(vec![
+                cp.dep_name.clone(),
+                cp.from.clone(),
+                "\u{2192}".to_string(),
+                cp.to.clone(),
+                origin,
             ]);
         }
         for line in table.lines() {
@@ -204,16 +261,36 @@ fn run(args: &Args) -> Result<i32> {
     }
 
     if args.update {
-        let task = runner.task("Updating package.json...");
-        apply_pins(&mut pkg_file, &pins);
-        if args.sort {
+        if !pins.is_empty() {
+            let task = runner.task("Updating package.json...");
+            apply_pins(&mut pkg_file, &pins);
+            if args.sort {
+                pkg_file
+                    .write_sorted()
+                    .context("failed to write package.json")?;
+            } else {
+                pkg_file.write().context("failed to write package.json")?;
+            }
+            task.complete("Updated package.json");
+        } else if args.sort {
+            let task = runner.task("Sorting package.json...");
             pkg_file
                 .write_sorted()
                 .context("failed to write package.json")?;
-        } else {
-            pkg_file.write().context("failed to write package.json")?;
+            task.complete("Sorted package.json");
         }
-        task.complete("Updated package.json");
+        if let Some(source) = catalog_source.as_ref()
+            && !catalog_pins.is_empty()
+        {
+            let task = runner.task("Updating pnpm-workspace.yaml...");
+            match apply_catalog_pins(source, &catalog_pins) {
+                Ok(()) => task.complete("Updated pnpm-workspace.yaml"),
+                Err(e) => {
+                    task.fail("Updating pnpm-workspace.yaml");
+                    return Err(e);
+                }
+            }
+        }
     } else {
         if args.sort {
             let task = runner.task("Sorting package.json...");
@@ -225,8 +302,13 @@ fn run(args: &Args) -> Result<i32> {
         if !args.quiet {
             let hint = generate_update_hint(args);
             eprintln!(
-                "\n  Run {} to upgrade package.json.",
-                style(hint).bold().cyan()
+                "\n  Run {} to upgrade package.json{}.",
+                style(hint).bold().cyan(),
+                if args.pin_catalog {
+                    " and pnpm-workspace.yaml"
+                } else {
+                    ""
+                },
             );
         }
     }
@@ -314,6 +396,38 @@ fn apply_pins(pkg_file: &mut PackageJsonFile, pins: &[VersionToPin]) {
     }
 }
 
+/// Rewrites each catalog pin into the original `pnpm-workspace.yaml` raw
+/// content and atomically writes it back to disk.
+fn apply_catalog_pins(source: &CatalogSource, pins: &[CatalogPin]) -> Result<()> {
+    let mut content = source.raw.clone();
+    for pin in pins {
+        content = riri_pnpm::catalog::PnpmCatalog::edit_line(
+            &content,
+            pin.catalog_name.as_deref(),
+            &pin.dep_name,
+            &pin.to,
+        )
+        .with_context(|| {
+            format!(
+                "failed to rewrite catalog entry `{}`{}",
+                pin.dep_name,
+                pin.catalog_name
+                    .as_ref()
+                    .map(|c| format!(" in catalog `{c}`"))
+                    .unwrap_or_default()
+            )
+        })?;
+    }
+
+    let parent = source.path.parent().unwrap_or_else(|| Path::new("."));
+    let tmp_path = parent.join(".pnpm-workspace.yaml.tmp");
+    std::fs::write(&tmp_path, &content)
+        .with_context(|| format!("failed to write {}", tmp_path.display()))?;
+    std::fs::rename(&tmp_path, &source.path)
+        .with_context(|| format!("failed to rename into {}", source.path.display()))?;
+    Ok(())
+}
+
 fn sync_typed(
     target: &mut std::collections::HashMap<String, String>,
     pins: &[VersionToPin],
@@ -336,7 +450,80 @@ fn generate_update_hint(args: &Args) -> String {
         parts.push("-d".to_string());
     }
     parts.push("-u".to_string());
+    if args.pin_catalog {
+        parts.push("--pin-catalog".to_string());
+    }
     parts.join(" ")
+}
+
+fn resolve_catalog_pins(
+    args: &Args,
+    runner: &TaskRunner,
+    lockfile_result: &riri_common::LockFileResult,
+    cwd: &Path,
+    lockfile: &dyn LockfileVersions,
+) -> Result<CatalogPlan> {
+    if lockfile_result.package_manager != PackageManager::Pnpm {
+        if !args.quiet {
+            eprintln!(
+                "  {} --pin-catalog is pnpm-only, ignoring",
+                style("warning:").yellow().bold(),
+            );
+        }
+        return Ok(CatalogPlan {
+            pins: Vec::new(),
+            source: None,
+        });
+    }
+
+    let Some(yaml_path) = riri_pnpm::catalog::find_workspace_yaml(cwd) else {
+        if !args.quiet {
+            eprintln!(
+                "  {} pnpm-workspace.yaml not found, no catalog entries to pin",
+                style("warning:").yellow().bold(),
+            );
+        }
+        return Ok(CatalogPlan {
+            pins: Vec::new(),
+            source: None,
+        });
+    };
+
+    let task = runner.task("Reading pnpm-workspace.yaml...");
+    let raw = match std::fs::read_to_string(&yaml_path) {
+        Ok(content) => {
+            task.complete("Read pnpm-workspace.yaml");
+            content
+        }
+        Err(e) => {
+            task.fail("Reading pnpm-workspace.yaml");
+            return Err(anyhow::anyhow!(
+                "failed to read {}: {e}",
+                yaml_path.display()
+            ));
+        }
+    };
+
+    let task = runner.task("Parsing catalog entries...");
+    let catalog = match riri_pnpm::catalog::PnpmCatalog::parse(&raw) {
+        Ok(c) => {
+            task.complete("Parsed catalog entries");
+            c
+        }
+        Err(e) => {
+            task.fail("Parsing catalog entries");
+            return Err(anyhow::anyhow!(e));
+        }
+    };
+
+    let pins = crate::pin_catalog_entries(&catalog, lockfile);
+    Ok(CatalogPlan {
+        pins,
+        source: Some(CatalogSource {
+            path: yaml_path,
+            raw,
+        }),
+    })
 }
 
 /// Entry point shared by the standalone binary and the JS bin shim.

@@ -1,0 +1,6 @@
+catalog:
+  fizz: ^18.0.0
+  buzz: 4.17.21
+catalogs:
+  set1:
+    quux: ^3.4.0

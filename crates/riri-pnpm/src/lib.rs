@@ -3,6 +3,8 @@
 //! Parses the lockfile and exposes engine constraints per dependency
 //! via the [`LockfileEngines`] trait.
 
+pub mod catalog;
+
 use riri_common::{Engines, LockfileEngines, LockfileVersions};
 use serde::Deserialize;
 use std::collections::HashMap;

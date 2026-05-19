@@ -182,6 +182,86 @@ fn cli_enable_save_exact_skips_when_already_set() {
 }
 
 #[test]
+fn cli_pin_catalog_reports_default_and_named() {
+    let (stdout, _stderr, code) =
+        run_in_fixture("npd-pnpm-v9-catalog", &["--pin-catalog", "--json"]);
+    assert_eq!(code, 1);
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    insta::assert_snapshot!(
+        "pin_catalog_json",
+        serde_json::to_string_pretty(&json).unwrap()
+    );
+}
+
+fn copy_fixture_dir_to_tmp(fixture: &str) -> tempfile::TempDir {
+    let src = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join(fixture);
+    let tmp = tempfile::TempDir::new().unwrap();
+    for entry in std::fs::read_dir(&src).unwrap() {
+        let entry = entry.unwrap();
+        let to = tmp.path().join(entry.file_name());
+        std::fs::copy(entry.path(), to).unwrap();
+    }
+    tmp
+}
+
+#[test]
+fn cli_pin_catalog_update_rewrites_workspace_yaml() {
+    let tmp = copy_fixture_dir_to_tmp("npd-pnpm-v9-catalog");
+    let output = npd_binary()
+        .current_dir(tmp.path())
+        .args(["-u", "--pin-catalog"])
+        .output()
+        .unwrap();
+    let code = output.status.code().unwrap_or(-1);
+    assert_eq!(code, 1);
+
+    let pkg = std::fs::read_to_string(tmp.path().join("package.json")).unwrap();
+    assert!(pkg.contains("\"foo\": \"1.0.5\""), "{pkg}");
+    // catalog refs must stay intact in package.json.
+    assert!(pkg.contains("\"fizz\": \"catalog:\""), "{pkg}");
+    assert!(pkg.contains("\"quux\": \"catalog:set1\""), "{pkg}");
+
+    let yaml = std::fs::read_to_string(tmp.path().join("pnpm-workspace.yaml")).unwrap();
+    assert!(yaml.contains("fizz: 18.2.0"), "{yaml}");
+    assert!(yaml.contains("quux: 3.4.21"), "{yaml}");
+    // already-pinned entry must be left untouched.
+    assert!(yaml.contains("buzz: 4.17.21"), "{yaml}");
+    // and the unpinned range must be gone.
+    assert!(!yaml.contains("^18.0.0"), "{yaml}");
+    assert!(!yaml.contains("^3.4.0"), "{yaml}");
+}
+
+#[test]
+fn cli_pin_catalog_without_update_does_not_touch_yaml() {
+    let tmp = copy_fixture_dir_to_tmp("npd-pnpm-v9-catalog");
+    let before = std::fs::read_to_string(tmp.path().join("pnpm-workspace.yaml")).unwrap();
+    let output = npd_binary()
+        .current_dir(tmp.path())
+        .args(["--pin-catalog"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code().unwrap_or(-1), 1);
+    let after = std::fs::read_to_string(tmp.path().join("pnpm-workspace.yaml")).unwrap();
+    assert_eq!(before, after);
+}
+
+#[test]
+fn cli_pin_catalog_on_non_pnpm_project_warns_and_ignores() {
+    let tmp = copy_fixture_to_tmp("npd-npm-v3-unpinned-deps");
+    let output = npd_binary()
+        .current_dir(tmp.path())
+        .args(["--pin-catalog", "--json"])
+        .output()
+        .unwrap();
+    let code = output.status.code().unwrap_or(-1);
+    assert_eq!(code, 1);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("pnpm-only"), "stderr: {stderr}");
+}
+
+#[test]
 fn cli_help_lists_core_flags() {
     let output = npd_binary().arg("--help").output().unwrap();
     let stdout = String::from_utf8_lossy(&output.stdout);

@@ -1,0 +1,7 @@
+{
+  "name": "fake",
+  "private": true,
+  "dependencies": {
+    "fake-lib-a": "catalog:"
+  }
+}
