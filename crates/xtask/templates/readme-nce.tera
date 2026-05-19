@@ -27,7 +27,7 @@ This package ships a native Rust core via [NAPI-RS](https://napi.rs/) as part of
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/en/download/) **version `^20.17.0 || ^22.13.0 || >=23.5.0`**
+- [Node.js](https://nodejs.org/en/download/) **version `{{ node_engines }}`**
 
 Supported platforms:
 
@@ -68,10 +68,7 @@ nce
 Sample output (against `fixtures/nce-policy-supported-eol-bump`):
 
 ```text
-  node  >=18.0.0  →  ^22.0.0 || ^24.0.0 || ^25.0.0 || >=26.0.0
-  npm   *         →  >=10.5.1
-
-  Run nce -u to upgrade package.json.
+{{ example }}
 ```
 
 Update `package.json` (and lockfile, when relevant) with the computed ranges:
@@ -133,78 +130,7 @@ import {
 ## CLI Options
 
 ```text
-Check and update Node.js engine constraints in package.json based on the dependency tree from the lockfile
-
-Usage: nce [OPTIONS]
-
-Options:
-  -q, --quiet
-          Silent mode — no output
-
-  -v, --verbose
-          Verbose output
-
-  -d, --debug
-          Debug mode — detailed logging
-
-  -e, --engines <ENGINES>
-          Engine keys to check (e.g. node, npm, yarn). Defaults to all
-
-  -u, --update
-          Update package.json (and lockfile) with computed ranges
-
-      --enable-engine-strict
-          Create or update .npmrc with engine-strict=true
-
-      --json
-          Output results as JSON
-
-      --sort
-          Sort package.json keys on write (uses sort-package-json conventions)
-
-      --precision <PRECISION>
-          Version precision in output: major (e.g. >=24), minor (e.g. >=24.0), or patch (e.g. >=24.0.0). Trailing .0 components are trimmed accordingly. Non-zero components are never dropped
-
-          Possible values:
-          - major: Trim all trailing .0 (minimum 1 component)
-          - minor: Trim trailing .0 patch only (minimum 2 components)
-          - patch: Always show major.minor.patch
-          
-          [default: patch]
-
-      --node-policy <NODE_POLICY>
-          Node.js lifecycle policy gate for engines.node
-          
-          [default: supported]
-          [possible values: any, stable, supported, lts, maintenance]
-
-      --allow-eol
-          Suppress EOL warnings (does not widen the policy)
-
-      --bump-npm
-          Bump engines.npm floor to match the lowest node major in range
-
-      --no-bump-npm
-          Disable the npm coupling pass
-
-      --npm-precision <NPM_PRECISION>
-          Precision applied to the npm bump floor
-
-          Possible values:
-          - major: Trim all trailing .0 (minimum 1 component)
-          - minor: Trim trailing .0 patch only (minimum 2 components)
-          - patch: Always show major.minor.patch
-          
-          [default: major]
-
-      --refresh
-          Fetch fresh lifecycle data from upstream and update the user cache. Continues with the rest of the run after writing the cache
-
-  -h, --help
-          Print help (see a summary with '-h')
-
-  -V, --version
-          Print version
+{{ help }}
 ```
 
 ---
@@ -221,18 +147,7 @@ The `-d/--debug` flag enables detailed logging to stderr. No environment variabl
 <summary>Sample debug output (against <code>fixtures/nce-policy-supported-eol-bump</code>)</summary>
 
 ```text
-  ▸ Detecting lockfile......
-  ✓ Detected package-lock.json
-  ▸ Reading package.json......
-  ✓ Read package.json
-  ▸ Parsing lockfile......
-  ✓ Parsed lockfile
-  ▸ Computing engine constraints......
-  ✓ Computed engine constraints
-  node  >=18.0.0  →  ^22.0.0 || ^24.0.0 || ^25.0.0 || >=26.0.0
-  npm   *         →  >=10.5.1
-
-  Run nce -d -u to upgrade package.json.
+{{ debug }}
 ```
 
 </details>

@@ -35,3 +35,41 @@ jobs:
         run: cargo clippy --workspace --all-targets
       - name: Test
         run: cargo test --workspace --verbose
+
+  readme-drift:
+    name: readme-drift - ${{ matrix.crate.name }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        crate:
+          - name: nce
+            dir: crates/riri-napi-nce
+          - name: npd
+            dir: crates/riri-napi-npd
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: rustup update stable && rustup default stable
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: readme-drift-${{ matrix.crate.name }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ${{ matrix.crate.dir }}/.nvmrc
+          cache: npm
+          cache-dependency-path: ${{ matrix.crate.dir }}/package-lock.json
+      - name: Build napi binary
+        env:
+          CRATE_DIR: ${{ matrix.crate.dir }}
+        run: |
+          cd "$CRATE_DIR"
+          npm ci
+          npx napi build --platform --release
+      - name: Check README drift
+        run: cargo run -p xtask -- regen-readme --check --crate-name ${{ matrix.crate.name }}
