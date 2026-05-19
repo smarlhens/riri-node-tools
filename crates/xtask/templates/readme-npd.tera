@@ -26,7 +26,7 @@ This package ships a native Rust core via [NAPI-RS](https://napi.rs/) as part of
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/en/download/) **version `^20.17.0 || ^22.13.0 || >=23.5.0`**
+- [Node.js](https://nodejs.org/en/download/) **version `{{ node_engines }}`**
 
 Supported platforms:
 
@@ -67,11 +67,7 @@ npd
 Sample output (against `fixtures/npd-npm-v3-unpinned-deps`):
 
 ```text
-  bar  ~18.2.0   →  18.2.0
-  foo  ^4.17.21  →  4.17.21
-  baz  ^1.0.0    →  1.6.0
-
-  Run npd -u to upgrade package.json.
+{{ example }}
 ```
 
 Apply the pins to `package.json`:
@@ -114,20 +110,7 @@ for (const { name, kind, from, to } of pins) {
 ## Options
 
 ```text
-Pin range-based dependency specifiers to the exact versions resolved by the lockfile
-
-Usage: npd [OPTIONS]
-
-Options:
-  -q, --quiet              Silent mode — no output
-  -v, --verbose            Verbose output
-  -d, --debug              Debug mode — detailed logging
-  -u, --update             Update package.json with pinned versions
-      --json               Output results as JSON
-      --sort               Sort package.json keys on write (uses sort-package-json conventions)
-      --enable-save-exact  Create or update .npmrc with save-exact=true
-  -h, --help               Print help
-  -V, --version            Print version
+{{ help }}
 ```
 
 ---
@@ -144,19 +127,7 @@ The `-d/--debug` flag enables detailed logging to stderr. No environment variabl
 <summary>Sample debug output (against <code>fixtures/npd-npm-v3-unpinned-deps</code>)</summary>
 
 ```text
-  ▸ Detecting lockfile......
-  ✓ Detected package-lock.json
-  ▸ Reading package.json......
-  ✓ Read package.json
-  ▸ Parsing lockfile......
-  ✓ Parsed lockfile
-  ▸ Computing dependency pins......
-  ✓ Computed dependency pins
-  bar  ~18.2.0   →  18.2.0
-  foo  ^4.17.21  →  4.17.21
-  baz  ^1.0.0    →  1.6.0
-
-  Run npd -d -u to upgrade package.json.
+{{ debug }}
 ```
 
 </details>
