@@ -27,7 +27,7 @@ This package ships a native Rust core via [NAPI-RS](https://napi.rs/) as part of
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/en/download/) **version `^20.17.0 || ^22.13.0 || >=23.5.0`**
+- [Node.js](https://nodejs.org/en/download/) **version `^22.13.0 || ^24.0.0 || ^25.0.0 || >=26.0.0`**
 
 Supported platforms:
 
