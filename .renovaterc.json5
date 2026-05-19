@@ -14,4 +14,17 @@
   "pre-commit": {
     enabled: true,
   },
+  packageRules: [
+    {
+      // Pin 0.x of the TS predecessors used by bench-js — they only exist
+      // to compare against the rust port and should never auto-update.
+      matchManagers: ["npm"],
+      matchPackageNames: [
+        "@smarlhens/npm-check-engines",
+        "@smarlhens/npm-pin-dependencies",
+      ],
+      matchCurrentVersion: "/^0\\./",
+      enabled: false,
+    },
+  ],
 }

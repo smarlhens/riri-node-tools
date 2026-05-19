@@ -13,7 +13,8 @@
     "postncu:apply": "npm install --registry https://registry.npmjs.org && npm update --registry https://registry.npmjs.org"
   },
   "dependencies": {
-    "@smarlhens/npm-check-engines": "0.14.4",
+    "@smarlhens/npm-check-engines-v0": "npm:@smarlhens/npm-check-engines@0.14.4",
+    "@smarlhens/npm-check-engines-v1": "npm:@smarlhens/npm-check-engines@1.1.0",
     "@smarlhens/npm-pin-dependencies": "0.11.1",
     "tinybench": "6.0.2"
   },
