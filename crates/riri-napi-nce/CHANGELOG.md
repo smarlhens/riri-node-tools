@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.1.0...@smarlhens/npm-check-engines-v1.2.0) (2026-05-19)
+
+
+### Features
+
+* **cli:** decouple --sort from --update gate ([ad2e029](https://github.com/smarlhens/riri-node-tools/commit/ad2e02941866152313363ca91c16a2ef0b3de1bb))
+* **cli:** expand --debug output with per-step tracing ([3003312](https://github.com/smarlhens/riri-node-tools/commit/30033129362abac4c70dfd6f0f6f561aa1a2e667))
+
+
+### Chores
+
+* apply prek formatting + strip trailing ws in regen-readme ([e4d2e10](https://github.com/smarlhens/riri-node-tools/commit/e4d2e10d4eb904eb4a054ad282e0a24d9e4f5f7a))
+* **napi:** add npm keywords to nce/npd packages ([07fd9c9](https://github.com/smarlhens/riri-node-tools/commit/07fd9c93bb6840d30e2af3475779bd5056300a49))
+* **napi:** bump engines.node to supported policy + add engines.npm floor ([397d4e0](https://github.com/smarlhens/riri-node-tools/commit/397d4e0372bcd88ef82f7ef7352c9d0c8874153d))
+
 ## [1.1.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.0.0...@smarlhens/npm-check-engines-v1.1.0) (2026-05-19)
 
 
