@@ -117,9 +117,9 @@ fn regenerate(workspace_root: &Path, tera: &Tera, spec: &CrateSpec) -> anyhow::R
 
     let mut ctx = TeraContext::new();
     ctx.insert("node_engines", &node_engines);
-    ctx.insert("help", help.trim_end());
-    ctx.insert("example", example.trim_end());
-    ctx.insert("debug", debug.trim_end());
+    ctx.insert("help", &strip_trailing_ws(&help));
+    ctx.insert("example", &strip_trailing_ws(&example));
+    ctx.insert("debug", &strip_trailing_ws(&debug));
 
     let rendered = tera
         .render(spec.template, &ctx)
@@ -158,6 +158,17 @@ fn run_node(bin: &Path, args: &[&str], cwd: &Path) -> anyhow::Result<String> {
         combined.push_str(&String::from_utf8_lossy(&output.stdout));
     }
     Ok(combined)
+}
+
+fn strip_trailing_ws(input: &str) -> String {
+    let trimmed = input.trim_end();
+    let mut out = String::with_capacity(trimmed.len());
+    for line in trimmed.split('\n') {
+        out.push_str(line.trim_end());
+        out.push('\n');
+    }
+    out.pop();
+    out
 }
 
 fn print_diff(original: &str, regenerated: &str) {
