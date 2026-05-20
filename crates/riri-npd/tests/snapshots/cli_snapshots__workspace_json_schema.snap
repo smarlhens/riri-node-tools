@@ -1,0 +1,33 @@
+---
+source: crates/riri-npd/tests/cli_snapshots.rs
+expression: stdout
+---
+{
+  "members": [
+    {
+      "name": "@fake/a",
+      "manifest": "packages/a/package.json",
+      "pins": [
+        {
+          "name": "fake-foo",
+          "kind": "dependencies",
+          "from": "^1.0.0",
+          "to": "1.0.5"
+        }
+      ]
+    },
+    {
+      "name": "@fake/b",
+      "manifest": "packages/b/package.json",
+      "pins": [
+        {
+          "name": "fake-bar",
+          "kind": "dependencies",
+          "from": "~2.3.0",
+          "to": "2.3.4"
+        }
+      ]
+    }
+  ],
+  "catalog": []
+}

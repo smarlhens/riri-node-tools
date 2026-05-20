@@ -1607,6 +1607,7 @@ dependencies = [
  "riri-npm",
  "riri-pnpm",
  "riri-task-runner",
+ "riri-workspace",
  "riri-yarn",
  "rstest",
  "semver",
@@ -1659,6 +1660,22 @@ version = "0.1.0"
 dependencies = [
  "console",
  "indicatif",
+]
+
+[[package]]
+name = "riri-workspace"
+version = "0.1.0"
+dependencies = [
+ "globset",
+ "insta",
+ "riri-common",
+ "riri-find-up",
+ "rstest",
+ "serde",
+ "serde-saphyr",
+ "serde_json",
+ "tempfile",
+ "thiserror",
 ]
 
 [[package]]

@@ -251,6 +251,7 @@ mod tests {
             ),
             dev_dependencies: None,
             optional_dependencies: None,
+            workspaces: None,
         }
     }
 

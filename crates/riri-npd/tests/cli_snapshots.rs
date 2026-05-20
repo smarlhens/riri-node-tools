@@ -31,6 +31,7 @@ fn run_in_fixture(fixture: &str, extra_args: &[&str]) -> (String, String, i32) {
 fn cli_npd_fixture(
     #[files("../../fixtures/npd-*/package.json")]
     #[exclude("500-deps")]
+    #[exclude("workspace")]
     pkg_path: PathBuf,
 ) {
     let fixture_dir = pkg_path.parent().unwrap();
@@ -51,6 +52,61 @@ fn cli_npd_fixture(
     insta::with_settings!({snapshot_suffix => fixture_name}, {
         insta::assert_snapshot!("cli_npd_fixture", snapshot);
     });
+}
+
+#[test]
+fn cli_workspace_pin_catalog_includes_catalog_section() {
+    let (stdout, _stderr, code) = run_in_fixture(
+        "npd-pnpm-v9-workspace",
+        &["--pin-catalog", "--json", "--quiet"],
+    );
+    assert_eq!(code, 1);
+    let value: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert!(value["members"].is_array());
+    let catalog = value["catalog"].as_array().unwrap();
+    assert_eq!(catalog.len(), 1);
+    assert_eq!(catalog[0]["name"], "fake-baz");
+}
+
+#[test]
+fn cli_workspace_json_schema() {
+    let (stdout, _stderr, code) = run_in_fixture("npd-npm-v3-workspace", &["--json", "--quiet"]);
+    assert_eq!(code, 1);
+    let value: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let members = value["members"].as_array().unwrap();
+    assert_eq!(members.len(), 2);
+    let names: Vec<_> = members
+        .iter()
+        .map(|m| m["name"].as_str().unwrap().to_string())
+        .collect();
+    assert!(names.contains(&"@fake/a".to_string()));
+    assert!(names.contains(&"@fake/b".to_string()));
+
+    insta::assert_snapshot!("workspace_json_schema", stdout);
+}
+
+#[test]
+fn cli_workspace_update_rewrites_each_member() {
+    let tmp = copy_fixture_to_tmp_workspace("npd-npm-v3-workspace");
+    let output = npd_binary()
+        .current_dir(tmp.path())
+        .args(["-u"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code().unwrap_or(-1), 1);
+
+    let a = std::fs::read_to_string(tmp.path().join("packages/a/package.json")).unwrap();
+    let b = std::fs::read_to_string(tmp.path().join("packages/b/package.json")).unwrap();
+    assert!(a.contains("\"fake-foo\": \"1.0.5\""), "a: {a}");
+    assert!(b.contains("\"fake-bar\": \"2.3.4\""), "b: {b}");
+}
+
+#[test]
+fn cli_npm_workspace_lists_per_member_pins() {
+    let (stdout, stderr, code) = run_in_fixture("npd-npm-v3-workspace", &["-v"]);
+    assert_eq!(code, 1);
+    insta::assert_snapshot!("npm_workspace_verbose", stderr);
+    let _ = stdout;
 }
 
 #[test]
@@ -75,6 +131,28 @@ fn copy_fixture_to_tmp(fixture: &str) -> tempfile::TempDir {
         std::fs::copy(entry.path(), to).unwrap();
     }
     tmp
+}
+
+fn copy_fixture_to_tmp_workspace(name: &str) -> tempfile::TempDir {
+    let src = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join(name);
+    let dst = tempfile::TempDir::new().unwrap();
+    copy_tree(&src, dst.path());
+    dst
+}
+
+fn copy_tree(src: &std::path::Path, dst: &std::path::Path) {
+    std::fs::create_dir_all(dst).unwrap();
+    for entry in std::fs::read_dir(src).unwrap().flatten() {
+        let from = entry.path();
+        let to = dst.join(entry.file_name());
+        if entry.file_type().unwrap().is_dir() {
+            copy_tree(&from, &to);
+        } else {
+            std::fs::copy(&from, &to).unwrap();
+        }
+    }
 }
 
 #[test]

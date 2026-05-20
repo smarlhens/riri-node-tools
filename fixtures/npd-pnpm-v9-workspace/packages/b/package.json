@@ -1,0 +1,7 @@
+{
+  "name": "@fake/b",
+  "version": "1.0.0",
+  "dependencies": {
+    "fake-bar": "~2.3.0"
+  }
+}

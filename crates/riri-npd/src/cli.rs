@@ -122,6 +122,10 @@ fn run(args: &Args) -> Result<i32> {
 
     maybe_enable_save_exact(args, &runner, &cwd)?;
 
+    if let Some(project) = riri_workspace::detect(&cwd) {
+        return run_workspace(args, &runner, &project);
+    }
+
     let task = runner.task("Detecting lockfile...");
     let lockfile_result = match detect_lockfile(&cwd) {
         Ok(result) => {
@@ -454,6 +458,241 @@ fn generate_update_hint(args: &Args) -> String {
         parts.push("--pin-catalog".to_string());
     }
     parts.join(" ")
+}
+
+fn run_workspace(
+    args: &Args,
+    runner: &TaskRunner,
+    project: &riri_workspace::WorkspaceProject,
+) -> Result<i32> {
+    let members = project
+        .members()
+        .map_err(|e| anyhow::anyhow!("failed to enumerate workspace members: {e}"))?;
+
+    if members.is_empty() {
+        if !args.quiet {
+            eprintln!("  no workspace members found");
+        }
+        return Ok(EXIT_OK);
+    }
+
+    let task = runner.task("Detecting lockfile...");
+    let lockfile_result = match detect_lockfile(project.root()) {
+        Ok(result) => {
+            task.complete(&format!(
+                "Detected {}",
+                result
+                    .path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+            ));
+            result
+        }
+        Err(e) => {
+            task.fail("Detecting lockfile");
+            return Err(anyhow::anyhow!(e));
+        }
+    };
+
+    let task = runner.task("Parsing lockfile...");
+    let lockfile = match load_lockfile(&lockfile_result.package_manager, &lockfile_result.path) {
+        Ok(lock) => {
+            task.complete("Parsed lockfile");
+            lock
+        }
+        Err(e) => {
+            task.fail("Parsing lockfile");
+            return Err(e);
+        }
+    };
+
+    let mut per_member: Vec<(
+        riri_workspace::WorkspaceMember,
+        Vec<VersionToPin>,
+        PackageJsonFile,
+    )> = Vec::new();
+    let mut worst = EXIT_OK;
+
+    for member in members {
+        let mut pkg_file = PackageJsonFile::read(&member.manifest_path)
+            .map_err(|e| anyhow::anyhow!("{}: {e}", member.name))?;
+        let pins = pin_dependencies(&pkg_file.parsed, lockfile.as_ref())
+            .map_err(|e| anyhow::anyhow!("{}: pin_dependencies failed: {e}", member.name))?;
+        if !pins.is_empty() {
+            worst = EXIT_PINS_PENDING;
+        }
+        if args.update && !pins.is_empty() {
+            apply_pins(&mut pkg_file, &pins);
+            if args.sort {
+                pkg_file
+                    .write_sorted()
+                    .map_err(|e| anyhow::anyhow!("{}: write failed: {e}", member.name))?;
+            } else {
+                pkg_file
+                    .write()
+                    .map_err(|e| anyhow::anyhow!("{}: write failed: {e}", member.name))?;
+            }
+        }
+        per_member.push((member, pins, pkg_file));
+    }
+
+    let mut catalog_pins: Vec<CatalogPin> = Vec::new();
+    if args.pin_catalog && lockfile_result.package_manager == PackageManager::Pnpm {
+        let plan = resolve_catalog_pins(
+            args,
+            runner,
+            &lockfile_result,
+            project.root(),
+            lockfile.as_ref(),
+        )?;
+        if !plan.pins.is_empty() {
+            worst = EXIT_PINS_PENDING;
+        }
+        if args.update
+            && let Some(source) = plan.source.as_ref()
+            && !plan.pins.is_empty()
+        {
+            let task = runner.task("Updating pnpm-workspace.yaml...");
+            match apply_catalog_pins(source, &plan.pins) {
+                Ok(()) => task.complete("Updated pnpm-workspace.yaml"),
+                Err(e) => {
+                    task.fail("Updating pnpm-workspace.yaml");
+                    return Err(e);
+                }
+            }
+        }
+        catalog_pins = plan.pins;
+    }
+
+    if args.json {
+        emit_workspace_json(project.root(), &per_member, &catalog_pins);
+    } else {
+        emit_workspace_text(args, &per_member, &catalog_pins);
+    }
+    Ok(worst)
+}
+
+fn relative_manifest(root: &Path, manifest: &Path) -> String {
+    manifest
+        .strip_prefix(root)
+        .unwrap_or(manifest)
+        .components()
+        .filter_map(|c| match c {
+            std::path::Component::Normal(s) => Some(s.to_string_lossy().to_string()),
+            _ => None,
+        })
+        .collect::<Vec<_>>()
+        .join("/")
+}
+
+fn emit_workspace_json(
+    root: &Path,
+    per_member: &[(
+        riri_workspace::WorkspaceMember,
+        Vec<VersionToPin>,
+        PackageJsonFile,
+    )],
+    catalog_pins: &[CatalogPin],
+) {
+    let members: Vec<serde_json::Value> = per_member
+        .iter()
+        .map(|(m, pins, _)| {
+            serde_json::json!({
+                "name": m.name,
+                "manifest": relative_manifest(root, &m.manifest_path),
+                "pins": pins.iter().map(|p| serde_json::json!({
+                    "name": p.name,
+                    "kind": p.kind.as_str(),
+                    "from": p.current_range,
+                    "to": p.pinned_version,
+                })).collect::<Vec<_>>(),
+            })
+        })
+        .collect();
+    let catalog: Vec<serde_json::Value> = catalog_pins
+        .iter()
+        .map(|cp| {
+            serde_json::json!({
+                "name": cp.dep_name,
+                "kind": "catalog",
+                "catalog": cp.catalog_name,
+                "from": cp.from,
+                "to": cp.to,
+            })
+        })
+        .collect();
+    let out = serde_json::json!({ "members": members, "catalog": catalog });
+    println!("{}", serde_json::to_string_pretty(&out).unwrap_or_default());
+}
+
+fn emit_workspace_text(
+    args: &Args,
+    per_member: &[(
+        riri_workspace::WorkspaceMember,
+        Vec<VersionToPin>,
+        PackageJsonFile,
+    )],
+    catalog_pins: &[CatalogPin],
+) {
+    if args.quiet {
+        return;
+    }
+    let mut any = false;
+    for (member, pins, _) in per_member {
+        if pins.is_empty() {
+            continue;
+        }
+        any = true;
+        eprintln!("\n  {}:", member.name);
+        let mut table = Table::new();
+        table.load_preset(presets::NOTHING);
+        for pin in pins {
+            table.add_row(vec![
+                pin.name.clone(),
+                pin.current_range.clone(),
+                "\u{2192}".to_string(),
+                pin.pinned_version.clone(),
+            ]);
+        }
+        for line in table.lines() {
+            eprintln!("    {}", line.trim());
+        }
+    }
+    if !catalog_pins.is_empty() {
+        any = true;
+        eprintln!("\n  (catalog):");
+        let mut table = Table::new();
+        table.load_preset(presets::NOTHING);
+        for cp in catalog_pins {
+            let label = match &cp.catalog_name {
+                None => cp.dep_name.clone(),
+                Some(name) => format!("{}:{}", name, cp.dep_name),
+            };
+            table.add_row(vec![
+                label,
+                cp.from.clone(),
+                "\u{2192}".to_string(),
+                cp.to.clone(),
+            ]);
+        }
+        for line in table.lines() {
+            eprintln!("    {}", line.trim());
+        }
+    }
+    if !any {
+        eprintln!(
+            "\n  All workspace dependencies are already pinned {}",
+            style(":)").green()
+        );
+    } else if !args.update {
+        let hint = generate_update_hint(args);
+        eprintln!(
+            "\n  Run {} to upgrade {} package.json files.",
+            style(hint).bold().cyan(),
+            per_member.iter().filter(|(_, p, _)| !p.is_empty()).count(),
+        );
+    }
 }
 
 fn resolve_catalog_pins(

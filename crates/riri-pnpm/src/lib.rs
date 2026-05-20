@@ -186,13 +186,31 @@ impl LockfileEngines for PnpmLockfile {
 
 impl LockfileVersions for PnpmLockfile {
     fn version_for(&self, name: &str) -> Option<&str> {
-        let importer = self.root_importer()?;
-        importer
-            .dependencies
-            .get(name)
-            .or_else(|| importer.dev_dependencies.get(name))
-            .or_else(|| importer.optional_dependencies.get(name))
-            .map(ImporterDep::version)
+        if let Some(importer) = self.root_importer()
+            && let Some(dep) = importer
+                .dependencies
+                .get(name)
+                .or_else(|| importer.dev_dependencies.get(name))
+                .or_else(|| importer.optional_dependencies.get(name))
+        {
+            return Some(dep.version());
+        }
+        let importers = match self {
+            Self::V5 { importers, .. }
+            | Self::V6 { importers, .. }
+            | Self::V9 { importers, .. } => importers,
+        };
+        importers
+            .iter()
+            .filter(|(k, _)| k.as_str() != ".")
+            .find_map(|(_, importer)| {
+                importer
+                    .dependencies
+                    .get(name)
+                    .or_else(|| importer.dev_dependencies.get(name))
+                    .or_else(|| importer.optional_dependencies.get(name))
+                    .map(ImporterDep::version)
+            })
     }
 }
 

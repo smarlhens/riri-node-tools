@@ -1,0 +1,16 @@
+---
+source: crates/riri-npd/tests/cli_snapshots.rs
+expression: stderr
+---
+  Detecting lockfile...
+  Detected package-lock.json
+  Parsing lockfile...
+  Parsed lockfile
+
+  @fake/a:
+    fake-foo  ^1.0.0  →  1.0.5
+
+  @fake/b:
+    fake-bar  ~2.3.0  →  2.3.4
+
+  Run npd -v -u to upgrade 2 package.json files.

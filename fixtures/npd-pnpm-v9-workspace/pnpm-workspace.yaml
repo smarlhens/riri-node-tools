@@ -1,0 +1,4 @@
+packages:
+  - "packages/*"
+catalog:
+  fake-baz: ^3.0.0
