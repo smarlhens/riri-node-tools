@@ -1,0 +1,8 @@
+{
+  "name": "@fake/a",
+  "version": "1.0.0",
+  "dependencies": {
+    "fake-baz": "catalog:",
+    "fake-foo": "^1.0.0"
+  }
+}

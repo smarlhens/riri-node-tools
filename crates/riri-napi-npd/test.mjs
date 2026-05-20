@@ -109,6 +109,18 @@ test('runCli --pin-catalog --json on pnpm catalog fixture', () => {
   }
 });
 
+test('runCli workspace mode on npm v3 workspace fixture', () => {
+  const fixtureDir = resolve(fixturesDir, 'npd-npm-v3-workspace');
+  const original = process.cwd();
+  try {
+    process.chdir(fixtureDir);
+    const code = napi.runCli(['npd', '--quiet', '--json']);
+    assert.equal(code, 1);
+  } finally {
+    process.chdir(original);
+  }
+});
+
 test('runCli with bogus flag exits 2', () => {
   const code = napi.runCli(['npd', '--definitely-not-a-flag']);
   assert.equal(code, 2);

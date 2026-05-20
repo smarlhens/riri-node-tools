@@ -133,6 +133,12 @@ Options:
 
 ---
 
+## Workspace mode
+
+When run from the root of an npm, pnpm, or yarn workspace, `npd` auto-detects the workspace and pins each member's `package.json` against the shared root lockfile. Output is grouped per member. `--pin-catalog` continues to operate on the root `pnpm-workspace.yaml`.
+
+---
+
 ## Debug
 
 ```sh

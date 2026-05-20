@@ -10,6 +10,7 @@ riri-common = { workspace = true, features = ["sort"] }
 riri-npm = { workspace = true }
 riri-pnpm = { workspace = true }
 riri-task-runner = { workspace = true }
+riri-workspace = { workspace = true }
 riri-yarn = { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true }

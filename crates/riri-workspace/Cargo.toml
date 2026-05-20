@@ -1,0 +1,23 @@
+[package]
+name = "riri-workspace"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+riri-common = { workspace = true }
+riri-find-up = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde-saphyr = "0.0.26"
+globset = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }
+rstest = { workspace = true }
+tempfile = { workspace = true }
+
+[lints]
+workspace = true
