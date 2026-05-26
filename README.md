@@ -6,6 +6,11 @@
 
 ---
 
+> [!NOTE]
+> The `riri-nce` / `riri-napi-nce` crates are the Rust rewrite of [smarlhens/npm-check-engines][npm-check-engines] (now archived). The npm package [`@smarlhens/npm-check-engines`][nce-npm] is still published under the same name: `0.x` releases are the original JavaScript implementation, `>=1.x` releases are backed by this Rust rewrite.
+
+---
+
 ## Table of Contents
 
 - [Development][development]
@@ -46,6 +51,8 @@
    ```
 
 [development]: #development
+[npm-check-engines]: https://github.com/smarlhens/npm-check-engines
+[nce-npm]: https://www.npmjs.com/package/@smarlhens/npm-check-engines
 [prek]: https://prek.j178.dev/
 [prek-shield]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/j178/prek/master/docs/assets/badge-v0.json
 [rustc]: https://www.rust-lang.org/tools/install
