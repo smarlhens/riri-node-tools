@@ -4,6 +4,8 @@ export default {
   target: name => {
     const targets = {
       '@types/node': 'minor',
+      // Benchmark baselines: keep each alias on its own major line (v0→0.x, v1→1.x).
+      'npm-check-engines': 'minor',
     };
 
     const keys = Object.keys(targets);
