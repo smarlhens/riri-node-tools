@@ -10,8 +10,8 @@ riri-common = { workspace = true }
 riri-find-up = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-serde-saphyr = "0.0.26"
-globset = { workspace = true }
+serde-saphyr = { workspace = true }
+globset = "0.4.18"
 thiserror = { workspace = true }
 
 [dev-dependencies]
