@@ -33,6 +33,11 @@ repos:
     hooks:
       - id: actionlint
 
+  - repo: https://github.com/smarlhens/whittle
+    rev: "v0.1.2"
+    hooks:
+      - id: whittle-fix
+
   - repo: local
     hooks:
       - id: fmt
