@@ -16,8 +16,8 @@
 
 ### Prerequisites
 
-- [rustc][rustc] **>=1.85.0 <2.0.0** (_tested with 1.94.1_)
-- [prek][prek] **>=0.3.8** (_tested with 0.3.8_)
+- [rustc][rustc] **>=1.85.0 <2.0.0** (_tested with 1.95.0_)
+- [prek][prek] **>=0.3.8** (_tested with 0.4.3_)
 
 ### Installation
 
