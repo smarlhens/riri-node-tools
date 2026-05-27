@@ -36,7 +36,7 @@ jobs:
       - name: Run prek hooks
         uses: j178/prek-action@v2.0.4
         with:
-          prek-version: "0.4.0"
+          prek-version: "0.4.3"
 
   rust:
     runs-on: ubuntu-24.04
