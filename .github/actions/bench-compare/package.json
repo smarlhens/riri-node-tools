@@ -21,10 +21,10 @@
   },
   "devDependencies": {
     "@types/node": "24.12.4",
-    "npm-check-updates": "22.2.0",
-    "oxfmt": "0.51.0",
-    "oxlint": "1.66.0",
-    "rolldown": "1.0.1",
+    "npm-check-updates": "22.2.1",
+    "oxfmt": "0.52.0",
+    "oxlint": "1.67.0",
+    "rolldown": "1.0.3",
     "typescript": "6.0.3"
   },
   "engines": {

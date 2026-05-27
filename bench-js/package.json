@@ -14,11 +14,11 @@
   },
   "dependencies": {
     "@smarlhens/npm-check-engines-v0": "npm:@smarlhens/npm-check-engines@0.14.4",
-    "@smarlhens/npm-check-engines-v1": "npm:@smarlhens/npm-check-engines@1.1.0",
+    "@smarlhens/npm-check-engines-v1": "npm:@smarlhens/npm-check-engines@1.2.0",
     "@smarlhens/npm-pin-dependencies": "0.11.1",
     "tinybench": "6.0.2"
   },
   "devDependencies": {
-    "npm-check-updates": "22.2.0"
+    "npm-check-updates": "22.2.1"
   }
 }
