@@ -11,7 +11,7 @@ semver = { workspace = true }
 [dev-dependencies]
 criterion = { workspace = true }
 nodejs-semver = "4.2.0"
-proptest = { workspace = true }
+proptest = "1.11.0"
 
 [[bench]]
 name = "range_parsing"

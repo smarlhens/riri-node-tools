@@ -9,7 +9,7 @@ license.workspace = true
 riri-common = { workspace = true }
 riri-find-up = { workspace = true }
 serde = { workspace = true }
-serde-saphyr = "0.0.26"
+serde-saphyr = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]

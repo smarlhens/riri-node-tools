@@ -9,11 +9,11 @@ license.workspace = true
 sort = ["sort-package-json"]
 
 [dependencies]
-detect-indent = { workspace = true }
+detect-indent = "0.1.0"
 riri-find-up = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-sort-package-json = { workspace = true, optional = true }
+sort-package-json = { version = "0.0.13", optional = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]

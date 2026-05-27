@@ -12,8 +12,8 @@ chrono = { workspace = true }
 clap = { workspace = true }
 riri-node-lifecycle = { workspace = true, features = ["refresh"] }
 serde_json = { workspace = true }
-similar = "3.1.0"
-tera = { workspace = true }
+similar = "3.1.1"
+tera = { version = "1.20.1", default-features = false }
 
 [lib]
 path = "src/lib.rs"

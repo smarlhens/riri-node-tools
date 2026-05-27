@@ -7,7 +7,7 @@ license.workspace = true
 
 [dependencies]
 console = { workspace = true }
-indicatif = { workspace = true }
+indicatif = "0.18.4"
 
 [lints]
 workspace = true
