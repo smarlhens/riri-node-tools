@@ -2,6 +2,30 @@ use crate::{DetectError, PackageJson};
 use detect_indent::detect_indent;
 use std::path::{Path, PathBuf};
 
+/// Serialize a JSON value to a pretty string using the indentation detected
+/// from `original`, with a trailing newline.
+///
+/// Preserves a file's existing indentation (e.g. tabs or 4 spaces) on
+/// write-back instead of forcing the `serde_json` default of 2 spaces. Used for
+/// files mutated as a raw [`serde_json::Value`], such as lockfiles.
+///
+/// # Errors
+///
+/// Returns [`serde_json::Error`] if serialization fails.
+pub fn to_pretty_json_preserving_indent(
+    value: &serde_json::Value,
+    original: &str,
+) -> Result<String, serde_json::Error> {
+    let indent = detect_indent(original).indent().to_string();
+    let formatter = serde_json::ser::PrettyFormatter::with_indent(indent.as_bytes());
+    let mut buf = Vec::new();
+    let mut serializer = serde_json::Serializer::with_formatter(&mut buf, formatter);
+    serde::Serialize::serialize(value, &mut serializer)?;
+    let mut out = String::from_utf8_lossy(&buf).into_owned();
+    out.push('\n');
+    Ok(out)
+}
+
 /// A `package.json` loaded from disk with its raw JSON value and detected indent.
 ///
 /// Preserves the original structure for write-back: unknown fields, key ordering,

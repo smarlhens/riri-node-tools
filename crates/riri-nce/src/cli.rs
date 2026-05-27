@@ -8,6 +8,7 @@ use comfy_table::{Table, presets};
 use console::style;
 use riri_common::{
     EngineConstraintKey, LockfileEngines, PackageJsonFile, PackageManager, detect_lockfile,
+    to_pretty_json_preserving_indent,
 };
 use riri_node_lifecycle::{LifecycleData, Policy};
 use riri_npm::NpmPackageLock;
@@ -388,7 +389,7 @@ fn run(args: &Args) -> Result<i32> {
             let task = runner.task("Updating lockfile...");
             let mut lockfile_raw: serde_json::Value = serde_json::from_str(&lockfile_content)?;
             apply_engines_to_lockfile(&mut lockfile_raw, &output.engines_range_to_set);
-            let lockfile_out = serde_json::to_string_pretty(&lockfile_raw)? + "\n";
+            let lockfile_out = to_pretty_json_preserving_indent(&lockfile_raw, &lockfile_content)?;
             std::fs::write(&lockfile_result.path, lockfile_out)
                 .context("failed to write lockfile")?;
             task.complete("Updated lockfile");

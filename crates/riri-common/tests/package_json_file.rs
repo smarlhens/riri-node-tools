@@ -2,9 +2,37 @@
 #![allow(clippy::unwrap_used)]
 //! Tests for `PackageJsonFile` read/write with indent preservation.
 
-use riri_common::PackageJsonFile;
+use riri_common::{PackageJsonFile, to_pretty_json_preserving_indent};
 use std::fs;
 use tempfile::TempDir;
+
+#[test]
+fn pretty_json_preserves_tab_indent() {
+    let original = "{\n\t\"name\": \"foo\"\n}\n";
+    let value: serde_json::Value = serde_json::from_str(original).unwrap();
+
+    let out = to_pretty_json_preserving_indent(&value, original).unwrap();
+
+    assert!(out.contains("\n\t\"name\""), "should preserve tab indent");
+    assert!(
+        !out.contains("  \"name\""),
+        "should not emit 2-space indent"
+    );
+    assert!(out.ends_with('\n'), "should have trailing newline");
+}
+
+#[test]
+fn pretty_json_preserves_4_space_indent() {
+    let original = "{\n    \"name\": \"foo\"\n}\n";
+    let value: serde_json::Value = serde_json::from_str(original).unwrap();
+
+    let out = to_pretty_json_preserving_indent(&value, original).unwrap();
+
+    assert!(
+        out.contains("\n    \"name\""),
+        "should preserve 4-space indent"
+    );
+}
 
 #[test]
 fn read_detects_2_space_indent() {

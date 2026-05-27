@@ -4,7 +4,7 @@ mod package_json_file;
 
 pub use detect::{DetectError, detect_lockfile, find_package_json};
 pub use npmrc::{NpmrcOutcome, upsert_npmrc_flag};
-pub use package_json_file::PackageJsonFile;
+pub use package_json_file::{PackageJsonFile, to_pretty_json_preserving_indent};
 
 use serde::Deserialize;
 use std::collections::HashMap;
