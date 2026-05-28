@@ -1503,7 +1503,7 @@ version = "0.1.0"
 
 [[package]]
 name = "riri-common"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "detect-indent",
  "riri-find-up",
@@ -1516,14 +1516,14 @@ dependencies = [
 
 [[package]]
 name = "riri-find-up"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "tempfile",
 ]
 
 [[package]]
 name = "riri-napi-nce"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "napi",
  "napi-build",
@@ -1540,7 +1540,7 @@ dependencies = [
 
 [[package]]
 name = "riri-napi-npd"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "napi",
  "napi-build",
@@ -1554,7 +1554,7 @@ dependencies = [
 
 [[package]]
 name = "riri-nce"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1595,7 +1595,7 @@ dependencies = [
 
 [[package]]
 name = "riri-npd"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -1620,7 +1620,7 @@ dependencies = [
 
 [[package]]
 name = "riri-npm"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "insta",
  "riri-common",
@@ -1632,7 +1632,7 @@ dependencies = [
 
 [[package]]
 name = "riri-pnpm"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "insta",
  "riri-common",
@@ -1646,7 +1646,7 @@ dependencies = [
 
 [[package]]
 name = "riri-semver-range"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "criterion",
  "nodejs-semver",
@@ -1664,7 +1664,7 @@ dependencies = [
 
 [[package]]
 name = "riri-workspace"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "globset",
  "insta",
@@ -1680,7 +1680,7 @@ dependencies = [
 
 [[package]]
 name = "riri-yarn"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "insta",
  "riri-common",
