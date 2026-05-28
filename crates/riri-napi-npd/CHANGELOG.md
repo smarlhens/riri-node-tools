@@ -1,0 +1,48 @@
+# Changelog
+
+## [1.0.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-pin-dependencies-v0.1.0...@smarlhens/npm-pin-dependencies-v1.0.0) (2026-05-28)
+
+
+### Features
+
+* **cli:** decouple --sort from --update gate ([ad2e029](https://github.com/smarlhens/riri-node-tools/commit/ad2e02941866152313363ca91c16a2ef0b3de1bb))
+* **cli:** expand --debug output with per-step tracing ([3003312](https://github.com/smarlhens/riri-node-tools/commit/30033129362abac4c70dfd6f0f6f561aa1a2e667))
+* **napi:** split into riri-napi-nce + riri-napi-npd, add pinDependencies binding ([5e682bc](https://github.com/smarlhens/riri-node-tools/commit/5e682bc1c329bcb062c56489812dcc39c8ed5f53))
+* **npd:** expose CLI via NAPI runCli + ship npd bin shim ([f411075](https://github.com/smarlhens/riri-node-tools/commit/f411075ff053b9650e150df2f6bcf7efad266a3c))
+* **npd:** pnpm catalog support ([1d13d90](https://github.com/smarlhens/riri-node-tools/commit/1d13d904b8b8cf36baff810b247524c005b180d9))
+* workspace / monorepo support ([64d33c1](https://github.com/smarlhens/riri-node-tools/commit/64d33c1dc692d39edd2017a48540df84224b023a))
+* **xtask:** add regen-readme with full tera templates + ci drift check ([1fa85cf](https://github.com/smarlhens/riri-node-tools/commit/1fa85cfe64d1e13f8a5759b5a6b5985933007f4c))
+
+
+### Bug Fixes
+
+* **napi:** add per-crate readme, drop readme copy from publish job ([09db420](https://github.com/smarlhens/riri-node-tools/commit/09db4207ed990baf8402afdf852cfb8832367aec))
+* **napi:** disable gh-release creation in prepublish to skip wrong-tag lookup ([36d01b0](https://github.com/smarlhens/riri-node-tools/commit/36d01b01fa9ae448b90ff02e597a6ede23051c9c))
+
+
+### Continuous Integration
+
+* **napi:** extract reusable workflow + thin nce/npd callers ([eb880bd](https://github.com/smarlhens/riri-node-tools/commit/eb880bd5ed99e3b76991b0ca089088ecc44c2b6c))
+* **release-please:** fix unbumpable workspace.deps baseline ([91130bc](https://github.com/smarlhens/riri-node-tools/commit/91130bc6a37eda575a0f1f6997d1e2f86704e251))
+* **release-please:** inline internal deps for plugin changelog rendering ([e9e68e9](https://github.com/smarlhens/riri-node-tools/commit/e9e68e97b9a712676bf31a7f2965e1b3f7909b37))
+* **release-please:** wire cargo-workspace plugin for in-graph crates ([32c754c](https://github.com/smarlhens/riri-node-tools/commit/32c754ce56369a03e2f6c0940f54fa81af4d5458))
+
+
+### Chores
+
+* apply prek formatting + strip trailing ws in regen-readme ([e4d2e10](https://github.com/smarlhens/riri-node-tools/commit/e4d2e10d4eb904eb4a054ad282e0a24d9e4f5f7a))
+* **deps:** bump cargo dependencies ([441696f](https://github.com/smarlhens/riri-node-tools/commit/441696f1f8356397d1c447194f013f7697577bfe))
+* **deps:** bump npm deps, pre-commit hooks & sync engines ([69643ad](https://github.com/smarlhens/riri-node-tools/commit/69643ad48eae3baf839d382c9d336901c1d9deee))
+* **deps:** bump rust deps ([c469203](https://github.com/smarlhens/riri-node-tools/commit/c469203a10ca8213db9eed2b02ff1bd213fe0258))
+* **napi:** add npm keywords to nce/npd packages ([07fd9c9](https://github.com/smarlhens/riri-node-tools/commit/07fd9c93bb6840d30e2af3475779bd5056300a49))
+* **napi:** bump engines.node to supported policy + add engines.npm floor ([397d4e0](https://github.com/smarlhens/riri-node-tools/commit/397d4e0372bcd88ef82f7ef7352c9d0c8874153d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.0 to 0.1.1
+    * riri-npd bumped from 0.1.0 to 0.1.1
+    * riri-npm bumped from 0.1.0 to 0.1.1
+    * riri-pnpm bumped from 0.1.0 to 0.1.1

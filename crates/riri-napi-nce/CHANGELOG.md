@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.2.1](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.2.0...@smarlhens/npm-check-engines-v1.2.1) (2026-05-28)
+
+
+### Continuous Integration
+
+* **release-please:** inline internal deps for plugin changelog rendering ([e9e68e9](https://github.com/smarlhens/riri-node-tools/commit/e9e68e97b9a712676bf31a7f2965e1b3f7909b37))
+
+
+### Chores
+
+* **deps:** bump cargo dependencies ([441696f](https://github.com/smarlhens/riri-node-tools/commit/441696f1f8356397d1c447194f013f7697577bfe))
+* **deps:** bump npm deps, pre-commit hooks & sync engines ([69643ad](https://github.com/smarlhens/riri-node-tools/commit/69643ad48eae3baf839d382c9d336901c1d9deee))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.0 to 0.1.1
+    * riri-nce bumped from 0.1.0 to 0.1.1
+    * riri-npm bumped from 0.1.0 to 0.1.1
+    * riri-pnpm bumped from 0.1.0 to 0.1.1
+    * riri-semver-range bumped from 0.1.0 to 0.1.1
+    * riri-yarn bumped from 0.1.0 to 0.1.1
+
 ## [1.2.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.1.0...@smarlhens/npm-check-engines-v1.2.0) (2026-05-19)
 
 
