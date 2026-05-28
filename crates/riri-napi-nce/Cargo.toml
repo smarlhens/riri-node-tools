@@ -12,13 +12,13 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-riri-common = { workspace = true }
-riri-nce = { workspace = true }
-riri-npm = { workspace = true }
-riri-pnpm = { workspace = true }
-riri-semver-range = { workspace = true }
+riri-common = { path = "../riri-common", version = "0.1.0" }
+riri-nce = { path = "../riri-nce", version = "0.1.0", default-features = false }
+riri-npm = { path = "../riri-npm", version = "0.1.0" }
+riri-pnpm = { path = "../riri-pnpm", version = "0.1.0" }
+riri-semver-range = { path = "../riri-semver-range", version = "0.1.0" }
 semver = { workspace = true }
-riri-yarn = { workspace = true }
+riri-yarn = { path = "../riri-yarn", version = "0.1.0" }
 serde_json = { workspace = true }
 
 [build-dependencies]
