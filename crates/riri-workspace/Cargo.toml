@@ -6,8 +6,8 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-riri-common = { workspace = true }
-riri-find-up = { workspace = true }
+riri-common = { path = "../riri-common", version = "0.1.0" }
+riri-find-up = { path = "../riri-find-up", version = "0.1.0" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde-saphyr = { workspace = true }

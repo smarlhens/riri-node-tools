@@ -6,13 +6,13 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-riri-common = { workspace = true, features = ["sort"] }
-riri-node-lifecycle = { workspace = true }
-riri-npm = { workspace = true }
-riri-pnpm = { workspace = true }
-riri-semver-range = { workspace = true }
-riri-yarn = { workspace = true }
-riri-task-runner = { workspace = true }
+riri-common = { path = "../riri-common", version = "0.1.0", features = ["sort"] }
+riri-node-lifecycle = { path = "../riri-node-lifecycle", version = "0.1.0" }
+riri-npm = { path = "../riri-npm", version = "0.1.0" }
+riri-pnpm = { path = "../riri-pnpm", version = "0.1.0" }
+riri-semver-range = { path = "../riri-semver-range", version = "0.1.0" }
+riri-yarn = { path = "../riri-yarn", version = "0.1.0" }
+riri-task-runner = { path = "../riri-task-runner", version = "0.1.0" }
 anyhow = { workspace = true }
 chrono = { workspace = true }
 clap = { workspace = true }

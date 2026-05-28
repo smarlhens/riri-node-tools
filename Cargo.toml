@@ -42,19 +42,3 @@ criterion = { version = "0.8.2", features = ["html_reports"] }
 insta = "1.47.2"
 rstest = "0.26.1"
 tempfile = "3.27.0"
-
-# workspace internal
-riri-find-up = { path = "crates/riri-find-up" }
-riri-common = { path = "crates/riri-common" }
-riri-npm = { path = "crates/riri-npm" }
-riri-pnpm = { path = "crates/riri-pnpm" }
-riri-yarn = { path = "crates/riri-yarn" }
-riri-bun = { path = "crates/riri-bun" }
-riri-semver-range = { path = "crates/riri-semver-range" }
-riri-nce = { path = "crates/riri-nce", default-features = false }
-riri-napi-nce = { path = "crates/riri-napi-nce" }
-riri-napi-npd = { path = "crates/riri-napi-npd" }
-riri-node-lifecycle = { path = "crates/riri-node-lifecycle" }
-riri-npd = { path = "crates/riri-npd" }
-riri-task-runner = { path = "crates/riri-task-runner" }
-riri-workspace = { path = "crates/riri-workspace" }

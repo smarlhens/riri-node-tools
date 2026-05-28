@@ -6,12 +6,12 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-riri-common = { workspace = true, features = ["sort"] }
-riri-npm = { workspace = true }
-riri-pnpm = { workspace = true }
-riri-task-runner = { workspace = true }
-riri-workspace = { workspace = true }
-riri-yarn = { workspace = true }
+riri-common = { path = "../riri-common", version = "0.1.0", features = ["sort"] }
+riri-npm = { path = "../riri-npm", version = "0.1.0" }
+riri-pnpm = { path = "../riri-pnpm", version = "0.1.0" }
+riri-task-runner = { path = "../riri-task-runner", version = "0.1.0" }
+riri-workspace = { path = "../riri-workspace", version = "0.1.0" }
+riri-yarn = { path = "../riri-yarn", version = "0.1.0" }
 anyhow = { workspace = true }
 clap = { workspace = true }
 comfy-table = { workspace = true }

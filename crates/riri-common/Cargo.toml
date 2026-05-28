@@ -10,7 +10,7 @@ sort = ["sort-package-json"]
 
 [dependencies]
 detect-indent = "0.1.0"
-riri-find-up = { workspace = true }
+riri-find-up = { path = "../riri-find-up", version = "0.1.0" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 sort-package-json = { version = "0.0.13", optional = true }
