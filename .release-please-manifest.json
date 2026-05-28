@@ -8,5 +8,5 @@
   "crates/riri-semver-range": "0.0.0",
   "crates/riri-yarn": "0.0.0",
   "crates/riri-napi-nce": "1.2.0",
-  "crates/riri-napi-npd": "0.0.0"
+  "crates/riri-napi-npd": "0.1.0"
 }
