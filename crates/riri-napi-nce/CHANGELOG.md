@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.2.0...@smarlhens/npm-check-engines-v1.2.1) (2026-05-28)
+
+
+### Chores
+
+* **deps:** bump cargo dependencies ([441696f](https://github.com/smarlhens/riri-node-tools/commit/441696f1f8356397d1c447194f013f7697577bfe))
+* **deps:** bump npm deps, pre-commit hooks & sync engines ([69643ad](https://github.com/smarlhens/riri-node-tools/commit/69643ad48eae3baf839d382c9d336901c1d9deee))
+
 ## [1.2.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.1.0...@smarlhens/npm-check-engines-v1.2.0) (2026-05-19)
 
 
