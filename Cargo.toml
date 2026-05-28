@@ -44,17 +44,17 @@ rstest = "0.26.1"
 tempfile = "3.27.0"
 
 # workspace internal
-riri-find-up = { path = "crates/riri-find-up" }
-riri-common = { path = "crates/riri-common" }
-riri-npm = { path = "crates/riri-npm" }
-riri-pnpm = { path = "crates/riri-pnpm" }
-riri-yarn = { path = "crates/riri-yarn" }
-riri-bun = { path = "crates/riri-bun" }
-riri-semver-range = { path = "crates/riri-semver-range" }
-riri-nce = { path = "crates/riri-nce", default-features = false }
-riri-napi-nce = { path = "crates/riri-napi-nce" }
-riri-napi-npd = { path = "crates/riri-napi-npd" }
-riri-node-lifecycle = { path = "crates/riri-node-lifecycle" }
-riri-npd = { path = "crates/riri-npd" }
-riri-task-runner = { path = "crates/riri-task-runner" }
-riri-workspace = { path = "crates/riri-workspace" }
+riri-find-up = { path = "crates/riri-find-up", version = "0.0.0" }
+riri-common = { path = "crates/riri-common", version = "0.0.0" }
+riri-npm = { path = "crates/riri-npm", version = "0.0.0" }
+riri-pnpm = { path = "crates/riri-pnpm", version = "0.0.0" }
+riri-yarn = { path = "crates/riri-yarn", version = "0.0.0" }
+riri-bun = { path = "crates/riri-bun", version = "0.0.0" }
+riri-semver-range = { path = "crates/riri-semver-range", version = "0.0.0" }
+riri-nce = { path = "crates/riri-nce", version = "0.0.0", default-features = false }
+riri-napi-nce = { path = "crates/riri-napi-nce", version = "1.2.0" }
+riri-napi-npd = { path = "crates/riri-napi-npd", version = "0.0.0" }
+riri-node-lifecycle = { path = "crates/riri-node-lifecycle", version = "0.0.0" }
+riri-npd = { path = "crates/riri-npd", version = "0.0.0" }
+riri-task-runner = { path = "crates/riri-task-runner", version = "0.0.0" }
+riri-workspace = { path = "crates/riri-workspace", version = "0.0.0" }
