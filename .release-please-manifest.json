@@ -4,7 +4,7 @@
   "crates/riri-nce": "0.0.0",
   "crates/riri-npd": "0.0.0",
   "crates/riri-npm": "0.0.0",
-  "crates/riri-pnpm": "0.0.0",
+  "crates/riri-pnpm": "0.1.0",
   "crates/riri-semver-range": "0.0.0",
   "crates/riri-yarn": "0.0.0",
   "crates/riri-napi-nce": "1.2.0",
