@@ -30,6 +30,7 @@
     },
     "crates/riri-napi-npd": {
       "package-name": "@smarlhens/npm-pin-dependencies",
+      "release-as": "1.0.0",
       "extra-files": [
         { "type": "json", "path": "package.json", "jsonpath": "$.version" },
         { "type": "json", "path": "package-lock.json", "jsonpath": "$.version" },
