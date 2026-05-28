@@ -1503,7 +1503,7 @@ version = "0.0.0"
 
 [[package]]
 name = "riri-common"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "detect-indent",
  "riri-find-up",
