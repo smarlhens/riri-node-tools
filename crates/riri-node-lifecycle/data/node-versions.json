@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "fetched_at": "2026-05-25T07:41:45.811369911Z",
+  "fetched_at": "2026-06-01T07:54:25.477310019Z",
   "majors": {
     "4": {
       "major": 4,
@@ -3300,7 +3300,7 @@
     },
     "25": {
       "major": 25,
-      "status": "maintenance",
+      "status": "end-of-life",
       "lts_codename": null,
       "start": "2025-10-15",
       "lts_start": null,
