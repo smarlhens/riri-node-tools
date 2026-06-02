@@ -27,7 +27,7 @@ This package ships a native Rust core via [NAPI-RS](https://napi.rs/) as part of
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/en/download/) **version `^22.13.0 || ^24.0.0 || ^25.0.0 || >=26.0.0`**
+- [Node.js](https://nodejs.org/en/download/) **version `^22.22.2 || ^24.15.0 || >=26.0.0`**
 
 Supported platforms:
 
@@ -68,7 +68,7 @@ nce
 Sample output (against `fixtures/nce-policy-supported-eol-bump`):
 
 ```text
-    node  >=18.0.0  →  ^22.0.0 || ^24.0.0 || ^25.0.0 || >=26.0.0
+    node  >=18.0.0  →  ^22.0.0 || ^24.0.0 || >=26.0.0
     npm   *         →  >=10.5.1
 
   Run nce -u to upgrade package.json.
@@ -243,12 +243,12 @@ The `-d/--debug` flag enables detailed logging to stderr. No environment variabl
     Package has no engines engine=yarn package=<root>
     Final computed engine range constraint: * engine=yarn
     Rewriting node range under policy gate: >=18.0.0 policy=Supported
-    Bumped disjunct: >=18.0.0 → ^22.0.0 || ^24.0.0 || ^25.0.0 || >=26.0.0
-    Rewritten node range: ^22.0.0 || ^24.0.0 || ^25.0.0 || >=26.0.0
+    Bumped disjunct: >=18.0.0 → ^22.0.0 || ^24.0.0 || >=26.0.0
+    Rewritten node range: ^22.0.0 || ^24.0.0 || >=26.0.0
     npm floor derived from node range: target 10.5.1 (declared: Some("*")) apply=true
     Bumping engines.npm floor to: >=10.5.1
   ✓ Computed engine constraints
-    node  >=18.0.0  →  ^22.0.0 || ^24.0.0 || ^25.0.0 || >=26.0.0
+    node  >=18.0.0  →  ^22.0.0 || ^24.0.0 || >=26.0.0
     npm   *         →  >=10.5.1
 
   Run nce -d -u to upgrade package.json.
