@@ -39,57 +39,60 @@
       ]
     },
     "crates/riri-common": {
-      "skip-github-release": true,
-      "draft": true,
       "extra-files": [
         { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-common')].version" }
       ]
     },
     "crates/riri-find-up": {
-      "skip-github-release": true,
-      "draft": true,
       "extra-files": [
         { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-find-up')].version" }
       ]
     },
     "crates/riri-nce": {
-      "skip-github-release": true,
-      "draft": true,
       "extra-files": [
         { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-nce')].version" }
       ]
     },
+    "crates/riri-node-lifecycle": {
+      "extra-files": [
+        {
+          "type": "toml",
+          "path": "/Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value=='riri-node-lifecycle')].version"
+        }
+      ]
+    },
     "crates/riri-npd": {
-      "skip-github-release": true,
-      "draft": true,
       "extra-files": [
         { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-npd')].version" }
       ]
     },
     "crates/riri-npm": {
-      "skip-github-release": true,
-      "draft": true,
       "extra-files": [
         { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-npm')].version" }
       ]
     },
     "crates/riri-pnpm": {
-      "skip-github-release": true,
-      "draft": true,
       "extra-files": [
         { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-pnpm')].version" }
       ]
     },
     "crates/riri-semver-range": {
-      "skip-github-release": true,
-      "draft": true,
       "extra-files": [
         { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-semver-range')].version" }
       ]
     },
+    "crates/riri-task-runner": {
+      "extra-files": [
+        { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-task-runner')].version" }
+      ]
+    },
+    "crates/riri-workspace": {
+      "extra-files": [
+        { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-workspace')].version" }
+      ]
+    },
     "crates/riri-yarn": {
-      "skip-github-release": true,
-      "draft": true,
       "extra-files": [
         { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-yarn')].version" }
       ]
