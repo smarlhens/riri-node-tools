@@ -6,6 +6,7 @@ export default {
       '@types/node': 'minor',
       // Benchmark baselines: keep each alias on its own major line (v0→0.x, v1→1.x).
       'npm-check-engines': 'minor',
+      'npm-pin-dependencies': 'minor',
     };
 
     const keys = Object.keys(targets);
