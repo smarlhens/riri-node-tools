@@ -9,7 +9,7 @@
   "crates/riri-semver-range": "0.1.1",
   "crates/riri-task-runner": "0.1.0",
   "crates/riri-yarn": "0.1.1",
-  "crates/riri-napi-nce": "1.2.1",
-  "crates/riri-napi-npd": "1.0.0",
+  "crates/riri-napi-nce": "1.2.2",
+  "crates/riri-napi-npd": "1.0.1",
   "crates/riri-workspace": "0.1.1"
 }
