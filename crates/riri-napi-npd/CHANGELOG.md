@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-pin-dependencies-v1.0.0...@smarlhens/npm-pin-dependencies-v1.0.1) (2026-06-02)
+
+
+### Bug Fixes
+
+* drop node 25 from supported engines & regen readmes ([6aa3193](https://github.com/smarlhens/riri-node-tools/commit/6aa31932e0f230960d97320368e8d8951d132abb))
+
 ## [1.0.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-pin-dependencies-v0.1.0...@smarlhens/npm-pin-dependencies-v1.0.0) (2026-05-28)
 
 
