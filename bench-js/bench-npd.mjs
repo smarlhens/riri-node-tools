@@ -1,4 +1,5 @@
-import { pinDependenciesFromString } from '@smarlhens/npm-pin-dependencies';
+import { pinDependenciesFromString as pinDepsV0 } from '@smarlhens/npm-pin-dependencies-v0';
+import { pinDependencies as pinDepsV1 } from '@smarlhens/npm-pin-dependencies-v1';
 import { readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
@@ -8,13 +9,14 @@ import { Bench } from 'tinybench';
 const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// Load the local .node binary — represents the unpublished working-tree code.
 const napiDir = resolve(__dirname, '../crates/riri-napi-npd');
 const nodeFile = readdirSync(napiDir).find(f => f.startsWith('npm-pin-dependencies.') && f.endsWith('.node'));
 if (!nodeFile) {
   console.error('No .node binary found. Run `cd crates/riri-napi-npd && npx napi build --platform --release` first.');
   process.exit(1);
 }
-const napi = require(resolve(napiDir, nodeFile));
+const napiLocal = require(resolve(napiDir, nodeFile));
 const rootDir = resolve(__dirname, '..');
 
 const fixtures = {
@@ -53,15 +55,23 @@ for (const [name, data] of Object.entries(fixtureData)) {
     warmupTime: 0,
   });
 
-  bench.add('js pinDependenciesFromString', async () => {
-    await pinDependenciesFromString({
+  bench.add('js v0.x (TS predecessor)', async () => {
+    await pinDepsV0({
       packageJsonString: data.packageJsonString,
       packageLockString: data.lockfileString,
     });
   });
 
-  bench.add('napi pinDependencies', () => {
-    napi.pinDependencies({
+  bench.add('napi v1.x (published)', () => {
+    pinDepsV1({
+      packageJson: data.packageJsonString,
+      lockfileContent: data.lockfileString,
+      lockfileType: data.lockfileType,
+    });
+  });
+
+  bench.add('napi local (unpublished)', () => {
+    napiLocal.pinDependencies({
       packageJson: data.packageJsonString,
       lockfileContent: data.lockfileString,
       lockfileType: data.lockfileType,

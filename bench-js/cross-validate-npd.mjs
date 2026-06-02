@@ -5,7 +5,7 @@
 //! Yarn v1 fixtures are skipped because the NAPI binding does not yet expose
 //! a string-based yarn path (Phase 11 — `pinDependenciesFromPath`).
 
-import { pinDependenciesFromString } from '@smarlhens/npm-pin-dependencies';
+import { pinDependenciesFromString } from '@smarlhens/npm-pin-dependencies-v0';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
