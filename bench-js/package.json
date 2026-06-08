@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@smarlhens/npm-check-engines-v0": "npm:@smarlhens/npm-check-engines@0.14.4",
-    "@smarlhens/npm-check-engines-v1": "npm:@smarlhens/npm-check-engines@1.2.0",
+    "@smarlhens/npm-check-engines-v1": "npm:@smarlhens/npm-check-engines@1.2.2",
     "@smarlhens/npm-pin-dependencies-v0": "npm:@smarlhens/npm-pin-dependencies@0.11.1",
     "@smarlhens/npm-pin-dependencies-v1": "npm:@smarlhens/npm-pin-dependencies@1.0.1",
     "markdown-table": "3.0.4",
@@ -31,11 +31,11 @@
     "tinybench": "6.0.2"
   },
   "devDependencies": {
-    "@types/node": "24.12.4",
-    "envinfo": "7.14.0",
-    "npm-check-updates": "22.2.1",
-    "oxfmt": "0.53.0",
-    "oxlint": "1.67.0",
+    "@types/node": "22.19.20",
+    "envinfo": "7.21.0",
+    "npm-check-updates": "22.2.3",
+    "oxfmt": "0.54.0",
+    "oxlint": "1.69.0",
     "typescript": "6.0.3"
   },
   "engines": {
