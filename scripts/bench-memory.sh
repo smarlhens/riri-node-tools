@@ -8,17 +8,52 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+JSON_MODE=""
+[ "${1:-}" = "--json" ] && JSON_MODE="1"
+
 FIXTURE_SMALL="$ROOT_DIR/fixtures/npm-v3-or-ranges-node-only"
 FIXTURE_LARGE="$ROOT_DIR/fixtures/npm-v3-500-deps"
 RUST_BIN="$ROOT_DIR/target/release/riri-nce"
 
 if [ ! -f "$RUST_BIN" ] && [ ! -f "$RUST_BIN.exe" ]; then
-    echo "Building Rust binary..."
-    cargo build --release -p riri-nce --manifest-path="$ROOT_DIR/Cargo.toml"
+    if [ -n "$JSON_MODE" ]; then
+        cargo build --release -p riri-nce --manifest-path="$ROOT_DIR/Cargo.toml" 1>&2
+    else
+        echo "Building Rust binary..."
+        cargo build --release -p riri-nce --manifest-path="$ROOT_DIR/Cargo.toml"
+    fi
 fi
 
 if [ -f "$RUST_BIN.exe" ]; then
     RUST_BIN="$RUST_BIN.exe"
+fi
+
+# Peak resident set size (kbytes) for one run of the binary in $1.
+# Uses GNU time's "maximum resident set size" line; prints nothing if
+# unavailable (e.g. BSD time without -v). Never fails the caller.
+peak_rss_kb() {
+    local dir="$1"
+    (
+        cd "$dir" 2> /dev/null || exit 0
+        command -v /usr/bin/time &> /dev/null || exit 0
+        /usr/bin/time -v "$RUST_BIN" -q 2>&1 \
+            | grep -i "maximum resident" \
+            | grep -oE '[0-9]+' \
+            | tail -n 1 || true
+    ) || true
+}
+
+if [ -n "$JSON_MODE" ]; then
+    small_kb="$(peak_rss_kb "$FIXTURE_SMALL")"
+    large_kb="$(peak_rss_kb "$FIXTURE_LARGE")"
+    small_kb="${small_kb:-0}"
+    large_kb="${large_kb:-0}"
+    peak_kb="$small_kb"
+    [ "$large_kb" -gt "$peak_kb" ] && peak_kb="$large_kb"
+    total_kb="$((small_kb + large_kb))"
+    printf 'peak_kb=%s\n' "$peak_kb"
+    printf 'total_kb=%s\n' "$total_kb"
+    exit 0
 fi
 
 echo "=== Memory profiling: Rust nce ==="

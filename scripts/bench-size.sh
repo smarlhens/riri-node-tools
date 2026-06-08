@@ -8,13 +8,34 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+JSON_MODE=""
+[ "${1:-}" = "--json" ] && JSON_MODE="1"
+
+# Resolve the release binary path (.exe on Windows)
+BIN="$ROOT_DIR/target/release/riri-nce"
+if [ -f "$BIN.exe" ]; then
+    BIN="$BIN.exe"
+fi
+
+# Portable byte-size of a file (GNU stat, BSD/macOS stat, then wc fallback)
+file_bytes() {
+    local f="$1"
+    stat -c %s "$f" 2> /dev/null || stat -f %z "$f" 2> /dev/null || wc -c < "$f" | tr -d ' '
+}
+
+if [ -n "$JSON_MODE" ]; then
+    cargo build --release -p riri-nce --manifest-path="$ROOT_DIR/Cargo.toml" 1>&2
+    if [ -f "$BIN" ]; then
+        printf '%s\t%s\n' "riri-nce" "$(file_bytes "$BIN")"
+    fi
+    exit 0
+fi
+
 echo "=== Release binary size ==="
 cargo build --release -p riri-nce --manifest-path="$ROOT_DIR/Cargo.toml"
 
-if [ -f "$ROOT_DIR/target/release/riri-nce.exe" ]; then
-    ls -lh "$ROOT_DIR/target/release/riri-nce.exe"
-elif [ -f "$ROOT_DIR/target/release/riri-nce" ]; then
-    ls -lh "$ROOT_DIR/target/release/riri-nce"
+if [ -f "$BIN" ]; then
+    ls -lh "$BIN"
 fi
 
 if command -v cargo-bloat &> /dev/null; then

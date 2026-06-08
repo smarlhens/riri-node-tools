@@ -21,22 +21,29 @@ if (!nodeFile) {
   console.error('No .node binary found. Run `cd crates/riri-napi-npd && npx napi build --platform --release` first.');
   process.exit(1);
 }
-const napi = require(resolve(napiDir, nodeFile));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const napi: any = require(resolve(napiDir, nodeFile));
 
 const fixturesDir = resolve(rootDir, 'fixtures');
 
-const sortKey = pin => `${pin.name}|${pin.from}|${pin.to}`;
-const normalize = pins => [...pins].sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+interface NpdPin {
+  name: string;
+  from: string;
+  to: string;
+}
 
-const runRust = (fixtureDir, lockfileType) => {
+const sortKey = (pin: NpdPin): string => `${pin.name}|${pin.from}|${pin.to}`;
+const normalize = (pins: NpdPin[]): NpdPin[] => [...pins].sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+
+const runRust = (fixtureDir: string, lockfileType: string): NpdPin[] => {
   const packageJson = readFileSync(join(fixtureDir, 'package.json'), 'utf8');
   const lockfileName = lockfileType === 'npm' ? 'package-lock.json' : 'pnpm-lock.yaml';
   const lockfileContent = readFileSync(join(fixtureDir, lockfileName), 'utf8');
   const result = napi.pinDependencies({ packageJson, lockfileContent, lockfileType });
-  return result.pins.map(p => ({ name: p.name, from: p.from, to: p.to }));
+  return result.pins.map((p: NpdPin) => ({ name: p.name, from: p.from, to: p.to }));
 };
 
-const runJs = async (fixtureDir, lockfileType) => {
+const runJs = async (fixtureDir: string, lockfileType: string): Promise<NpdPin[] | null> => {
   const packageJsonString = readFileSync(join(fixtureDir, 'package.json'), 'utf8');
   if (lockfileType !== 'npm') {
     return null;
@@ -50,7 +57,7 @@ const runJs = async (fixtureDir, lockfileType) => {
   }));
 };
 
-const classifyFixture = fixtureDir => {
+const classifyFixture = (fixtureDir: string): string => {
   if (existsSync(join(fixtureDir, 'package-lock.json'))) {
     return 'npm';
   }

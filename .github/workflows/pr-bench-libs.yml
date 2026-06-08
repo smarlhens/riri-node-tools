@@ -1,0 +1,44 @@
+name: pr-bench-libs
+
+on:
+  pull_request:
+    paths:
+      - "bench-js/**"
+      - ".github/workflows/pr-bench-libs.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "bench-js/**"
+      - ".github/workflows/pr-bench-libs.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  bench-js:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: bench-js/.nvmrc
+          cache: npm
+          cache-dependency-path: bench-js/package-lock.json
+      - name: Install bench-js dependencies
+        run: npm ci
+        working-directory: bench-js
+      - name: Typecheck
+        run: npm run typecheck
+        working-directory: bench-js
+      - name: Test
+        run: npm test
+        working-directory: bench-js
