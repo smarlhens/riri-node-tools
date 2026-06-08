@@ -20,7 +20,7 @@
     "markdown-table": "3.0.4"
   },
   "devDependencies": {
-    "@types/node": "22.19.20",
+    "@types/node": "24.13.1",
     "npm-check-updates": "22.2.3",
     "oxfmt": "0.54.0",
     "oxlint": "1.69.0",
