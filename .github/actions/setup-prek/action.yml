@@ -1,0 +1,24 @@
+name: setup-prek
+description: Install prek (and optionally run hooks) at the version pinned for this repository.
+
+# Single source of truth for the prek version across all workflows. Bump the
+# `prek-version` below to upgrade prek everywhere.
+
+inputs:
+  install-only:
+    description: Only install prek onto PATH; do not run hooks.
+    required: false
+    default: "false"
+  extra-args:
+    description: Options passed to `prek run` (ignored when install-only is true).
+    required: false
+    default: "--all-files"
+
+runs:
+  using: composite
+  steps:
+    - uses: j178/prek-action@v2.0.4
+      with:
+        prek-version: "0.4.4"
+        install-only: ${{ inputs.install-only }}
+        extra-args: ${{ inputs.extra-args }}

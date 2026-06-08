@@ -1,0 +1,89 @@
+# Node.js tools written in Rust
+
+[![GitHub CI][github-ci-shield]][github-ci]
+[![GitHub license][license-shield]][license]
+[![prek][prek-shield]][prek]
+
+**Fast, native npm utilities — Rust cores exposed to Node via NAPI-RS that read your lockfile and rewrite `package.json`, much faster than their JavaScript predecessors.**
+
+---
+
+## Table of Contents
+
+- [Tools][tools]
+- [Benchmarks][benchmarks]
+- [Development][development]
+- [License][license-section]
+
+---
+
+## Tools
+
+End-user CLIs published from this monorepo:
+
+{{ tools_table }}
+
+{{ tools_features }}
+
+### Supported platforms
+
+Prebuilt native binaries are published for:
+
+{{ platforms_table }}
+
+---
+
+## Benchmarks
+
+Microbenchmarks (point-in-time, machine-specific) live in [BENCHMARKS.md](BENCHMARKS.md) — per tool: [nce](benchmarks/nce.md), [npd](benchmarks/npd.md), [semver-range](benchmarks/semver-range.md).
+
+---
+
+## Development
+
+### Prerequisites
+
+{% for p in prereqs %}- [{{ p.name }}]({{ p.url }}) **{{ p.constraint }}** (_tested with {{ p.tested_with }}_)
+{% endfor %}
+### Installation
+
+1. Clone the git repository
+
+   ```bash
+   git clone https://github.com/smarlhens/riri-node-tools.git
+   ```
+
+2. Go into the project directory
+
+   ```bash
+   cd riri-node-tools/
+   ```
+
+3. Checkout working branch
+
+   ```bash
+   git checkout <branch>
+   ```
+
+4. Enable pre-commit hooks
+
+   ```bash
+   prek install
+   ```
+
+---
+
+## License
+
+[BlueOak Model License 1.0.0](LICENSE.md).
+
+[tools]: #tools
+[benchmarks]: #benchmarks
+[development]: #development
+[license-section]: #license
+[prek]: https://prek.j178.dev/
+[prek-shield]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/j178/prek/master/docs/assets/badge-v0.json
+[license]: https://github.com/smarlhens/riri-node-tools
+[license-shield]: https://img.shields.io/badge/license-BlueOak--1.0.0-blue
+[github-ci]: https://github.com/smarlhens/riri-node-tools/actions/workflows/ci.yml
+[github-ci-shield]: https://github.com/smarlhens/riri-node-tools/workflows/ci/badge.svg
