@@ -18,7 +18,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/oxc-project/mirrors-oxfmt
-    rev: "v0.52.0"
+    rev: "v0.54.0"
     hooks:
       - id: oxfmt
         types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css]
@@ -26,7 +26,7 @@ repos:
         exclude: '(^|/)(package-lock\.json|pnpm-lock\.yaml)$'
 
   - repo: https://github.com/oxc-project/mirrors-oxlint
-    rev: "v1.67.0"
+    rev: "v1.69.0"
     hooks:
       - id: oxlint
 
