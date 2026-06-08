@@ -131,6 +131,10 @@ jobs:
             } >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Install bench-js dependencies
+        run: npm ci
+        working-directory: bench-js
+
       - name: Install action dependencies
         run: npm ci
         working-directory: .github/actions/bench-compare

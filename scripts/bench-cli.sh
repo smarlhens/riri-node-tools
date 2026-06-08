@@ -8,6 +8,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+JSON_OUT="${1:-}" # optional: path prefix for --export-json
+
 FIXTURE_SMALL="$ROOT_DIR/fixtures/npm-v3-or-ranges-node-only"
 FIXTURE_LARGE="$ROOT_DIR/fixtures/npm-v3-500-deps"
 RUST_BIN="$ROOT_DIR/target/release/riri-nce"
@@ -32,17 +34,23 @@ JS_CMD="npx --yes @smarlhens/npm-check-engines -q"
 echo ""
 echo "=== Small fixture (7 deps) ==="
 cd "$FIXTURE_SMALL"
+EXPORT_SMALL=()
+[ -n "$JSON_OUT" ] && EXPORT_SMALL=(--export-json "${JSON_OUT}-small.json")
 hyperfine \
     --warmup 5 \
     --min-runs 50 \
+    "${EXPORT_SMALL[@]}" \
     -n "rust nce" "$RUST_BIN -q" \
     -n "js nce" "$JS_CMD"
 
 echo ""
 echo "=== Large fixture (500 deps) ==="
 cd "$FIXTURE_LARGE"
+EXPORT_LARGE=()
+[ -n "$JSON_OUT" ] && EXPORT_LARGE=(--export-json "${JSON_OUT}-large.json")
 hyperfine \
     --warmup 5 \
     --min-runs 20 \
+    "${EXPORT_LARGE[@]}" \
     -n "rust nce" "$RUST_BIN -q" \
     -n "js nce" "$JS_CMD"

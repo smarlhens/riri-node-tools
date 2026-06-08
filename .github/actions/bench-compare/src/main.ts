@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 
 import { createOrUpdateComment } from './comment.js';
-import { buildCrossComparisons, compareBenchmarks } from './criterion.js';
+import { compareBenchmarks, crossCompare } from './criterion.js';
 import {
   buildFullComment,
   formatBenchmarkTable,
@@ -49,7 +49,10 @@ export const run = async (): Promise<void> => {
     const isReference = (name: string): boolean => referencePrefixes.some(prefix => name.startsWith(prefix));
 
     const ownBenchmarkResults = allBenchmarkResults.filter(result => !isReference(result.name));
-    const crossComparisons = buildCrossComparisons(allBenchmarkResults, referencePrefixes);
+    const crossComparisons = crossCompare(
+      allBenchmarkResults.map(r => ({ name: r.name, ns: r.prNanoseconds })),
+      referencePrefixes,
+    );
 
     core.info(
       `Found ${allBenchmarkResults.length} benchmark(s) (${ownBenchmarkResults.length} own, ${allBenchmarkResults.length - ownBenchmarkResults.length} reference)`,

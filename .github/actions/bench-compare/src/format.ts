@@ -1,51 +1,14 @@
 import { markdownTable } from 'markdown-table';
 
+import { formatBytes, formatNanoseconds } from '../../../../bench-js/lib/format.ts';
+
 import type { BenchmarkResult, CrossComparison } from './criterion.js';
 
-const NANOSECONDS_PER_SECOND = 1_000_000_000;
-const NANOSECONDS_PER_MILLISECOND = 1_000_000;
-const NANOSECONDS_PER_MICROSECOND = 1_000;
 const BYTES_PER_KILOBYTE = 1_024;
-const BYTES_PER_MEGABYTE = BYTES_PER_KILOBYTE * BYTES_PER_KILOBYTE;
 const PERCENTAGE_MULTIPLIER = 100;
 const DECIMAL_PLACES_SHORT = 1;
 const DECIMAL_PLACES_LONG = 2;
 const IMPROVEMENT_THRESHOLD = -1;
-
-const bytesFormatter = new Intl.NumberFormat('en', {
-  maximumFractionDigits: DECIMAL_PLACES_LONG,
-  style: 'unit',
-  unit: 'megabyte',
-});
-const kiloBytesFormatter = new Intl.NumberFormat('en', {
-  maximumFractionDigits: DECIMAL_PLACES_SHORT,
-  style: 'unit',
-  unit: 'kilobyte',
-});
-
-const formatNanoseconds = (nanoseconds: number): string => {
-  if (nanoseconds >= NANOSECONDS_PER_SECOND) {
-    return `${(nanoseconds / NANOSECONDS_PER_SECOND).toFixed(DECIMAL_PLACES_LONG)} s`;
-  }
-  if (nanoseconds >= NANOSECONDS_PER_MILLISECOND) {
-    return `${(nanoseconds / NANOSECONDS_PER_MILLISECOND).toFixed(DECIMAL_PLACES_LONG)} ms`;
-  }
-  if (nanoseconds >= NANOSECONDS_PER_MICROSECOND) {
-    return `${(nanoseconds / NANOSECONDS_PER_MICROSECOND).toFixed(DECIMAL_PLACES_SHORT)} \u00B5s`;
-  }
-  return `${nanoseconds.toFixed(DECIMAL_PLACES_SHORT)} ns`;
-};
-
-const formatBytes = (bytes: number): string => {
-  const absolute = Math.abs(bytes);
-  if (absolute >= BYTES_PER_MEGABYTE) {
-    return bytesFormatter.format(bytes / BYTES_PER_MEGABYTE);
-  }
-  if (absolute >= BYTES_PER_KILOBYTE) {
-    return kiloBytesFormatter.format(bytes / BYTES_PER_KILOBYTE);
-  }
-  return `${bytes} B`;
-};
 
 const toPercentage = (numerator: number, denominator: number): number =>
   denominator === 0 ? 0 : (numerator / denominator) * PERCENTAGE_MULTIPLIER;
@@ -179,8 +142,8 @@ export const formatCrossComparisonTable = (comparisons: CrossComparison[]): stri
 
   const rows = comparisons.map(comparison => [
     comparison.metric,
-    formatNanoseconds(comparison.ownNanoseconds),
-    formatNanoseconds(comparison.referenceNanoseconds),
+    formatNanoseconds(comparison.ownNs),
+    formatNanoseconds(comparison.referenceNs),
     `${comparison.speedup.toFixed(DECIMAL_PLACES_LONG)}x`,
   ]);
 

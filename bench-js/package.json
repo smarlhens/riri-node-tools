@@ -4,23 +4,39 @@
   "type": "module",
   "scripts": {
     "bench": "npm run bench-nce && npm run bench-npd",
-    "bench-nce": "node bench-nce.mjs",
-    "bench-npd": "node bench-npd.mjs",
-    "cross-validate-nce": "node cross-validate-nce.mjs",
-    "cross-validate-npd": "node cross-validate-npd.mjs",
+    "bench-nce": "node bench-nce.ts",
+    "bench-npd": "node bench-npd.ts",
+    "cross-validate-nce": "node cross-validate-nce.ts",
+    "cross-validate-npd": "node cross-validate-npd.ts",
     "ncu:apply": "ncu -u",
     "ncu:check": "ncu",
-    "postncu:apply": "npm install --registry https://registry.npmjs.org && npm update --registry https://registry.npmjs.org"
+    "postncu:apply": "npm install --registry https://registry.npmjs.org && npm update --registry https://registry.npmjs.org",
+    "bench:run": "node run-benches.ts",
+    "bench:render": "node generate-benchmarks.ts",
+    "bench:report": "npm run bench:run && npm run bench:render",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test lib/*.test.ts",
+    "fmt:check": "oxfmt --check",
+    "fmt:write": "oxfmt",
+    "lint:check": "oxlint",
+    "lint:fix": "oxlint --fix"
   },
   "dependencies": {
     "@smarlhens/npm-check-engines-v0": "npm:@smarlhens/npm-check-engines@0.14.4",
     "@smarlhens/npm-check-engines-v1": "npm:@smarlhens/npm-check-engines@1.2.0",
     "@smarlhens/npm-pin-dependencies-v0": "npm:@smarlhens/npm-pin-dependencies@0.11.1",
     "@smarlhens/npm-pin-dependencies-v1": "npm:@smarlhens/npm-pin-dependencies@1.0.1",
+    "markdown-table": "3.0.4",
+    "pretty-bytes": "7.1.0",
     "tinybench": "6.0.2"
   },
   "devDependencies": {
-    "npm-check-updates": "22.2.1"
+    "@types/node": "24.12.4",
+    "envinfo": "7.14.0",
+    "npm-check-updates": "22.2.1",
+    "oxfmt": "0.53.0",
+    "oxlint": "1.67.0",
+    "typescript": "6.0.3"
   },
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0",

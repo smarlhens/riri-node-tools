@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/actions/bench-compare/**"
       - ".github/workflows/pr-action.yml"
+      - "bench-js/**"
       - ".oxfmtrc.json"
       - "oxlintrc.json"
   push:
@@ -13,6 +14,7 @@ on:
     paths:
       - ".github/actions/bench-compare/**"
       - ".github/workflows/pr-action.yml"
+      - "bench-js/**"
       - ".oxfmtrc.json"
       - "oxlintrc.json"
 
@@ -44,6 +46,10 @@ jobs:
           node-version-file: .github/actions/bench-compare/.nvmrc
           cache: npm
           cache-dependency-path: .github/actions/bench-compare/package-lock.json
+
+      - name: Install bench-js dependencies
+        working-directory: bench-js
+        run: npm ci
 
       - name: Install dependencies
         run: npm ci

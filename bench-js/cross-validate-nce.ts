@@ -21,31 +21,43 @@ if (!nodeFile) {
   console.error('No .node binary found. Run `cd crates/riri-napi-nce && npx napi build --platform --release` first.');
   process.exit(1);
 }
-const napi = require(resolve(napiDir, nodeFile));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const napi: any = require(resolve(napiDir, nodeFile));
 
 const fixturesDir = resolve(rootDir, 'fixtures');
 
-const sortKey = change => `${change.engine}|${change.from}|${change.to}`;
-const normalizeChanges = changes => [...changes].sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+interface NceChange {
+  engine: string;
+  from: string;
+  to: string;
+}
 
-const sortObj = obj => {
+const sortKey = (change: NceChange): string => `${change.engine}|${change.from}|${change.to}`;
+const normalizeChanges = (changes: NceChange[]): NceChange[] =>
+  [...changes].sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+
+const sortObj = (obj: Record<string, unknown>): Record<string, unknown> => {
   const entries = Object.entries(obj).sort(([a], [b]) => a.localeCompare(b));
   return Object.fromEntries(entries);
 };
 
-const runRust = fixtureDir => {
+const runRust = (fixtureDir: string) => {
   const packageJson = readFileSync(join(fixtureDir, 'package.json'), 'utf8');
   const lockfileContent = readFileSync(join(fixtureDir, 'package-lock.json'), 'utf8');
   const result = napi.checkEngines({ lockfileContent, lockfileType: 'npm', packageJson });
   return {
     engines: sortObj(result.computedEngines ?? {}),
     changes: normalizeChanges(
-      (result.changes ?? []).map(c => ({ engine: c.engine, from: c.from ?? '', to: c.to ?? '' })),
+      (result.changes ?? []).map((c: { engine: string; from?: string; to?: string }) => ({
+        engine: c.engine,
+        from: c.from ?? '',
+        to: c.to ?? '',
+      })),
     ),
   };
 };
 
-const runJs = fixtureDir => {
+const runJs = (fixtureDir: string) => {
   const packageJsonString = readFileSync(join(fixtureDir, 'package.json'), 'utf8');
   const packageLockString = readFileSync(join(fixtureDir, 'package-lock.json'), 'utf8');
   const result = checkEnginesFromString({ packageJsonString, packageLockString });
