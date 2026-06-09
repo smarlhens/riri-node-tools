@@ -2,26 +2,26 @@
 # Manual changes might be lost - proceed with caution!
 
 __metadata:
-  version: 4
-  cacheKey: 7
-
-"foo@npm:^4.17.21":
-  version: 4.17.21
-  resolution: "foo@npm:4.17.21"
-  checksum: placeholder
-  languageName: node
-  linkType: hard
+  version: 8
+  cacheKey: 10
 
 "bar@npm:~18.2.0":
   version: 18.2.0
   resolution: "bar@npm:18.2.0"
-  checksum: placeholder
+  checksum: 10/placeholder
   languageName: node
   linkType: hard
 
 "baz@npm:^1.0.0":
   version: 1.6.0
   resolution: "baz@npm:1.6.0"
-  checksum: placeholder
+  checksum: 10/placeholder
+  languageName: node
+  linkType: hard
+
+"foo@npm:^4.17.21":
+  version: 4.17.21
+  resolution: "foo@npm:4.17.21"
+  checksum: 10/placeholder
   languageName: node
   linkType: hard

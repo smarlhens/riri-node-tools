@@ -9,7 +9,7 @@ use riri_common::{LockfileVersions, PackageJsonFile, PackageManager, detect_lock
 use riri_npm::NpmPackageLock;
 use riri_pnpm::PnpmLockfile;
 use riri_task_runner::{RendererMode, TaskRunner};
-use riri_yarn::YarnProject;
+use riri_yarn::YarnLock;
 use std::path::{Path, PathBuf};
 
 use crate::{CatalogPin, DependencyKind, VersionToPin, pin_dependencies};
@@ -102,11 +102,10 @@ fn load_lockfile(
             Ok(Box::new(lock))
         }
         PackageManager::Yarn => {
-            let project_dir = lockfile_path.parent().unwrap_or_else(|| Path::new("."));
-            let project = YarnProject::scan(project_dir).with_context(|| {
-                format!("failed to scan {}/node_modules", project_dir.display())
-            })?;
-            Ok(Box::new(project))
+            let content = std::fs::read_to_string(lockfile_path)
+                .with_context(|| format!("failed to read {}", lockfile_path.display()))?;
+            let lock = YarnLock::parse(&content).context("failed to parse yarn.lock")?;
+            Ok(Box::new(lock))
         }
     }
 }

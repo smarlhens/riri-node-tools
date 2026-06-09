@@ -196,20 +196,40 @@ fn cli_pnpm_unpinned_deps_strips_peer_suffix() {
 }
 
 #[test]
-fn cli_yarn_no_node_modules_errors() {
-    // yarn.lock without node_modules → scan error → exit 2.
+fn cli_yarn_resolves_from_lockfile_without_node_modules() {
+    // npd parses yarn.lock directly (like the legacy JS), so it resolves with
+    // no node_modules present — works under PnP / before install.
     let tmp = tempfile::TempDir::new().unwrap();
-    std::fs::write(tmp.path().join("package.json"), b"{\"name\":\"x\"}\n").unwrap();
-    std::fs::write(tmp.path().join("yarn.lock"), b"# yarn lockfile v1\n").unwrap();
+    std::fs::write(
+        tmp.path().join("package.json"),
+        b"{\"name\":\"x\",\"dependencies\":{\"foo\":\"^4.17.21\"}}\n",
+    )
+    .unwrap();
+    std::fs::write(
+        tmp.path().join("yarn.lock"),
+        b"# yarn lockfile v1\n\nfoo@^4.17.21:\n  version \"4.17.21\"\n",
+    )
+    .unwrap();
     let output = npd_binary()
         .current_dir(tmp.path())
         .env("NO_COLOR", "1")
+        .arg("--json")
         .output()
         .unwrap();
     let code = output.status.code().unwrap_or(-1);
-    assert_eq!(code, 2);
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("node_modules"), "stderr: {stderr}");
+    assert_eq!(
+        code,
+        1,
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: serde_json::Value =
+        serde_json::from_str(&String::from_utf8_lossy(&output.stdout)).unwrap();
+    let pins = json["pins"].as_array().unwrap();
+    assert_eq!(pins.len(), 1, "json: {json}");
+    assert_eq!(pins[0]["name"], "foo");
+    assert_eq!(pins[0]["from"], "^4.17.21");
+    assert_eq!(pins[0]["to"], "4.17.21");
 }
 
 #[test]
