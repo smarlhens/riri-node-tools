@@ -5,7 +5,7 @@
 use std::process::Command;
 
 fn nce_binary() -> Command {
-    let mut cmd = Command::new(env!("CARGO_BIN_EXE_riri-nce"));
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_nce"));
     // Disable color for deterministic snapshots
     cmd.env("NO_COLOR", "1");
     cmd

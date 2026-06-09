@@ -1,0 +1,24 @@
+# Bridge between release-please and cargo-dist.
+# When release-please publishes a GitHub Release, dispatch the dist workflow
+# to build and attach prebuilt CLI binaries.
+
+name: dist-trigger
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  trigger:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Dispatch dist workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: dist.yml
+          ref: ${{ github.event.release.tag_name }}
+          inputs: '{ "tag": "${{ github.event.release.tag_name }}" }'

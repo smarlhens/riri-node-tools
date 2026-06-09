@@ -16,11 +16,11 @@ inputs:
     required: false
     default: base
   pr-binary-sizes:
-    description: 'JSON object of PR binary sizes in bytes, e.g. {"riri-nce": 1234}'
+    description: 'JSON object of PR binary sizes in bytes, e.g. {"nce": 1234}'
     required: false
     default: "{}"
   base-binary-sizes:
-    description: 'JSON object of base binary sizes in bytes, e.g. {"riri-nce": 1234}'
+    description: 'JSON object of base binary sizes in bytes, e.g. {"nce": 1234}'
     required: false
     default: "{}"
   pr-test-count:
@@ -32,11 +32,11 @@ inputs:
     required: false
     default: "0"
   pr-peak-rss-kb:
-    description: 'JSON object of PR peak RSS in KB per binary, e.g. {"riri-nce": 1234}'
+    description: 'JSON object of PR peak RSS in KB per binary, e.g. {"nce": 1234}'
     required: false
     default: "{}"
   base-peak-rss-kb:
-    description: 'JSON object of base peak RSS in KB per binary, e.g. {"riri-nce": 1234}'
+    description: 'JSON object of base peak RSS in KB per binary, e.g. {"nce": 1234}'
     required: false
     default: "{}"
   reference-prefix:

@@ -6,6 +6,7 @@ members = ["crates/*"]
 edition = "2024"
 authors = ["Samuel MARLHENS <samuel.marlhens@proton.me>"]
 license = "BlueOak-1.0.0"
+repository = "https://github.com/smarlhens/riri-node-tools"
 
 [workspace.lints.clippy]
 pedantic = "deny"
@@ -42,3 +43,35 @@ criterion = { version = "0.8.2", features = ["html_reports"] }
 insta = "1.47.2"
 rstest = "0.26.1"
 tempfile = "3.27.0"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true
+
+# cargo-dist build profile
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+[workspace.metadata.dist]
+cargo-dist-version = "0.32.0"
+ci = "github"
+installers = ["shell", "powershell"]
+targets = [
+    "aarch64-apple-darwin",
+    "aarch64-unknown-linux-gnu",
+    "aarch64-unknown-linux-musl",
+    "x86_64-apple-darwin",
+    "x86_64-unknown-linux-gnu",
+    "x86_64-unknown-linux-musl",
+    "x86_64-pc-windows-msvc",
+]
+packages = ["riri-nce", "riri-npd"]
+precise-builds = true
+pr-run-mode = "skip"
+install-path = "CARGO_HOME"
+install-updater = false
+dispatch-releases = true
+allow-dirty = ["ci"]
