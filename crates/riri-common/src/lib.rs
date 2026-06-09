@@ -129,6 +129,16 @@ pub trait LockfileVersions {
     /// Returns the locked version for the given top-level `package.json`
     /// dependency name, or `None` when the lockfile does not pin that name.
     fn version_for(&self, name: &str) -> Option<&str>;
+
+    /// Resolves the locked version using the `package.json` `range` specifier
+    /// in addition to the `name`.
+    ///
+    /// npm and pnpm lockfiles are name-keyed, so the default ignores `range`
+    /// and delegates to [`Self::version_for`]. yarn lockfiles are keyed by the
+    /// `name@range` descriptor and override this to resolve precisely.
+    fn resolved_version(&self, name: &str, _range: &str) -> Option<&str> {
+        self.version_for(name)
+    }
 }
 
 #[cfg(test)]

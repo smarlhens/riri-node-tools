@@ -1,0 +1,11 @@
+{
+  "name": "fake",
+  "private": true,
+  "dependencies": {
+    "bar": "~18.2.0",
+    "foo": "^4.17.21"
+  },
+  "devDependencies": {
+    "baz": "^1.0.0"
+  }
+}

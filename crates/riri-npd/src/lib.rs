@@ -112,7 +112,7 @@ pub fn pin_dependencies(
                 );
                 continue;
             }
-            let Some(locked) = lockfile.version_for(name) else {
+            let Some(locked) = lockfile.resolved_version(name, current_range) else {
                 debug!(
                     target: "riri_npd::pin",
                     bucket = kind.as_str(),

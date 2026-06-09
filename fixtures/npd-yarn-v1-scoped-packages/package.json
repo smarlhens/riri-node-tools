@@ -1,0 +1,11 @@
+{
+  "name": "fake",
+  "private": true,
+  "dependencies": {
+    "@scope/bar": "~18.2.0",
+    "@scope/foo": "^4.17.21"
+  },
+  "devDependencies": {
+    "@other/baz": "^1.0.0"
+  }
+}
