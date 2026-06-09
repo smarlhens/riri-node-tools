@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/smarlhens/riri-node-tools/compare/riri-common-v0.1.1...riri-common-v0.1.2) (2026-06-09)
+
+
+### Features
+
+* **npd:** resolve yarn versions from lockfile not node_modules scan ([8f4b8ec](https://github.com/smarlhens/riri-node-tools/commit/8f4b8ec52d3b8017e3434e556955454841179333))
+
 ## [0.1.1](https://github.com/smarlhens/riri-node-tools/compare/riri-common-v0.1.0...riri-common-v0.1.1) (2026-05-28)
 
 

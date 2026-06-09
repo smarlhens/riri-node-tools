@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.2](https://github.com/smarlhens/riri-node-tools/compare/riri-npd-v0.1.1...riri-npd-v0.1.2) (2026-06-09)
+
+
+### Features
+
+* distribute nce & npd as standalone cli binaries via cargo-dist ([be9f66e](https://github.com/smarlhens/riri-node-tools/commit/be9f66e52f1e96a4ec49d80885ab794943c53021))
+* **npd:** resolve yarn versions from lockfile not node_modules scan ([8f4b8ec](https://github.com/smarlhens/riri-node-tools/commit/8f4b8ec52d3b8017e3434e556955454841179333))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.1 to 0.1.2
+    * riri-npm bumped from 0.1.1 to 0.1.2
+    * riri-pnpm bumped from 0.1.1 to 0.1.2
+    * riri-workspace bumped from 0.1.1 to 0.1.2
+    * riri-yarn bumped from 0.1.1 to 0.1.2
+
 ## [0.1.1](https://github.com/smarlhens/riri-node-tools/compare/riri-npd-v0.1.0...riri-npd-v0.1.1) (2026-05-28)
 
 

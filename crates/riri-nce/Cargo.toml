@@ -1,6 +1,6 @@
 [package]
 name = "riri-nce"
-version = "0.1.2"
+version = "0.1.3"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -15,12 +15,12 @@ name = "npm-check-engines"
 path = "src/bin/npm-check-engines.rs"
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.1.1", features = ["sort"] }
+riri-common = { path = "../riri-common", version = "0.1.2", features = ["sort"] }
 riri-node-lifecycle = { path = "../riri-node-lifecycle", version = "0.1.1" }
-riri-npm = { path = "../riri-npm", version = "0.1.1" }
-riri-pnpm = { path = "../riri-pnpm", version = "0.1.1" }
+riri-npm = { path = "../riri-npm", version = "0.1.2" }
+riri-pnpm = { path = "../riri-pnpm", version = "0.1.2" }
 riri-semver-range = { path = "../riri-semver-range", version = "0.1.1" }
-riri-yarn = { path = "../riri-yarn", version = "0.1.1" }
+riri-yarn = { path = "../riri-yarn", version = "0.1.2" }
 riri-task-runner = { path = "../riri-task-runner", version = "0.1.0" }
 anyhow = { workspace = true }
 chrono = { workspace = true }
