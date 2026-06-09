@@ -1,12 +1,12 @@
 [package]
 name = "riri-npm"
-version = "0.1.1"
+version = "0.1.2"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.1.1" }
+riri-common = { path = "../riri-common", version = "0.1.2" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

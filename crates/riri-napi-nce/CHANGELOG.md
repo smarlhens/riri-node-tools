@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.4](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.2.3...@smarlhens/npm-check-engines-v1.2.4) (2026-06-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.1 to 0.1.2
+    * riri-nce bumped from 0.1.2 to 0.1.3
+    * riri-npm bumped from 0.1.1 to 0.1.2
+    * riri-pnpm bumped from 0.1.1 to 0.1.2
+    * riri-yarn bumped from 0.1.1 to 0.1.2
+
 ## [1.2.3](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.2.2...@smarlhens/npm-check-engines-v1.2.3) (2026-06-09)
 
 

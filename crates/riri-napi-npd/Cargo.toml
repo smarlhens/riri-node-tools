@@ -1,6 +1,6 @@
 [package]
 name = "riri-napi-npd"
-version = "1.0.1"
+version = "1.0.2"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -11,10 +11,10 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-riri-common = { path = "../riri-common", version = "0.1.1" }
-riri-npd = { path = "../riri-npd", version = "0.1.1" }
-riri-npm = { path = "../riri-npm", version = "0.1.1" }
-riri-pnpm = { path = "../riri-pnpm", version = "0.1.1" }
+riri-common = { path = "../riri-common", version = "0.1.2" }
+riri-npd = { path = "../riri-npd", version = "0.1.2" }
+riri-npm = { path = "../riri-npm", version = "0.1.2" }
+riri-pnpm = { path = "../riri-pnpm", version = "0.1.2" }
 serde_json = { workspace = true }
 
 [build-dependencies]
