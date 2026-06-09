@@ -701,6 +701,7 @@ pub fn run_cli(argv: Vec<String>) -> i32 {
             };
         }
     };
+
     match run(&parsed) {
         Ok(code) => code,
         Err(error) => {

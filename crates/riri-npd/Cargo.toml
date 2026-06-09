@@ -4,6 +4,15 @@ version = "0.1.1"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "npd"
+path = "src/bin/npd.rs"
+
+[[bin]]
+name = "npm-pin-dependencies"
+path = "src/bin/npm-pin-dependencies.rs"
 
 [dependencies]
 riri-common = { path = "../riri-common", version = "0.1.1", features = ["sort"] }

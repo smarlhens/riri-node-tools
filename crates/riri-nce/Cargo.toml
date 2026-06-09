@@ -4,6 +4,15 @@ version = "0.1.2"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "nce"
+path = "src/bin/nce.rs"
+
+[[bin]]
+name = "npm-check-engines"
+path = "src/bin/npm-check-engines.rs"
 
 [dependencies]
 riri-common = { path = "../riri-common", version = "0.1.1", features = ["sort"] }

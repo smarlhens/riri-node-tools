@@ -69,7 +69,7 @@ jobs:
         id: sizes
         run: |
           sizes="{}"
-          for bin in riri-nce riri-npd; do
+          for bin in nce npd; do
             if [ -f "target/release/$bin" ]; then
               s=$(stat --format='%s' "target/release/$bin")
               sizes=$(echo "$sizes" | jq -c --arg k "$bin" --argjson v "$s" '. + {($k): $v}')
@@ -96,9 +96,9 @@ jobs:
             (cd "$fixture" && { /usr/bin/time -v "../../$binary" --quiet 2>&1 1>/dev/null; } 2>&1 \
               | grep 'Maximum resident set size' | grep -oP '\d+' || echo "0")
           }
-          rss_nce=$(measure_in fixtures/npm-v3-500-deps target/release/riri-nce)
-          rss_npd=$(measure_in fixtures/npd-npm-v3-500-deps target/release/riri-npd)
-          json=$(jq -nc --argjson nce "$rss_nce" --argjson npd "$rss_npd" '{"riri-nce": $nce, "riri-npd": $npd}')
+          rss_nce=$(measure_in fixtures/npm-v3-500-deps target/release/nce)
+          rss_npd=$(measure_in fixtures/npd-npm-v3-500-deps target/release/npd)
+          json=$(jq -nc --argjson nce "$rss_nce" --argjson npd "$rss_npd" '{"nce": $nce, "npd": $npd}')
           echo "rss_kb=$json" >> "$GITHUB_OUTPUT"
 
       - name: Discover bench targets

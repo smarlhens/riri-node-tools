@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 fn npd_binary() -> Command {
-    let mut cmd = Command::new(env!("CARGO_BIN_EXE_riri-npd"));
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_npd"));
     cmd.env("NO_COLOR", "1");
     cmd
 }
