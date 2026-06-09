@@ -1,13 +1,13 @@
 [package]
 name = "riri-nce"
-version = "0.1.1"
+version = "0.1.2"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
 [dependencies]
 riri-common = { path = "../riri-common", version = "0.1.1", features = ["sort"] }
-riri-node-lifecycle = { path = "../riri-node-lifecycle", version = "0.1.0" }
+riri-node-lifecycle = { path = "../riri-node-lifecycle", version = "0.1.1" }
 riri-npm = { path = "../riri-npm", version = "0.1.1" }
 riri-pnpm = { path = "../riri-pnpm", version = "0.1.1" }
 riri-semver-range = { path = "../riri-semver-range", version = "0.1.1" }

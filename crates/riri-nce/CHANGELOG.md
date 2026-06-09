@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.2](https://github.com/smarlhens/riri-node-tools/compare/riri-nce-v0.1.1...riri-nce-v0.1.2) (2026-06-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-node-lifecycle bumped from 0.1.0 to 0.1.1
+
 ## [0.1.1](https://github.com/smarlhens/riri-node-tools/compare/riri-nce-v0.1.0...riri-nce-v0.1.1) (2026-05-28)
 
 

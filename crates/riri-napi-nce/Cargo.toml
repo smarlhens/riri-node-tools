@@ -1,6 +1,6 @@
 [package]
 name = "riri-napi-nce"
-version = "1.2.2"
+version = "1.2.3"
 description = "Check and update Node.js engine constraints in package.json"
 edition.workspace = true
 authors.workspace = true
@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
 napi = { workspace = true }
 napi-derive = { workspace = true }
 riri-common = { path = "../riri-common", version = "0.1.1" }
-riri-nce = { path = "../riri-nce", version = "0.1.1", default-features = false }
+riri-nce = { path = "../riri-nce", version = "0.1.2", default-features = false }
 riri-npm = { path = "../riri-npm", version = "0.1.1" }
 riri-pnpm = { path = "../riri-pnpm", version = "0.1.1" }
 riri-semver-range = { path = "../riri-semver-range", version = "0.1.1" }

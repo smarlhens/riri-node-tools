@@ -1,6 +1,6 @@
 {
   "name": "@smarlhens/npm-check-engines",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Check and update Node.js engine constraints in package.json",
   "keywords": [
     "cli",
