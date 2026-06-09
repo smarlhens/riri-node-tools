@@ -22,8 +22,8 @@ repos:
     hooks:
       - id: oxfmt
         types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css]
-        # oxfmt ignores lockfiles; passing only ignored files makes it exit non-zero.
-        exclude: '(^|/)(package-lock\.json|pnpm-lock\.yaml)$'
+        # oxfmt ignores lockfiles & CHANGELOG.md; passing only ignored files makes it exit non-zero.
+        exclude: '(^|/)(package-lock\.json|pnpm-lock\.yaml|CHANGELOG\.md)$'
 
   - repo: https://github.com/oxc-project/mirrors-oxlint
     rev: "v1.69.0"
