@@ -26,5 +26,17 @@
       matchCurrentVersion: "/^0\\./",
       enabled: false,
     },
+    {
+      matchDatasources: ["npm"],
+      matchPackageNames: ["@types/node"],
+      matchUpdateTypes: ["major"],
+      enabled: false,
+    },
+    {
+      matchDatasources: ["node-version", "docker"],
+      matchPackageNames: ["node"],
+      matchUpdateTypes: ["major"],
+      enabled: false,
+    },
   ],
 }
