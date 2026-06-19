@@ -51,7 +51,7 @@
     "version": "napi version"
   },
   "devDependencies": {
-    "@napi-rs/cli": "3.7.0"
+    "@napi-rs/cli": "3.7.2"
   },
   "napi": {
     "binaryName": "npm-pin-dependencies",
