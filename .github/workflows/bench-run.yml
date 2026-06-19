@@ -104,9 +104,31 @@ jobs:
             (cd "$fixture" && { /usr/bin/time -v "../../$binary" --quiet 2>&1 1>/dev/null; } 2>&1 \
               | grep 'Maximum resident set size' | grep -oP '\d+' || echo "0")
           }
+          # ncd needs a registry; synthesize an offline one (one empty packument
+          # per locked package) so the run is deterministic, then measure it
+          # against the shared 500-dep lockfile for a comparable workload.
+          measure_ncd() {
+            local fixture="$1"
+            local binary="$2"
+            if [ ! -d "$fixture" ] || [ ! -x "$binary" ]; then
+              echo "0"
+              return
+            fi
+            local root reg
+            root="$PWD"
+            reg="$(mktemp -d)"
+            jq -r '.packages | keys[] | select(startswith("node_modules/")) | ltrimstr("node_modules/")' \
+              "$fixture/package-lock.json" | while read -r name; do
+              printf '{}' > "$reg/$name.json"
+            done
+            (cd "$fixture" && { /usr/bin/time -v "$root/$binary" --quiet --registry "file://$reg" 2>&1 1>/dev/null; } 2>&1 \
+              | grep 'Maximum resident set size' | grep -oP '\d+' || echo "0")
+          }
           rss_nce=$(measure_in fixtures/npm-v3-500-deps target/release/nce)
           rss_npd=$(measure_in fixtures/npd-npm-v3-500-deps target/release/npd)
-          json=$(jq -nc --argjson nce "$rss_nce" --argjson npd "$rss_npd" '{"nce": $nce, "npd": $npd}')
+          rss_ncd=$(measure_ncd fixtures/npd-npm-v3-500-deps target/release/ncd)
+          json=$(jq -nc --argjson nce "$rss_nce" --argjson npd "$rss_npd" --argjson ncd "$rss_ncd" \
+            '{"nce": $nce, "npd": $npd, "ncd": $ncd}')
           echo "rss_kb=$json" >> "$GITHUB_OUTPUT"
 
       - name: Discover bench targets
