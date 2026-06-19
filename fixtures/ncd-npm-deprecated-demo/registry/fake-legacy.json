@@ -1,0 +1,9 @@
+{
+  "dist-tags": { "latest": "0.3.0" },
+  "versions": {
+    "0.2.1": {
+      "deprecated": "fake-legacy is unmaintained; migrate to fake-modern"
+    },
+    "0.3.0": {}
+  }
+}

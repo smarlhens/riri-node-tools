@@ -1,0 +1,41 @@
+name: napi-ncd
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "crates/riri-napi-ncd/**"
+      - "crates/riri-ncd/**"
+      - "crates/riri-common/**"
+      - "crates/riri-npm/**"
+      - "crates/riri-pnpm/**"
+      - "crates/riri-yarn/**"
+      - "crates/riri-semver-range/**"
+      - ".github/workflows/napi-ncd.yml"
+      - ".github/workflows/napi.yml"
+  pull_request:
+    paths:
+      - "crates/riri-napi-ncd/**"
+      - "crates/riri-ncd/**"
+      - "crates/riri-common/**"
+      - "crates/riri-npm/**"
+      - "crates/riri-pnpm/**"
+      - "crates/riri-yarn/**"
+      - "crates/riri-semver-range/**"
+      - ".github/workflows/napi-ncd.yml"
+      - ".github/workflows/napi.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  napi:
+    uses: ./.github/workflows/napi.yml
+    with:
+      crate-dir: crates/riri-napi-ncd
+      app-name: npm-check-deprecations

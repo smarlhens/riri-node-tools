@@ -1,0 +1,11 @@
+{
+  "name": "ncd-demo",
+  "private": true,
+  "dependencies": {
+    "fake-app": "^2.0.0",
+    "fake-util": "^1.0.0"
+  },
+  "devDependencies": {
+    "fake-test": "^3.0.0"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "dist-tags": { "latest": "2.0.0" },
+  "versions": {
+    "1.2.0": {
+      "deprecated": "fake-util is deprecated in favor of @demo/fake-util"
+    },
+    "1.4.0": {},
+    "2.0.0": {}
+  }
+}

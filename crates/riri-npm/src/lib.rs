@@ -3,6 +3,9 @@
 //! Parses the lockfile and exposes engine constraints per dependency
 //! via the [`LockfileEngines`] trait.
 
+#[cfg(feature = "graph")]
+mod graph;
+
 use riri_common::{Engines, LockfileEngines, LockfileVersions};
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -18,6 +21,16 @@ pub enum NpmParseError {
     UnsupportedVersion(u64),
 }
 
+/// `dependencies` differs by lockfile version: v2/v3 `packages` entries map
+/// name → range string; v1 entries nest child entries.
+#[cfg(feature = "graph")]
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum NpmEntryDeps {
+    Ranges(HashMap<String, String>),
+    Nested(HashMap<String, NpmLockEntry>),
+}
+
 /// A single dependency entry in an npm lockfile.
 #[derive(Debug, Clone, Deserialize)]
 pub struct NpmLockEntry {
@@ -29,6 +42,21 @@ pub struct NpmLockEntry {
     pub resolved: Option<String>,
     #[serde(default)]
     pub link: Option<bool>,
+    /// `dependencies` differs by lockfile version: v2/v3 store name → range
+    /// strings, v1 nests child entries.
+    #[cfg(feature = "graph")]
+    #[serde(default)]
+    pub dependencies: Option<NpmEntryDeps>,
+    #[cfg(feature = "graph")]
+    #[serde(default, rename = "optionalDependencies")]
+    pub optional_dependencies: Option<HashMap<String, String>>,
+    #[cfg(feature = "graph")]
+    #[serde(default, rename = "devDependencies")]
+    pub dev_dependencies: Option<HashMap<String, String>>,
+    /// v1 only: name → range of runtime deps.
+    #[cfg(feature = "graph")]
+    #[serde(default)]
+    pub requires: Option<HashMap<String, String>>,
 }
 
 /// Parsed npm `package-lock.json` covering v1, v2, and v3 formats.

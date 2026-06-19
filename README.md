@@ -21,12 +21,14 @@
 
 End-user CLIs published from this monorepo:
 
-| Tool                                                                                                                                                           | Description                                                                          | Install                                    |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------ |
-| [@smarlhens/npm-check-engines](https://npmx.dev/@smarlhens/npm-check-engines) (`nce`, `npm-check-engines`) — [README](crates/riri-napi-nce/README.md)          | Check and update Node.js engine constraints in package.json                          | `npm i -g @smarlhens/npm-check-engines`    |
-| [@smarlhens/npm-pin-dependencies](https://npmx.dev/@smarlhens/npm-pin-dependencies) (`npd`, `npm-pin-dependencies`) — [README](crates/riri-napi-npd/README.md) | Pin dependency ranges in package.json to the exact versions resolved by the lockfile | `npm i -g @smarlhens/npm-pin-dependencies` |
+| Tool                                                                                                                                                                 | Description                                                                                    | Install                                      |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| [@smarlhens/npm-check-engines](https://npmx.dev/@smarlhens/npm-check-engines) (`nce`, `npm-check-engines`) — [README](crates/riri-napi-nce/README.md)                | Check and update Node.js engine constraints in package.json                                    | `npm i -g @smarlhens/npm-check-engines`      |
+| [@smarlhens/npm-check-deprecations](https://npmx.dev/@smarlhens/npm-check-deprecations) (`ncd`, `npm-check-deprecations`) — [README](crates/riri-napi-ncd/README.md) | Find deprecated packages in the lockfile dependency tree and show the chains that pull them in | `npm i -g @smarlhens/npm-check-deprecations` |
+| [@smarlhens/npm-pin-dependencies](https://npmx.dev/@smarlhens/npm-pin-dependencies) (`npd`, `npm-pin-dependencies`) — [README](crates/riri-napi-npd/README.md)       | Pin dependency ranges in package.json to the exact versions resolved by the lockfile           | `npm i -g @smarlhens/npm-pin-dependencies`   |
 
 - **npm-check-engines** — npm / pnpm / yarn lockfiles · Node.js lifecycle & EOL policy gates · multiple engine keys (node, npm, yarn) · configurable version precision · JSON output
+- **npm-check-deprecations** — npm / yarn / pnpm lockfiles (auto-detected) · dependency chains to each deprecated package · semver-range blocker analysis · newest non-deprecated version hints · JSON output
 - **npm-pin-dependencies** — npm / yarn / pnpm lockfiles (auto-detected) · workspace mode · pnpm catalog pinning · save-exact via .npmrc · JSON output
 
 ### Supported platforms

@@ -65,6 +65,8 @@ jobs:
         crate:
           - name: nce
             dir: crates/riri-napi-nce
+          - name: ncd
+            dir: crates/riri-napi-ncd
           - name: npd
             dir: crates/riri-napi-npd
     steps:

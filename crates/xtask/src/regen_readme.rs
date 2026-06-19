@@ -7,6 +7,7 @@ use std::process::{Command, Stdio};
 use tera::{Context as TeraContext, Tera};
 
 const TPL_README_NCE: &str = include_str!("../templates/readme-nce.tera");
+const TPL_README_NCD: &str = include_str!("../templates/readme-ncd.tera");
 const TPL_README_NPD: &str = include_str!("../templates/readme-npd.tera");
 const TPL_README_ROOT: &str = include_str!("../templates/readme-root.tera");
 
@@ -15,7 +16,7 @@ pub struct Args {
     /// Fail with a non-zero exit code and print a diff if the README would change.
     #[arg(long)]
     pub check: bool,
-    /// Restrict to a single target (`root`, `nce`, or `npd`). Defaults to all.
+    /// Restrict to a single target (`root`, `nce`, `ncd`, or `npd`). Defaults to all.
     #[arg(long)]
     pub crate_name: Option<String>,
 }
@@ -33,6 +34,9 @@ struct CrateSpec {
     template: &'static str,
     /// Curated capability highlights for the root README tools section.
     features: &'static [&'static str],
+    /// Serve packuments from `{fixture_dir}/registry` via a `file://` registry
+    /// so example/debug output is deterministic and offline (ncd only).
+    offline_registry: bool,
 }
 
 const CRATES: &[CrateSpec] = &[
@@ -49,6 +53,22 @@ const CRATES: &[CrateSpec] = &[
             "configurable version precision",
             "JSON output",
         ],
+        offline_registry: false,
+    },
+    CrateSpec {
+        name: "ncd",
+        crate_dir: "crates/riri-napi-ncd",
+        bin_script: "bin/ncd.js",
+        fixture_dir: "fixtures/ncd-npm-deprecated-demo",
+        template: "readme-ncd",
+        features: &[
+            "npm / yarn / pnpm lockfiles (auto-detected)",
+            "dependency chains to each deprecated package",
+            "semver-range blocker analysis",
+            "newest non-deprecated version hints",
+            "JSON output",
+        ],
+        offline_registry: true,
     },
     CrateSpec {
         name: "npd",
@@ -63,6 +83,7 @@ const CRATES: &[CrateSpec] = &[
             "save-exact via .npmrc",
             "JSON output",
         ],
+        offline_registry: false,
     },
 ];
 
@@ -88,7 +109,7 @@ pub fn run(args: &Args) -> anyhow::Result<()> {
             CRATES
                 .iter()
                 .find(|c| c.name == name)
-                .ok_or_else(|| anyhow!("unknown crate: {name}. Known: root, nce, npd"))?,
+                .ok_or_else(|| anyhow!("unknown crate: {name}. Known: root, nce, ncd, npd"))?,
         ],
         None => CRATES.iter().collect(),
     };
@@ -126,13 +147,41 @@ fn regenerate(workspace_root: &Path, tera: &Tera, spec: &CrateSpec) -> anyhow::R
         .ok_or_else(|| anyhow!("engines.node missing in {}", pkg_path.display()))?
         .to_string();
 
-    let help = run_node(&bin_path, &["--help"], &crate_path)?;
+    let targets: Vec<String> = pkg
+        .get("napi")
+        .and_then(|n| n.get("targets"))
+        .and_then(serde_json::Value::as_array)
+        .map(|a| {
+            a.iter()
+                .filter_map(serde_json::Value::as_str)
+                .map(str::to_string)
+                .collect()
+        })
+        .unwrap_or_default();
+
     let fixture_path = workspace_root.join(spec.fixture_dir);
-    let example = run_node(&bin_path, &[], &fixture_path)?;
-    let debug = run_node(&bin_path, &["-d"], &fixture_path)?;
+    // Offline crates point `--registry` at a `file://` packument fixture so the
+    // example/debug output is deterministic (no live registry).
+    let registry_arg = spec
+        .offline_registry
+        .then(|| format!("file://{}", fixture_path.join("registry").display()));
+    let mut example_args: Vec<&str> = Vec::new();
+    let mut debug_args: Vec<&str> = vec!["-d"];
+    if let Some(reg) = &registry_arg {
+        example_args.extend(["--registry", reg.as_str()]);
+        debug_args.extend(["--registry", reg.as_str()]);
+    }
+
+    let help = run_node(&bin_path, &["--help"], &crate_path)?;
+    let example = run_node(&bin_path, &example_args, &fixture_path)?;
+    let debug = run_node(&bin_path, &debug_args, &fixture_path)?;
 
     let mut ctx = TeraContext::new();
     ctx.insert("node_engines", &node_engines);
+    ctx.insert(
+        "platforms_table",
+        &markdown_table(&["OS", "Arch"], &platform_rows(&targets)),
+    );
     ctx.insert("help", &strip_trailing_ws(&help));
     ctx.insert("example", &strip_trailing_ws(&example));
     ctx.insert("debug", &strip_trailing_ws(&debug));
@@ -148,6 +197,7 @@ fn build_tera() -> anyhow::Result<Tera> {
     tera.autoescape_on(Vec::new());
     tera.add_raw_templates(vec![
         ("readme-nce", TPL_README_NCE),
+        ("readme-ncd", TPL_README_NCD),
         ("readme-npd", TPL_README_NPD),
         ("readme-root", TPL_README_ROOT),
     ])

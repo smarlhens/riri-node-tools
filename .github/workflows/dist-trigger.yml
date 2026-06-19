@@ -2,9 +2,9 @@
 # When release-please publishes a GitHub Release, dispatch the dist workflow
 # to build and attach prebuilt CLI binaries.
 #
-# release-please tags every workspace package, but only riri-nce and riri-npd
-# are dist-able (see packages in the root Cargo.toml). Dispatching dist for any
-# other tag fails 'dist plan', so the trigger is gated to those two prefixes.
+# release-please tags every workspace package, but only riri-nce, riri-npd &
+# riri-ncd are dist-able (see packages in the root Cargo.toml). Dispatching dist
+# for any other tag fails 'dist plan', so the trigger is gated to those prefixes.
 
 name: dist-trigger
 
@@ -19,7 +19,7 @@ permissions:
 jobs:
   trigger:
     runs-on: ubuntu-24.04
-    if: startsWith(github.event.release.tag_name, 'riri-nce-v') || startsWith(github.event.release.tag_name, 'riri-npd-v')
+    if: startsWith(github.event.release.tag_name, 'riri-nce-v') || startsWith(github.event.release.tag_name, 'riri-npd-v') || startsWith(github.event.release.tag_name, 'riri-ncd-v')
     steps:
       - name: Dispatch dist workflow
         uses: benc-uk/workflow-dispatch@v1
