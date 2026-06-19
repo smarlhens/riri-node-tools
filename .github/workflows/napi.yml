@@ -19,6 +19,10 @@ on:
 
 env:
   MACOSX_DEPLOYMENT_TARGET: "10.13"
+  # ring's pregenerated ARM assembly needs __ARM_ARCH defined; the napi-cross
+  # aarch64-gnu gcc does not set it, so define it for that target's C builds.
+  # Only crates with C deps (e.g. riri-ncd via ureq → rustls → ring) use this.
+  CFLAGS_aarch64_unknown_linux_gnu: "-D__ARM_ARCH=8"
 
 jobs:
   build:

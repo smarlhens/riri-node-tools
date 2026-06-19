@@ -3,6 +3,8 @@ mod npmrc;
 mod package_json_file;
 
 pub use detect::{DetectError, detect_lockfile, find_package_json};
+#[cfg(feature = "graph")]
+pub use npmrc::{DEFAULT_REGISTRY, NpmrcRegistryConfig};
 pub use npmrc::{NpmrcOutcome, upsert_npmrc_flag};
 pub use package_json_file::{PackageJsonFile, to_pretty_json_preserving_indent};
 
@@ -138,6 +140,125 @@ pub trait LockfileVersions {
     /// `name@range` descriptor and override this to resolve precisely.
     fn resolved_version(&self, name: &str, _range: &str) -> Option<&str> {
         self.version_for(name)
+    }
+}
+
+/// Which section of `package.json` a root dependency comes from.
+#[cfg(feature = "graph")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RootDepKind {
+    Dependencies,
+    DevDependencies,
+    OptionalDependencies,
+}
+
+#[cfg(feature = "graph")]
+impl RootDepKind {
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Dependencies => "dependencies",
+            Self::DevDependencies => "devDependencies",
+            Self::OptionalDependencies => "optionalDependencies",
+        }
+    }
+}
+
+/// A node in the resolved dependency graph — one *installed instance*.
+#[cfg(feature = "graph")]
+#[derive(Debug, Clone)]
+pub struct LockGraphNode {
+    pub name: String,
+    pub version: String,
+    pub deps: Vec<LockGraphEdge>,
+}
+
+/// A directed edge from a parent node to a child node in the graph.
+#[cfg(feature = "graph")]
+#[derive(Debug, Clone)]
+pub struct LockGraphEdge {
+    /// Index into [`LockGraph::nodes`].
+    pub node: usize,
+    pub optional: bool,
+}
+
+/// A root dependency edge (from the project root to a top-level package).
+#[cfg(feature = "graph")]
+#[derive(Debug, Clone)]
+pub struct LockGraphRoot {
+    pub kind: RootDepKind,
+    /// The `package.json` specifier range (e.g. `^1.2.3`).
+    pub range: String,
+    /// Index into [`LockGraph::nodes`].
+    pub node: usize,
+}
+
+/// Resolved dependency graph extracted from a lockfile.
+#[cfg(feature = "graph")]
+#[derive(Debug, Clone, Default)]
+pub struct LockGraph {
+    pub nodes: Vec<LockGraphNode>,
+    pub roots: Vec<LockGraphRoot>,
+}
+
+/// Error type for lockfile graph extraction.
+#[cfg(feature = "graph")]
+#[derive(Debug, thiserror::Error)]
+pub enum GraphError {
+    #[error("{0}")]
+    Other(String),
+}
+
+/// Trait implemented by each lockfile parser to expose the full dependency graph.
+#[cfg(feature = "graph")]
+pub trait LockfileGraph {
+    /// Build a dependency graph from a parsed lockfile. `package_json` supplies
+    /// the direct-dependency specifiers (and, for yarn, the root descriptors).
+    /// Unresolvable edges are skipped, not errors — lockfiles legitimately omit
+    /// optional/platform-specific entries.
+    ///
+    /// # Errors
+    /// Returns [`GraphError`] for structurally broken lockfiles.
+    fn dep_graph(&self, package_json: &PackageJson) -> Result<LockGraph, GraphError>;
+}
+
+/// Returns `true` if the specifier refers to a local path or workspace alias
+/// rather than a registry package.
+#[must_use]
+pub fn is_local_specifier(spec: &str) -> bool {
+    spec.starts_with("file:")
+        || spec.starts_with("link:")
+        || spec.starts_with("workspace:")
+        || spec.starts_with("catalog:")
+        || spec == "catalog"
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod graph_tests {
+    use super::*;
+
+    #[cfg(feature = "graph")]
+    #[test]
+    fn root_dep_kind_as_str() {
+        assert_eq!(RootDepKind::Dependencies.as_str(), "dependencies");
+        assert_eq!(RootDepKind::DevDependencies.as_str(), "devDependencies");
+        assert_eq!(
+            RootDepKind::OptionalDependencies.as_str(),
+            "optionalDependencies"
+        );
+    }
+
+    #[test]
+    fn is_local_specifier_recognizes_all_forms() {
+        assert!(is_local_specifier("file:../foo"));
+        assert!(is_local_specifier("link:../bar"));
+        assert!(is_local_specifier("workspace:*"));
+        assert!(is_local_specifier("catalog:react18"));
+        assert!(is_local_specifier("catalog"));
+        assert!(!is_local_specifier("^1.2.3"));
+        assert!(!is_local_specifier("1.2.3"));
+        assert!(!is_local_specifier("latest"));
     }
 }
 

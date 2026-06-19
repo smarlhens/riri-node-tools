@@ -1,0 +1,7 @@
+{
+  "name": "ncd-workspace-fixture",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
+}

@@ -63,13 +63,21 @@ jobs:
           save-if: ${{ inputs.save-rust-cache }}
 
       - name: Build release binaries
-        run: cargo build --release --workspace
+        run: |
+          members=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[].name')
+          for p in riri-nce riri-npd riri-ncd; do
+            if echo "$members" | grep -qx "$p"; then
+              cargo build --release -p "$p"
+            else
+              echo "skip $p (not in workspace at this ref)"
+            fi
+          done
 
       - name: Record binary sizes
         id: sizes
         run: |
           sizes="{}"
-          for bin in nce npd; do
+          for bin in nce npd ncd; do
             if [ -f "target/release/$bin" ]; then
               s=$(stat --format='%s' "target/release/$bin")
               sizes=$(echo "$sizes" | jq -c --arg k "$bin" --argjson v "$s" '. + {($k): $v}')

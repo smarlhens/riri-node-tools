@@ -1,0 +1,7 @@
+{
+  "name": "@ncd/b",
+  "version": "1.0.0",
+  "dependencies": {
+    "qux": "^1.0.0"
+  }
+}

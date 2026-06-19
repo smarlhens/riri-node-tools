@@ -1,0 +1,18 @@
+lockfileVersion: '9.0'
+
+importers:
+  .:
+    dependencies:
+      bar:
+        specifier: ^2.0.0
+        version: 2.0.0
+
+packages:
+  bar@2.0.0: {}
+  foo@1.0.0: {}
+
+snapshots:
+  bar@2.0.0:
+    dependencies:
+      foo: 1.0.0
+  foo@1.0.0: {}

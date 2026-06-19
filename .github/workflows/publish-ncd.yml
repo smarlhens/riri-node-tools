@@ -1,0 +1,25 @@
+name: publish-ncd
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  napi:
+    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, '@smarlhens/npm-check-deprecations-') }}
+    uses: ./.github/workflows/napi.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      crate-dir: crates/riri-napi-ncd
+      app-name: npm-check-deprecations
+      run-publish: true

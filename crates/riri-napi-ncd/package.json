@@ -1,0 +1,70 @@
+{
+  "name": "@smarlhens/npm-check-deprecations",
+  "version": "0.1.0",
+  "description": "Find deprecated packages in the lockfile dependency tree and show the chains that pull them in",
+  "keywords": [
+    "cli",
+    "dependencies",
+    "dependency-management",
+    "deprecated",
+    "deprecation",
+    "lockfile",
+    "napi",
+    "node",
+    "nodejs",
+    "npm",
+    "package.json",
+    "pnpm",
+    "rust",
+    "semver",
+    "typescript",
+    "yarn"
+  ],
+  "license": "BlueOak-1.0.0",
+  "author": "Samuel MARLHENS <samuel.marlhens@proton.me>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smarlhens/riri-node-tools.git"
+  },
+  "bin": {
+    "ncd": "bin/ncd.js",
+    "npm-check-deprecations": "bin/ncd.js"
+  },
+  "files": [
+    "bin",
+    "index.d.ts",
+    "index.js"
+  ],
+  "main": "index.js",
+  "types": "index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm --no-gh-release",
+    "version": "napi version"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "3.7.0"
+  },
+  "napi": {
+    "binaryName": "npm-check-deprecations",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "aarch64-unknown-linux-musl",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0",
+    "npm": ">=10.9.7"
+  }
+}

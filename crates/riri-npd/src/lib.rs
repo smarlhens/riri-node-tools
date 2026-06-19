@@ -6,7 +6,7 @@
 
 pub mod cli;
 
-use riri_common::{LockfileVersions, PackageJson};
+use riri_common::{LockfileVersions, PackageJson, is_local_specifier};
 use semver::Version;
 use thiserror::Error;
 use tracing::debug;
@@ -155,14 +155,6 @@ pub fn pin_dependencies(
             .then(a.name.cmp(&b.name))
     });
     Ok(result)
-}
-
-fn is_local_specifier(spec: &str) -> bool {
-    spec.starts_with("file:")
-        || spec.starts_with("link:")
-        || spec.starts_with("workspace:")
-        || spec.starts_with("catalog:")
-        || spec == "catalog"
 }
 
 fn is_already_pinned(spec: &str, locked: &str) -> bool {

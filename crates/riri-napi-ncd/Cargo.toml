@@ -1,0 +1,20 @@
+[package]
+name = "riri-napi-ncd"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+riri-ncd = { path = "../riri-ncd", version = "0.1.0" }
+
+[build-dependencies]
+napi-build = { workspace = true }
+
+[lints]
+workspace = true

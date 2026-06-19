@@ -1,0 +1,46 @@
+[package]
+name = "riri-ncd"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Core logic for npm-check-deprecations"
+
+[[bin]]
+name = "ncd"
+path = "src/bin/ncd.rs"
+
+[[bin]]
+name = "npm-check-deprecations"
+path = "src/bin/npm-check-deprecations.rs"
+
+[dependencies]
+riri-common = { path = "../riri-common", version = "0.1.2", features = ["graph"] }
+riri-npm = { path = "../riri-npm", version = "0.1.2", features = ["graph"] }
+riri-pnpm = { path = "../riri-pnpm", version = "0.1.2", features = ["graph"] }
+riri-semver-range = { path = "../riri-semver-range", version = "0.1.1" }
+riri-task-runner = { path = "../riri-task-runner", version = "0.1.0" }
+riri-workspace = { path = "../riri-workspace", version = "0.1.2" }
+riri-yarn = { path = "../riri-yarn", version = "0.1.2", features = ["graph"] }
+anyhow = { workspace = true }
+clap = { workspace = true }
+console = { workspace = true }
+semver = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
+ureq = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+tempfile = { workspace = true }
+
+[[bench]]
+name = "check_deprecations"
+harness = false
+
+[lints]
+workspace = true

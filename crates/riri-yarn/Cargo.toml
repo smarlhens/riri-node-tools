@@ -5,6 +5,9 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
+[features]
+graph = ["riri-common/graph"]
+
 [dependencies]
 riri-common = { path = "../riri-common", version = "0.1.2" }
 serde = { workspace = true }
