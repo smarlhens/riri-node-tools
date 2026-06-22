@@ -39,6 +39,10 @@ inputs:
     description: 'JSON object of base peak RSS in KB per binary, e.g. {"nce": 1234}'
     required: false
     default: "{}"
+  crates:
+    description: Space-separated crate set the PR benchmarked; when set, binary-size and RSS tables are limited to it. Empty compares everything present.
+    required: false
+    default: ""
   reference-prefix:
     description: "Comma-separated prefixes for reference benchmarks (excluded from regression, shown in cross-comparison)"
     required: false

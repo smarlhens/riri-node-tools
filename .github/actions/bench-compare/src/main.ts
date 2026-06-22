@@ -37,6 +37,20 @@ export const run = async (): Promise<void> => {
       .map(prefix => prefix.trim())
       .filter(prefix => prefix.length > 0);
 
+    // The PR may benchmark only a subset of crates; narrow the size/RSS maps to
+    // that set so unbenchmarked crates aren't reported as removed. Empty = all.
+    const affectedCrates = new Set(
+      core
+        .getInput('crates')
+        .split(/\s+/)
+        .map(crate => crate.trim())
+        .filter(crate => crate.length > 0),
+    );
+    const limitToAffected = (sizes: Record<string, number>): Record<string, number> =>
+      affectedCrates.size === 0
+        ? sizes
+        : Object.fromEntries(Object.entries(sizes).filter(([name]) => affectedCrates.has(name)));
+
     core.info(`Comparing criterion baselines: ${baseBaseline} vs ${prBaseline}`);
     core.info(`Criterion directory: ${criterionDirectory}`);
     core.info(`Threshold: ${threshold}%`);
@@ -69,8 +83,8 @@ export const run = async (): Promise<void> => {
 
     const benchmarkTable = formatBenchmarkTable(ownBenchmarkResults, threshold);
     const crossComparisonTable = formatCrossComparisonTable(crossComparisons);
-    const sizeTable = formatBinarySizeTable(prBinarySizes, baseBinarySizes);
-    const rssTable = formatRssTable(prPeakRssKilobytes, basePeakRssKilobytes);
+    const sizeTable = formatBinarySizeTable(limitToAffected(prBinarySizes), limitToAffected(baseBinarySizes));
+    const rssTable = formatRssTable(limitToAffected(prPeakRssKilobytes), limitToAffected(basePeakRssKilobytes));
     const testTable = formatTestCountTable(prTestCount, baseTestCount);
 
     const commentBody = buildFullComment(
