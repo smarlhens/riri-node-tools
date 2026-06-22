@@ -25,6 +25,11 @@ on:
         required: false
         type: string
         default: bench-v1
+      crates:
+        description: Space-separated benchable crates to run (nce ncd npd semver-range). Empty runs all.
+        required: false
+        type: string
+        default: ""
     outputs:
       binary-sizes:
         description: JSON object of binary sizes in bytes
@@ -62,22 +67,44 @@ jobs:
           prefix-key: ${{ inputs.rust-cache-prefix }}
           save-if: ${{ inputs.save-rust-cache }}
 
-      - name: Build release binaries
+      # Translate the crate set (default: all) into cargo `-p` flags for the
+      # binary builds. Bench targets are discovered per-ref below.
+      - name: Resolve crate set
+        id: resolve
+        env:
+          REQUESTED: ${{ inputs.crates }}
         run: |
-          members=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[].name')
-          for p in riri-nce riri-npd riri-ncd; do
-            if echo "$members" | grep -qx "$p"; then
-              cargo build --release -p "$p"
-            else
-              echo "skip $p (not in workspace at this ref)"
-            fi
+          set="${REQUESTED:-}"
+          [ -z "$set" ] && set="nce npd ncd semver-range"
+          build=""
+          for c in $set; do
+            case "$c" in
+              nce | npd | ncd) build="$build -p riri-$c" ;;
+            esac
           done
+          {
+            echo "set=$set"
+            echo "build=$build"
+          } >> "$GITHUB_OUTPUT"
+          echo "Crate set: $set"
+
+      - name: Build release binaries
+        if: steps.resolve.outputs.build != ''
+        env:
+          BUILD_PKGS: ${{ steps.resolve.outputs.build }}
+        run: |
+          read -ra pkgs <<< "$BUILD_PKGS"
+          cargo build --release "${pkgs[@]}"
 
       - name: Record binary sizes
         id: sizes
+        env:
+          CRATE_SET: ${{ steps.resolve.outputs.set }}
         run: |
+          has() { case " $CRATE_SET " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
           sizes="{}"
           for bin in nce npd ncd; do
+            has "$bin" || continue
             if [ -f "target/release/$bin" ]; then
               s=$(stat --format='%s' "target/release/$bin")
               sizes=$(echo "$sizes" | jq -c --arg k "$bin" --argjson v "$s" '. + {($k): $v}')
@@ -93,7 +120,10 @@ jobs:
 
       - name: Measure peak RSS
         id: rss
+        env:
+          CRATE_SET: ${{ steps.resolve.outputs.set }}
         run: |
+          has() { case " $CRATE_SET " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
           measure_in() {
             local fixture="$1"
             local binary="$2"
@@ -124,22 +154,45 @@ jobs:
             (cd "$fixture" && { /usr/bin/time -v "$root/$binary" --quiet --registry "file://$reg" 2>&1 1>/dev/null; } 2>&1 \
               | grep 'Maximum resident set size' | grep -oP '\d+' || echo "0")
           }
-          rss_nce=$(measure_in fixtures/npm-v3-500-deps target/release/nce)
-          rss_npd=$(measure_in fixtures/npd-npm-v3-500-deps target/release/npd)
-          rss_ncd=$(measure_ncd fixtures/npd-npm-v3-500-deps target/release/ncd)
-          json=$(jq -nc --argjson nce "$rss_nce" --argjson npd "$rss_npd" --argjson ncd "$rss_ncd" \
-            '{"nce": $nce, "npd": $npd, "ncd": $ncd}')
+          json="{}"
+          if has nce; then
+            rss=$(measure_in fixtures/npm-v3-500-deps target/release/nce)
+            json=$(echo "$json" | jq -c --argjson v "$rss" '. + {"nce": $v}')
+          fi
+          if has npd; then
+            rss=$(measure_in fixtures/npd-npm-v3-500-deps target/release/npd)
+            json=$(echo "$json" | jq -c --argjson v "$rss" '. + {"npd": $v}')
+          fi
+          if has ncd; then
+            rss=$(measure_ncd fixtures/npd-npm-v3-500-deps target/release/ncd)
+            json=$(echo "$json" | jq -c --argjson v "$rss" '. + {"ncd": $v}')
+          fi
           echo "rss_kb=$json" >> "$GITHUB_OUTPUT"
 
+      # Select bench targets explicitly (not `--benches`, which also runs the
+      # lib/bin unittest harness and chokes on `--save-baseline`). Read names
+      # from each affected crate's manifest at this ref.
       - name: Discover bench targets
         id: discover
+        env:
+          CRATE_SET: ${{ steps.resolve.outputs.set }}
         run: |
-          targets=$(grep -r '^\[\[bench\]\]' crates/*/Cargo.toml -A1 \
-            | grep 'name =' | sed 's/.*name = "\(.*\)"/--bench \1/' | tr '\n' ' ')
+          declare -A dir=( [nce]=riri-nce [ncd]=riri-ncd [npd]=riri-npd [semver-range]=riri-semver-range )
+          tomls=()
+          for c in $CRATE_SET; do
+            d="${dir[$c]:-}"
+            [ -n "$d" ] && [ -f "crates/$d/Cargo.toml" ] && tomls+=("crates/$d/Cargo.toml")
+          done
+          targets=""
+          if [ ${#tomls[@]} -gt 0 ]; then
+            targets=$(grep '^\[\[bench\]\]' "${tomls[@]}" -A1 \
+              | grep 'name =' | sed 's/.*name = "\(.*\)"/--bench \1/' | tr '\n' ' ')
+          fi
           echo "targets=$targets" >> "$GITHUB_OUTPUT"
           echo "Discovered bench targets: $targets"
 
       - name: Run benchmarks
+        if: steps.discover.outputs.targets != ''
         env:
           BENCH_TARGETS: ${{ steps.discover.outputs.targets }}
           BASELINE_NAME: ${{ inputs.baseline-name }}

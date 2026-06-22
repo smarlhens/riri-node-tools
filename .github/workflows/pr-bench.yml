@@ -22,6 +22,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ── Resolve which benchable crates the diff affects ──────
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      crates: ${{ steps.affected.outputs.crates }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: bench-js/.nvmrc
+
+      - name: Compute affected benchable crates
+        id: affected
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node bench-js/affected-crates.ts
+
   # ── Check for cached base results ────────────────────────
   check-cache:
     runs-on: ubuntu-24.04
@@ -37,8 +61,10 @@ jobs:
           restore-keys: bench-baseline-
           lookup-only: true
 
-  # ── Benchmark PR branch (always runs) ────────────────────
+  # ── Benchmark PR branch (only affected crates) ───────────
   bench-pr:
+    needs: changes
+    if: needs.changes.outputs.crates != ''
     uses: ./.github/workflows/bench-run.yml
     with:
       ref: ${{ github.event.pull_request.head.sha }}
@@ -46,21 +72,23 @@ jobs:
       artifact-name: criterion-pr
       save-rust-cache: true
       rust-cache-prefix: bench-v1
+      crates: ${{ needs.changes.outputs.crates }}
 
   # ── Benchmark base branch (only if no cache) ─────────────
   bench-base:
-    needs: check-cache
-    if: needs.check-cache.outputs.has-cache != 'true'
+    needs: [check-cache, changes]
+    if: needs.check-cache.outputs.has-cache != 'true' && needs.changes.outputs.crates != ''
     uses: ./.github/workflows/bench-run.yml
     with:
       ref: ${{ github.event.pull_request.base.sha }}
       baseline-name: base
       artifact-name: criterion-base
       save-rust-cache: false
+      crates: ${{ needs.changes.outputs.crates }}
 
   # ── Compare & report ─────────────────────────────────────
   compare:
-    needs: [check-cache, bench-pr, bench-base]
+    needs: [check-cache, changes, bench-pr, bench-base]
     if: always() && needs.bench-pr.result == 'success'
     runs-on: ubuntu-24.04
     permissions:
@@ -155,5 +183,6 @@ jobs:
           base-test-count: ${{ steps.base.outputs.test_count }}
           pr-peak-rss-kb: ${{ needs.bench-pr.outputs.peak-rss-kb }}
           base-peak-rss-kb: ${{ steps.base.outputs.rss_kb }}
+          crates: ${{ needs.changes.outputs.crates }}
           reference-prefix: "nodejs-semver"
           threshold: "10"
