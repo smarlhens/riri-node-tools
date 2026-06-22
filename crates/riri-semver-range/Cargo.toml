@@ -10,7 +10,7 @@ semver = { workspace = true }
 
 [dev-dependencies]
 criterion = { workspace = true }
-nodejs-semver = "4.2.0"
+nodejs-semver = "5.0.0"
 proptest = "1.11.0"
 
 [[bench]]
