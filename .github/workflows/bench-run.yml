@@ -48,9 +48,9 @@ jobs:
   bench:
     runs-on: ubuntu-24.04
     outputs:
-      binary-sizes: ${{ steps.sizes.outputs.json }}
-      test-count: ${{ steps.tests.outputs.count }}
-      peak-rss-kb: ${{ steps.rss.outputs.rss_kb }}
+      binary-sizes: ${{ steps.bench.outputs.binary-sizes }}
+      test-count: ${{ steps.bench.outputs.test-count }}
+      peak-rss-kb: ${{ steps.bench.outputs.peak-rss-kb }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -67,138 +67,20 @@ jobs:
           prefix-key: ${{ inputs.rust-cache-prefix }}
           save-if: ${{ inputs.save-rust-cache }}
 
-      # Translate the crate set (default: all) into cargo `-p` flags for the
-      # binary builds. Bench targets are discovered per-ref below.
-      - name: Resolve crate set
-        id: resolve
-        env:
-          REQUESTED: ${{ inputs.crates }}
-        run: |
-          set="${REQUESTED:-}"
-          [ -z "$set" ] && set="nce npd ncd semver-range"
-          build=""
-          for c in $set; do
-            case "$c" in
-              nce | npd | ncd) build="$build -p riri-$c" ;;
-            esac
-          done
-          {
-            echo "set=$set"
-            echo "build=$build"
-          } >> "$GITHUB_OUTPUT"
-          echo "Crate set: $set"
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: bench-js/.nvmrc
 
-      - name: Build release binaries
-        if: steps.resolve.outputs.build != ''
+      # Builds binaries, records sizes, counts tests, measures peak RSS and runs
+      # the criterion benches for the crate set; emits binary-sizes / test-count
+      # / peak-rss-kb. Logic lives in bench-js/lib/ci-bench.ts (unit-tested).
+      - name: Benchmark
+        id: bench
         env:
-          BUILD_PKGS: ${{ steps.resolve.outputs.build }}
-        run: |
-          read -ra pkgs <<< "$BUILD_PKGS"
-          cargo build --release "${pkgs[@]}"
-
-      - name: Record binary sizes
-        id: sizes
-        env:
-          CRATE_SET: ${{ steps.resolve.outputs.set }}
-        run: |
-          has() { case " $CRATE_SET " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
-          sizes="{}"
-          for bin in nce npd ncd; do
-            has "$bin" || continue
-            if [ -f "target/release/$bin" ]; then
-              s=$(stat --format='%s' "target/release/$bin")
-              sizes=$(echo "$sizes" | jq -c --arg k "$bin" --argjson v "$s" '. + {($k): $v}')
-            fi
-          done
-          echo "json=$sizes" >> "$GITHUB_OUTPUT"
-
-      - name: Count tests
-        id: tests
-        run: |
-          count=$(cargo test --workspace -- --list 2>&1 | grep -c ': test$' || echo "0")
-          echo "count=$count" >> "$GITHUB_OUTPUT"
-
-      - name: Measure peak RSS
-        id: rss
-        env:
-          CRATE_SET: ${{ steps.resolve.outputs.set }}
-        run: |
-          has() { case " $CRATE_SET " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
-          measure_in() {
-            local fixture="$1"
-            local binary="$2"
-            if [ ! -d "$fixture" ] || [ ! -x "$binary" ]; then
-              echo "0"
-              return
-            fi
-            (cd "$fixture" && { /usr/bin/time -v "../../$binary" --quiet 2>&1 1>/dev/null; } 2>&1 \
-              | grep 'Maximum resident set size' | grep -oP '\d+' || echo "0")
-          }
-          # ncd needs a registry; synthesize an offline one (one empty packument
-          # per locked package) so the run is deterministic, then measure it
-          # against the shared 500-dep lockfile for a comparable workload.
-          measure_ncd() {
-            local fixture="$1"
-            local binary="$2"
-            if [ ! -d "$fixture" ] || [ ! -x "$binary" ]; then
-              echo "0"
-              return
-            fi
-            local root reg
-            root="$PWD"
-            reg="$(mktemp -d)"
-            jq -r '.packages | keys[] | select(startswith("node_modules/")) | ltrimstr("node_modules/")' \
-              "$fixture/package-lock.json" | while read -r name; do
-              printf '{}' > "$reg/$name.json"
-            done
-            (cd "$fixture" && { /usr/bin/time -v "$root/$binary" --quiet --registry "file://$reg" 2>&1 1>/dev/null; } 2>&1 \
-              | grep 'Maximum resident set size' | grep -oP '\d+' || echo "0")
-          }
-          json="{}"
-          if has nce; then
-            rss=$(measure_in fixtures/npm-v3-500-deps target/release/nce)
-            json=$(echo "$json" | jq -c --argjson v "$rss" '. + {"nce": $v}')
-          fi
-          if has npd; then
-            rss=$(measure_in fixtures/npd-npm-v3-500-deps target/release/npd)
-            json=$(echo "$json" | jq -c --argjson v "$rss" '. + {"npd": $v}')
-          fi
-          if has ncd; then
-            rss=$(measure_ncd fixtures/npd-npm-v3-500-deps target/release/ncd)
-            json=$(echo "$json" | jq -c --argjson v "$rss" '. + {"ncd": $v}')
-          fi
-          echo "rss_kb=$json" >> "$GITHUB_OUTPUT"
-
-      # Select bench targets explicitly (not `--benches`, which also runs the
-      # lib/bin unittest harness and chokes on `--save-baseline`). Read names
-      # from each affected crate's manifest at this ref.
-      - name: Discover bench targets
-        id: discover
-        env:
-          CRATE_SET: ${{ steps.resolve.outputs.set }}
-        run: |
-          declare -A dir=( [nce]=riri-nce [ncd]=riri-ncd [npd]=riri-npd [semver-range]=riri-semver-range )
-          tomls=()
-          for c in $CRATE_SET; do
-            d="${dir[$c]:-}"
-            [ -n "$d" ] && [ -f "crates/$d/Cargo.toml" ] && tomls+=("crates/$d/Cargo.toml")
-          done
-          targets=""
-          if [ ${#tomls[@]} -gt 0 ]; then
-            targets=$(grep '^\[\[bench\]\]' "${tomls[@]}" -A1 \
-              | grep 'name =' | sed 's/.*name = "\(.*\)"/--bench \1/' | tr '\n' ' ')
-          fi
-          echo "targets=$targets" >> "$GITHUB_OUTPUT"
-          echo "Discovered bench targets: $targets"
-
-      - name: Run benchmarks
-        if: steps.discover.outputs.targets != ''
-        env:
-          BENCH_TARGETS: ${{ steps.discover.outputs.targets }}
+          CRATES: ${{ inputs.crates }}
           BASELINE_NAME: ${{ inputs.baseline-name }}
-        run: |
-          read -ra targets <<< "$BENCH_TARGETS"
-          cargo bench "${targets[@]}" -- --save-baseline "$BASELINE_NAME"
+        run: node bench-js/ci-bench.ts
 
       - name: Upload criterion baselines
         uses: actions/upload-artifact@v7
