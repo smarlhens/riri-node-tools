@@ -31,11 +31,11 @@
     "tinybench": "6.0.2"
   },
   "devDependencies": {
-    "@types/node": "22.19.21",
+    "@types/node": "22.20.0",
     "envinfo": "7.21.0",
-    "npm-check-updates": "22.2.3",
-    "oxfmt": "0.55.0",
-    "oxlint": "1.70.0",
+    "npm-check-updates": "22.2.7",
+    "oxfmt": "0.56.0",
+    "oxlint": "1.71.0",
     "typescript": "6.0.3"
   },
   "engines": {
