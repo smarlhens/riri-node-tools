@@ -7,10 +7,11 @@ license.workspace = true
 
 [features]
 graph = ["riri-common/graph"]
+catalog = ["dep:riri-find-up"]
 
 [dependencies]
 riri-common = { path = "../riri-common", version = "0.1.2" }
-riri-find-up = { path = "../riri-find-up", version = "0.1.1" }
+riri-find-up = { path = "../riri-find-up", version = "0.1.1", optional = true }
 serde = { workspace = true }
 serde-saphyr = { workspace = true }
 thiserror = { workspace = true }

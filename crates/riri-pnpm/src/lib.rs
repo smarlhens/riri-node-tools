@@ -3,6 +3,7 @@
 //! Parses the lockfile and exposes engine constraints per dependency
 //! via the [`LockfileEngines`] trait.
 
+#[cfg(feature = "catalog")]
 pub mod catalog;
 
 use riri_common::{Engines, LockfileEngines, LockfileVersions};
