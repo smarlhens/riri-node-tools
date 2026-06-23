@@ -311,10 +311,17 @@ fn is_wildcard_str(s: &str) -> bool {
 }
 
 fn is_x_range(token: &str) -> bool {
-    token.contains('x')
-        || token.contains('X')
-        || token.contains('*')
-        || token.split('.').count() < 3
+    // Single pass: a wildcard byte makes it an x-range; otherwise fewer than three
+    // components (i.e. fewer than two dots) is a partial, which is also an x-range.
+    let mut dots = 0_usize;
+    for b in token.bytes() {
+        match b {
+            b'x' | b'X' | b'*' => return true,
+            b'.' => dots += 1,
+            _ => {}
+        }
+    }
+    dots < 2
 }
 
 /// `>=` with partial version support: `>=1.2` → `>=1.2.0`
@@ -410,8 +417,7 @@ fn parse_eq_range(input: &str) -> Result<RangePart, String> {
 }
 
 fn parse_caret(input: &str) -> Result<RangePart, String> {
-    let parts_count = version_component_count(input);
-    let v = parse_partial_version(input)?;
+    let (v, parts_count) = parse_partial_with_count(input)?;
 
     let upper = match parts_count {
         // ^0 → <1.0.0, ^1 → <2.0.0 (only major specified)
@@ -450,8 +456,7 @@ fn parse_caret(input: &str) -> Result<RangePart, String> {
 }
 
 fn parse_tilde(input: &str) -> Result<RangePart, String> {
-    let parts_count = version_component_count(input);
-    let v = parse_partial_version(input)?;
+    let (v, parts_count) = parse_partial_with_count(input)?;
     let upper = if parts_count == 1 {
         // ~1 means >=1.0.0 <2.0.0
         Version::new(v.major + 1, 0, 0)
@@ -589,6 +594,14 @@ fn parse_strict_version(input: &str) -> Result<Version, String> {
 }
 
 fn parse_partial_version(input: &str) -> Result<Version, String> {
+    parse_partial_with_count(input).map(|(version, _)| version)
+}
+
+/// Like [`parse_partial_version`], but also returns the number of explicit numeric
+/// components present before any wildcard (`0..=3`). Caret/tilde need this count to
+/// choose the upper bound, so version and count come from a single scan instead of
+/// scanning the token twice.
+fn parse_partial_with_count(input: &str) -> Result<(Version, usize), String> {
     let input = strip_v(input);
     // Strip build metadata (+...)
     let input = input.split('+').next().unwrap_or(input);
@@ -596,60 +609,47 @@ fn parse_partial_version(input: &str) -> Result<Version, String> {
     // No prerelease (the common case): build the version directly, skipping the
     // `format!` + full `Version::parse` round-trip.
     let Some(idx) = input.find('-') else {
-        let (major, minor, patch) = parse_core_components(input)?;
-        return Ok(Version::new(major, minor, patch));
+        let (major, minor, patch, count) = parse_core_components(input)?;
+        return Ok((Version::new(major, minor, patch), count));
     };
 
     // Prerelease present: preserve the exact prior behaviour. Reassemble the
     // normalized core with the original prerelease suffix and let `semver` parse
     // it so prerelease identifiers are kept and validated.
-    let (major, minor, patch) = parse_core_components(&input[..idx])?;
+    let (major, minor, patch, count) = parse_core_components(&input[..idx])?;
     let pre = &input[idx..];
     let full = format!("{major}.{minor}.{patch}{pre}");
-    Version::parse(&full).map_err(|e| format!("invalid version '{full}': {e}"))
+    let version = Version::parse(&full).map_err(|e| format!("invalid version '{full}': {e}"))?;
+    Ok((version, count))
 }
 
 /// Parse the numeric `major[.minor[.patch]]` core of a (possibly partial) version,
-/// treating `x`/`X`/`*` and any absent components as `0`.
-fn parse_core_components(base: &str) -> Result<(u64, u64, u64), String> {
+/// treating `x`/`X`/`*` and any absent components as `0`. Also returns how many
+/// explicit numeric components were present before any wildcard.
+fn parse_core_components(base: &str) -> Result<(u64, u64, u64, usize), String> {
     let mut components = base
         .split('.')
         .take_while(|p| !matches!(*p, "x" | "X" | "*"));
 
     let Some(major) = components.next() else {
-        return Ok((0, 0, 0));
+        return Ok((0, 0, 0, 0));
     };
     let major = parse_u64(major)?;
 
     let Some(minor) = components.next() else {
-        return Ok((major, 0, 0));
+        return Ok((major, 0, 0, 1));
     };
     let minor = parse_u64(minor)?;
 
     let Some(patch) = components.next() else {
-        return Ok((major, minor, 0));
+        return Ok((major, minor, 0, 2));
     };
     let patch = parse_u64(patch)?;
 
     if components.next().is_some() {
         return Err(format!("invalid partial version: {base}"));
     }
-    Ok((major, minor, patch))
-}
-
-/// Count the number of meaningful (non-wildcard) version components,
-/// stripping build metadata and prerelease before counting.
-fn version_component_count(input: &str) -> usize {
-    let clean = input.split('+').next().unwrap_or(input);
-    let clean = if let Some(idx) = clean.find('-') {
-        &clean[..idx]
-    } else {
-        clean
-    };
-    clean
-        .split('.')
-        .take_while(|p| !matches!(*p, "x" | "X" | "*"))
-        .count()
+    Ok((major, minor, patch, 3))
 }
 
 fn parse_u64(input: &str) -> Result<u64, String> {
