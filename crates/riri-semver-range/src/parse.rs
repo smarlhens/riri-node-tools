@@ -106,8 +106,11 @@ fn parse_comparator_set(input: &str) -> Result<RangePart, String> {
         return Ok(wildcard());
     }
 
-    // Hyphen range: "1.0.0 - 2.0.0"
-    if let Some(idx) = input.find(" - ") {
+    // Hyphen range: "1.0.0 - 2.0.0". The left side is always a version, never an
+    // operator, so skip the full-input scan for operator-led comparator sets.
+    if !matches!(input.as_bytes().first(), Some(b'^' | b'~' | b'>' | b'<' | b'='))
+        && let Some(idx) = input.find(" - ")
+    {
         return parse_hyphen_range(&input[..idx], &input[idx + 3..]);
     }
 
@@ -162,8 +165,188 @@ fn parse_comparator_set(input: &str) -> Result<RangePart, String> {
     })
 }
 
+/// Operator recognized by the byte-level fast path.
+#[derive(Clone, Copy)]
+enum FastOp {
+    Caret,
+    Tilde,
+    Gte,
+    Gt,
+    Lt,
+    Lte,
+    Exact,
+}
+
+/// Fast path for the common comparator shapes: an optional operator followed by a
+/// fully-specified `major.minor.patch` version (optionally with a `-prerelease`),
+/// e.g. `^1.2.3`, `>=16.0.0`, `~1.2.3`, `1.2.3`, `=1.2.3-alpha`, `> 1.0.0`.
+///
+/// Anything else — wildcards/x-ranges, partial versions, build metadata, hyphen
+/// ranges — returns `None` and is handled by the slower string-based parser, so
+/// this is a pure shortcut with no behavioural change.
+fn fast_comparator(token: &str) -> Option<RangePart> {
+    let bytes = token.as_bytes();
+    let mut i = skip_ascii_ws(bytes, 0);
+
+    let op = match (bytes.get(i).copied(), bytes.get(i + 1).copied()) {
+        (Some(b'^'), _) => {
+            i += 1;
+            FastOp::Caret
+        }
+        (Some(b'~'), Some(b'>')) => {
+            i += 2;
+            FastOp::Tilde
+        }
+        (Some(b'~'), _) => {
+            i += 1;
+            FastOp::Tilde
+        }
+        (Some(b'>'), Some(b'=')) => {
+            i += 2;
+            FastOp::Gte
+        }
+        (Some(b'>'), _) => {
+            i += 1;
+            FastOp::Gt
+        }
+        (Some(b'<'), Some(b'=')) => {
+            i += 2;
+            FastOp::Lte
+        }
+        (Some(b'<'), _) => {
+            i += 1;
+            FastOp::Lt
+        }
+        (Some(b'='), _) => {
+            i += 1;
+            FastOp::Exact
+        }
+        (Some(b'0'..=b'9' | b'v' | b'V'), _) => FastOp::Exact,
+        _ => return None,
+    };
+
+    i = skip_ascii_ws(bytes, i);
+    if matches!(bytes.get(i), Some(b'v' | b'V')) {
+        i += 1;
+    }
+
+    let (major, next) = take_u64(bytes, i)?;
+    i = next;
+    if bytes.get(i) != Some(&b'.') {
+        return None;
+    }
+    i += 1;
+    let (minor, next) = take_u64(bytes, i)?;
+    i = next;
+    if bytes.get(i) != Some(&b'.') {
+        return None;
+    }
+    i += 1;
+    let (patch, next) = take_u64(bytes, i)?;
+    i = next;
+
+    let version = match bytes.get(i).copied() {
+        None => Version::new(major, minor, patch),
+        Some(b'-') => {
+            let pre = &token[i..];
+            // Build metadata after the prerelease is left to the slow path.
+            if pre.as_bytes().contains(&b'+') {
+                return None;
+            }
+            Version::parse(&format!("{major}.{minor}.{patch}{pre}")).ok()?
+        }
+        // Build metadata, trailing wildcard, or stray bytes: defer to the slow path.
+        _ => return None,
+    };
+
+    Some(build_full_version_part(op, version))
+}
+
+/// Build the range part for an operator applied to a fully-specified version.
+/// Mirrors the slow-path operator handlers for the non-wildcard, full-version case.
+fn build_full_version_part(op: FastOp, v: Version) -> RangePart {
+    match op {
+        FastOp::Caret => {
+            let upper = if v.major == 0 {
+                if v.minor == 0 {
+                    Version::new(0, 0, v.patch + 1)
+                } else {
+                    Version::new(0, v.minor + 1, 0)
+                }
+            } else {
+                Version::new(v.major + 1, 0, 0)
+            };
+            RangePart {
+                min: v,
+                min_op: Op::Gte,
+                max: Some(upper),
+                max_op: Some(Op::Lt),
+            }
+        }
+        FastOp::Tilde => {
+            let upper = Version::new(v.major, v.minor + 1, 0);
+            RangePart {
+                min: v,
+                min_op: Op::Gte,
+                max: Some(upper),
+                max_op: Some(Op::Lt),
+            }
+        }
+        FastOp::Gte => RangePart {
+            min: v,
+            min_op: Op::Gte,
+            max: None,
+            max_op: None,
+        },
+        FastOp::Gt => RangePart {
+            min: v,
+            min_op: Op::Gt,
+            max: None,
+            max_op: None,
+        },
+        FastOp::Lt => RangePart {
+            min: Version::new(0, 0, 0),
+            min_op: Op::Gte,
+            max: Some(v),
+            max_op: Some(Op::Lt),
+        },
+        FastOp::Lte => RangePart {
+            min: Version::new(0, 0, 0),
+            min_op: Op::Gte,
+            max: Some(v),
+            max_op: Some(Op::Lte),
+        },
+        FastOp::Exact => exact_version_part(v),
+    }
+}
+
+fn skip_ascii_ws(bytes: &[u8], start: usize) -> usize {
+    let mut i = start;
+    while matches!(
+        bytes.get(i),
+        Some(b' ' | b'\t' | b'\n' | b'\r' | 0x0B | 0x0C)
+    ) {
+        i += 1;
+    }
+    i
+}
+
+fn take_u64(bytes: &[u8], start: usize) -> Option<(u64, usize)> {
+    let mut i = start;
+    let mut value: u64 = 0;
+    while let Some(&b @ b'0'..=b'9') = bytes.get(i) {
+        value = value.checked_mul(10)?.checked_add(u64::from(b - b'0'))?;
+        i += 1;
+    }
+    (i > start).then_some((value, i))
+}
+
 /// Parse a single comparator token.
 fn parse_single_comparator(token: &str) -> Result<RangePart, String> {
+    if let Some(part) = fast_comparator(token) {
+        return Ok(part);
+    }
+
     let token = strip_v(token);
     // Strip build metadata early so it doesn't interfere with pattern detection
     let token = token.split('+').next().unwrap_or(token);
