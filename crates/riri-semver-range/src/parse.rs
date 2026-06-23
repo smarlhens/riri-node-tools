@@ -221,12 +221,33 @@ fn parse_single_comparator(token: &str) -> Result<RangePart, String> {
 
     // Bare version: treat as exact
     let v = parse_strict_version(token)?;
-    Ok(RangePart {
-        min: v.clone(),
-        min_op: Op::Gte,
-        max: Some(Version::new(v.major, v.minor, v.patch + 1)),
-        max_op: Some(Op::Lt),
-    })
+    Ok(exact_version_part(v))
+}
+
+/// Build the range part for a fully-specified exact version (`1.2.3` or `=1.2.3`).
+///
+/// For a release this is `>=v <v.(patch+1)`, which is equivalent to `=v` over
+/// release versions. For a prerelease, node-semver matches only that exact
+/// version, so we use the inclusive point interval `>=v <=v` — otherwise the
+/// `<v.(patch+1)` upper bound would wrongly admit the release `v` and other
+/// prereleases on the same `[major, minor, patch]`.
+fn exact_version_part(v: Version) -> RangePart {
+    if v.pre.is_empty() {
+        let upper = Version::new(v.major, v.minor, v.patch + 1);
+        RangePart {
+            min: v,
+            min_op: Op::Gte,
+            max: Some(upper),
+            max_op: Some(Op::Lt),
+        }
+    } else {
+        RangePart {
+            min: v.clone(),
+            min_op: Op::Gte,
+            max: Some(v),
+            max_op: Some(Op::Lte),
+        }
+    }
 }
 
 /// Split a comparator set into borrowed tokens, merging a bare operator with the
@@ -385,12 +406,7 @@ fn parse_eq_range(input: &str) -> Result<RangePart, String> {
         return parse_x_range(input);
     }
     let v = parse_partial_version(input)?;
-    Ok(RangePart {
-        min: v.clone(),
-        min_op: Op::Gte,
-        max: Some(Version::new(v.major, v.minor, v.patch + 1)),
-        max_op: Some(Op::Lt),
-    })
+    Ok(exact_version_part(v))
 }
 
 fn parse_caret(input: &str) -> Result<RangePart, String> {
