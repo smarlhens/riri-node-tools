@@ -114,6 +114,13 @@ fn parse_comparator_set(input: &str) -> Result<RangePart, String> {
         return parse_hyphen_range(&input[..idx], &input[idx + 3..]);
     }
 
+    // Single comparator over a fully-specified version (the common case): build it
+    // directly without tokenizing. A multi-comparator set has a space after the
+    // version, so `fast_comparator` returns `None` and we fall through to tokenize.
+    if let Some(part) = fast_comparator(input) {
+        return Ok(part);
+    }
+
     // Split into whitespace-separated tokens, merging bare operators with next token.
     // This handles ">= 1.0.0", "< 2.0.0", "~ 1.0", "^ 1.2", "~> 1", etc.
     let tokens = comparator_tokens(input);

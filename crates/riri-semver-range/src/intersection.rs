@@ -1,6 +1,7 @@
 use crate::helpers::split_by_major;
 use crate::subset::{intersects, is_subset_of};
-use crate::{Op, ParsedRange, RangePart};
+use crate::{Op, ParsedRange, Parts, RangePart};
+use smallvec::SmallVec;
 
 /// Compute the most restrictive intersection of two ranges.
 ///
@@ -30,11 +31,13 @@ pub fn restrictive_range(r1: &ParsedRange, r2: &ParsedRange) -> ParsedRange {
     }
 
     // Split both ranges into one part per major version
-    let a_parts: Vec<_> = r1.parts.iter().flat_map(split_by_major).collect();
-    let b_parts: Vec<_> = r2.parts.iter().flat_map(split_by_major).collect();
+    // Most ranges are one or two parts that don't span majors, so keep the split
+    // results and the intersection output inline instead of heap-allocating.
+    let a_parts: SmallVec<[RangePart; 2]> = r1.parts.iter().flat_map(split_by_major).collect();
+    let b_parts: SmallVec<[RangePart; 2]> = r2.parts.iter().flat_map(split_by_major).collect();
 
     // Pairwise interval intersection
-    let mut result_parts = Vec::new();
+    let mut result_parts: Parts = SmallVec::new();
     for a_part in &a_parts {
         for b_part in &b_parts {
             if let Some(intersection) = intersect_parts(a_part, b_part) {
@@ -48,7 +51,7 @@ pub fn restrictive_range(r1: &ParsedRange, r2: &ParsedRange) -> ParsedRange {
     }
 
     ParsedRange {
-        parts: result_parts.into(),
+        parts: result_parts,
     }
 }
 
