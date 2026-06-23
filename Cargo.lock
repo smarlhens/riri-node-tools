@@ -1666,6 +1666,7 @@ dependencies = [
  "nodejs-semver",
  "proptest",
  "semver",
+ "smallvec",
 ]
 
 [[package]]

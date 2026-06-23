@@ -48,7 +48,7 @@ pub fn restrictive_range(r1: &ParsedRange, r2: &ParsedRange) -> ParsedRange {
     }
 
     ParsedRange {
-        parts: result_parts,
+        parts: result_parts.into(),
     }
 }
 

@@ -1,10 +1,17 @@
 use crate::{Op, RangePart};
 use semver::Version;
+use smallvec::{SmallVec, smallvec};
+
+/// Storage for the parts of a [`ParsedRange`].
+///
+/// The vast majority of ranges are a single comparator set (no `||`), which is
+/// kept inline on the stack; only disjunctions spill to the heap.
+pub type Parts = SmallVec<[RangePart; 1]>;
 
 /// A full semver range: multiple parts joined by `||`.
 #[derive(Debug, Clone)]
 pub struct ParsedRange {
-    pub parts: Vec<RangePart>,
+    pub parts: Parts,
 }
 
 impl ParsedRange {
@@ -17,14 +24,14 @@ impl ParsedRange {
         let input = input.trim();
         if input.is_empty() || is_wildcard_str(input) {
             return Ok(Self {
-                parts: vec![wildcard()],
+                parts: smallvec![wildcard()],
             });
         }
 
-        let mut parts: Vec<RangePart> = input
+        let mut parts: Parts = input
             .split("||")
             .map(|s| parse_comparator_set(s.trim()))
-            .collect::<Result<Vec<_>, _>>()?;
+            .collect::<Result<Parts, _>>()?;
 
         parts.sort_by(|a, b| a.min.cmp(&b.min));
 
@@ -61,7 +68,7 @@ impl ParsedRange {
     #[must_use]
     pub fn drop_first(&self) -> Self {
         Self {
-            parts: self.parts[1..].to_vec(),
+            parts: self.parts[1..].iter().cloned().collect(),
         }
     }
 
@@ -106,10 +113,10 @@ fn parse_comparator_set(input: &str) -> Result<RangePart, String> {
 
     // Split into whitespace-separated tokens, merging bare operators with next token.
     // This handles ">= 1.0.0", "< 2.0.0", "~ 1.0", "^ 1.2", "~> 1", etc.
-    let tokens = tokenize_comparator_set(input);
+    let tokens = comparator_tokens(input);
 
     if tokens.len() == 1 {
-        return parse_single_comparator(&tokens[0]);
+        return parse_single_comparator(tokens[0]);
     }
 
     // Multi-comparator: intersect all (e.g., ">=1.0.0 <2.0.0" or "~1.2.1 >=1.2.3")
@@ -119,7 +126,7 @@ fn parse_comparator_set(input: &str) -> Result<RangePart, String> {
     let mut max: Option<Version> = None;
     let mut max_op: Option<Op> = None;
 
-    for token in &tokens {
+    for &token in &tokens {
         let part = parse_single_comparator(token)?;
 
         // Take the higher lower bound
@@ -222,21 +229,50 @@ fn parse_single_comparator(token: &str) -> Result<RangePart, String> {
     })
 }
 
-/// Split a comparator set into tokens, merging bare operators with the
-/// following version token.  e.g. `">= 1.0.0 < 2.0.0"` → `[">=1.0.0", "<2.0.0"]`.
-fn tokenize_comparator_set(input: &str) -> Vec<String> {
-    let raw: Vec<&str> = input.split_whitespace().collect();
-    let mut tokens = Vec::new();
+/// Split a comparator set into borrowed tokens, merging a bare operator with the
+/// following version word.  e.g. `">= 1.0.0 < 2.0.0"` → `[">= 1.0.0", "< 2.0.0"]`.
+///
+/// Unlike the old `format!`-based tokenizer, a merged operator+version token is a
+/// slice of the original `input` spanning both words (the embedded whitespace is
+/// trimmed downstream by `strip_v`), so no `String` is allocated.
+fn comparator_tokens(input: &str) -> SmallVec<[&str; 2]> {
+    let bytes = input.as_bytes();
+    let len = bytes.len();
+    let mut tokens: SmallVec<[&str; 2]> = SmallVec::new();
     let mut i = 0;
-    while i < raw.len() {
-        if is_bare_operator(raw[i]) && i + 1 < raw.len() {
-            tokens.push(format!("{}{}", raw[i], raw[i + 1]));
-            i += 2;
-        } else {
-            tokens.push(raw[i].to_string());
+
+    while i < len {
+        while i < len && bytes[i].is_ascii_whitespace() {
             i += 1;
         }
+        if i >= len {
+            break;
+        }
+        let word_start = i;
+        while i < len && !bytes[i].is_ascii_whitespace() {
+            i += 1;
+        }
+        let word = &input[word_start..i];
+
+        // A bare operator merges with the following word into one borrowed slice.
+        if is_bare_operator(word) {
+            let mut j = i;
+            while j < len && bytes[j].is_ascii_whitespace() {
+                j += 1;
+            }
+            if j < len {
+                while j < len && !bytes[j].is_ascii_whitespace() {
+                    j += 1;
+                }
+                tokens.push(&input[word_start..j]);
+                i = j;
+                continue;
+            }
+        }
+
+        tokens.push(word);
     }
+
     tokens
 }
 
@@ -540,41 +576,49 @@ fn parse_partial_version(input: &str) -> Result<Version, String> {
     let input = strip_v(input);
     // Strip build metadata (+...)
     let input = input.split('+').next().unwrap_or(input);
-    // Separate prerelease (-...) but preserve it
-    let (base, pre) = if let Some(idx) = input.find('-') {
-        (&input[..idx], Some(&input[idx..]))
-    } else {
-        (input, None)
+
+    // No prerelease (the common case): build the version directly, skipping the
+    // `format!` + full `Version::parse` round-trip.
+    let Some(idx) = input.find('-') else {
+        let (major, minor, patch) = parse_core_components(input)?;
+        return Ok(Version::new(major, minor, patch));
     };
-    // Filter out x/*/X wildcard components, treating them as absent
-    let parts: Vec<&str> = base
-        .split('.')
-        .take_while(|p| !matches!(*p, "x" | "X" | "*"))
-        .collect();
-    let version_str = match parts.as_slice() {
-        [] => "0.0.0".to_string(),
-        [major] => {
-            parse_u64(major)?;
-            format!("{major}.0.0")
-        }
-        [major, minor] => {
-            parse_u64(major)?;
-            parse_u64(minor)?;
-            format!("{major}.{minor}.0")
-        }
-        [major, minor, patch] => {
-            parse_u64(major)?;
-            parse_u64(minor)?;
-            parse_u64(patch)?;
-            format!("{major}.{minor}.{patch}")
-        }
-        _ => return Err(format!("invalid partial version: {base}")),
-    };
-    let full = match pre {
-        Some(pre) => format!("{version_str}{pre}"),
-        None => version_str,
-    };
+
+    // Prerelease present: preserve the exact prior behaviour. Reassemble the
+    // normalized core with the original prerelease suffix and let `semver` parse
+    // it so prerelease identifiers are kept and validated.
+    let (major, minor, patch) = parse_core_components(&input[..idx])?;
+    let pre = &input[idx..];
+    let full = format!("{major}.{minor}.{patch}{pre}");
     Version::parse(&full).map_err(|e| format!("invalid version '{full}': {e}"))
+}
+
+/// Parse the numeric `major[.minor[.patch]]` core of a (possibly partial) version,
+/// treating `x`/`X`/`*` and any absent components as `0`.
+fn parse_core_components(base: &str) -> Result<(u64, u64, u64), String> {
+    let mut components = base
+        .split('.')
+        .take_while(|p| !matches!(*p, "x" | "X" | "*"));
+
+    let Some(major) = components.next() else {
+        return Ok((0, 0, 0));
+    };
+    let major = parse_u64(major)?;
+
+    let Some(minor) = components.next() else {
+        return Ok((major, 0, 0));
+    };
+    let minor = parse_u64(minor)?;
+
+    let Some(patch) = components.next() else {
+        return Ok((major, minor, 0));
+    };
+    let patch = parse_u64(patch)?;
+
+    if components.next().is_some() {
+        return Err(format!("invalid partial version: {base}"));
+    }
+    Ok((major, minor, patch))
 }
 
 /// Count the number of meaningful (non-wildcard) version components,
