@@ -7,6 +7,7 @@ license.workspace = true
 
 [dependencies]
 semver = { workspace = true }
+smallvec = { workspace = true }
 
 [dev-dependencies]
 criterion = { workspace = true }
@@ -18,11 +19,19 @@ name = "range_parsing"
 harness = false
 
 [[bench]]
+name = "range_parsing_breakdown"
+harness = false
+
+[[bench]]
 name = "range_satisfies"
 harness = false
 
 [[bench]]
 name = "range_intersection"
+harness = false
+
+[[bench]]
+name = "range_humanize"
 harness = false
 
 [lints]
