@@ -363,3 +363,20 @@ slow path would surface as a cross-validation or fuzz mismatch.
 Remaining headroom is small and not worth the risk: the fallback still handles x-ranges/partials/
 hyphens with the string parser, and a SWAR short-string probe (v5 §2) would help only very long
 inputs, which engine ranges never are.
+
+### Beyond parse (other hot paths)
+
+The crate's other operations were measured too:
+
+| operation                         |      riri | nodejs-semver 5.0.0 | note                          |
+| --------------------------------- | --------: | ------------------: | ----------------------------- |
+| `satisfies` (already-parsed)      | 27.9 ns |             31.9 ns | riri 1.14x faster; left as-is |
+| `restrictive_range` (8 pairs)     |   694 ns |                 n/a | was 740 ns                    |
+| parse + `restrictive_range` (×8)  |  1.91 µs |                 n/a | was 1.98 µs                   |
+
+- **satisfies** is already leaner than nodejs-semver and dominated by `semver::Version` comparisons —
+  no change made.
+- **restrictive_range** (used by the policy/`npm_bump` range narrowing) heap-allocated three `Vec`s
+  per call (`a_parts`, `b_parts`, `result_parts`); these are now `SmallVec`, inline for the common
+  one/two-part ranges. The residual cost is the `is_subset_of`/`intersects` pre-checks and the
+  per-bound `Version` clones, which are structural and low-value to chase further.
