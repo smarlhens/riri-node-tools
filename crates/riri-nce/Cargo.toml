@@ -20,7 +20,7 @@ riri-node-lifecycle = { path = "../riri-node-lifecycle", version = "0.1.1" }
 riri-npm = { path = "../riri-npm", version = "0.1.2" }
 riri-pnpm = { path = "../riri-pnpm", version = "0.1.2" }
 riri-semver-range = { path = "../riri-semver-range", version = "0.1.1" }
-riri-yarn = { path = "../riri-yarn", version = "0.1.2" }
+riri-yarn = { path = "../riri-yarn", version = "0.1.2", features = ["scan"] }
 riri-task-runner = { path = "../riri-task-runner", version = "0.1.0" }
 anyhow = { workspace = true }
 chrono = { workspace = true }

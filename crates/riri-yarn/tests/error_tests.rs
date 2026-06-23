@@ -1,3 +1,4 @@
+#![cfg(feature = "scan")]
 #![allow(clippy::tests_outside_test_module)]
 #![allow(clippy::unwrap_used)]
 
