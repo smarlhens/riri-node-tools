@@ -17,7 +17,7 @@ path = "src/bin/npm-pin-dependencies.rs"
 [dependencies]
 riri-common = { path = "../riri-common", version = "0.1.2", features = ["sort"] }
 riri-npm = { path = "../riri-npm", version = "0.1.2" }
-riri-pnpm = { path = "../riri-pnpm", version = "0.1.2" }
+riri-pnpm = { path = "../riri-pnpm", version = "0.1.2", features = ["catalog"] }
 riri-task-runner = { path = "../riri-task-runner", version = "0.1.0" }
 riri-workspace = { path = "../riri-workspace", version = "0.1.2" }
 riri-yarn = { path = "../riri-yarn", version = "0.1.2" }
