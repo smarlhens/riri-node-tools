@@ -308,15 +308,15 @@ Do **1 → 2 → 3** first (all parse-path, low risk, directly mirror v5, guarde
 cross-validate + proptest suites), re-run `benches/range_parsing.rs` against nodejs-semver
 5.0.0 to quantify, then decide on 4–6 from the numbers.
 
-## Implemented on this branch (1–3)
+## Implemented on this branch (1–6)
 
-All three parse-path optimizations are implemented and measured. Prerelease handling is
+All six parse-path optimizations are implemented and measured. Prerelease handling is
 **unchanged**: the fast path in #1 fires only when the token has no `-pre`; any prerelease
 token falls through to the original `format!` + `Version::parse` route, so identifiers are
 still parsed and validated.
 
 - **#1** `parse_partial_version` (`parse.rs`): no-prerelease tokens now build
-  `Version::new(major, minor, patch)` directly via a new `parse_core_components` helper —
+  `Version::new(major, minor, patch)` directly via a `parse_core_components` helper —
   no intermediate `String`, no full re-parse, no `Vec<&str>`.
 - **#2** `ParsedRange.parts` is now `SmallVec<[RangePart; 1]>` (type alias `Parts`). Single-part
   ranges (no `||`) stay on the stack. Consumers were unaffected except three `ParsedRange { .. }`
@@ -326,18 +326,28 @@ still parsed and validated.
   is replaced by `comparator_tokens`, which yields borrowed `&str` slices of the original input
   (`SmallVec<[&str; 2]>`); a merged operator+version token is a single slice spanning both words,
   with the embedded whitespace trimmed downstream by `strip_v`.
+- **#4** caret/tilde no longer scan the token twice. `version_component_count` is gone; the new
+  `parse_partial_with_count` returns the version **and** the component count from one scan, which
+  `parse_caret`/`parse_tilde` consume — relevant because `^` is the most common range form.
+- **#5** `is_x_range` was up to four scans (`contains('x')` ×3 + `split('.').count()`); now a single
+  byte pass that early-returns on a wildcard byte and counts dots otherwise.
+- **#6** `split_by_major` returned `vec![part.clone()]` on the common no-split path (a heap alloc per
+  part); it now returns `SmallVec<[RangePart; 1]>` (`SplitParts`), keeping the single part inline.
+  Benefits the humanize / intersection / policy paths. `policy.rs` adapted with one `.into_vec()`.
 
 ### Measured (`cargo bench --bench range_parsing`, same machine, 8-range corpus)
 
-|                      | riri before |   riri after | nodejs-semver 5.0.0 |
-| -------------------- | ----------: | -----------: | ------------------: |
-| parse range (corpus) |    2.149 µs | **1.245 µs** |              832 ns |
+|                      | before (main) | after #1–3 |   after #1–6 | nodejs-semver 5.0.0 |
+| -------------------- | ------------: | ---------: | -----------: | ------------------: |
+| parse range (corpus) |      2.149 µs |   1.245 µs | **1.071 µs** |              834 ns |
 
-- **1.73x faster** than before (~42% less parse time).
-- Gap vs nodejs-semver 5.0.0 narrowed from **2.58x slower → 1.50x slower**.
+- **2.01x faster** than before (~50% less parse time).
+- Gap vs nodejs-semver 5.0.0 narrowed from **2.58x slower → 1.28x slower**.
 
-The residual gap is what opportunities **4–6** (single-pass caret/tilde + `is_x_range`, clone/Vec
-churn) plus the SWAR byte-probe trick would close. Our parser still uses `split`/`strip_prefix`
-and rescans tokens, whereas v5 is a fully hand-rolled byte walk. Verification: all 22 test suites
-pass, including `cross_validate_nodejs_semver` and `proptest_invariants`; clippy clean under the
-workspace's `pedantic = deny`.
+The residual gap (1.28x) is structural: our parser still does `split`/`strip_prefix` and re-derives
+`strip_v`/build-stripping per token, whereas v5 is a single fully hand-rolled byte walk with a SWAR
+short-string probe. Closing it would mean rewriting `parse_single_comparator` as one byte cursor
+that dispatches on the first byte and accumulates digits inline — the biggest remaining lift.
+Verification: all 22 test suites pass — including `cross_validate_nodejs_semver` (now with a
+prerelease corpus, 432 comparisons, 0 mismatches) and `proptest_invariants` (a 2000-case prerelease
+fuzz vs nodejs-semver) — and clippy is clean under the workspace's `pedantic = deny`.
