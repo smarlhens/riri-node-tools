@@ -758,4 +758,74 @@ mod tests {
         assert!(r.satisfies(&Version::new(20, 0, 0)));
         assert!(!r.satisfies(&Version::new(15, 0, 0)));
     }
+
+    // --- Parsed-output assertions for prerelease ranges ---
+
+    fn pre(s: &str) -> Version {
+        Version::parse(s).expect("valid prerelease version")
+    }
+
+    #[test]
+    fn parse_caret_prerelease() {
+        let r = ParsedRange::parse("^1.2.3-alpha").expect("parse");
+        assert_eq!(r.parts[0].min, pre("1.2.3-alpha"));
+        assert_eq!(r.parts[0].min_op, Op::Gte);
+        assert_eq!(r.parts[0].max, Some(Version::new(2, 0, 0)));
+        assert_eq!(r.parts[0].max_op, Some(Op::Lt));
+    }
+
+    #[test]
+    fn parse_tilde_prerelease() {
+        let r = ParsedRange::parse("~1.2.3-beta").expect("parse");
+        assert_eq!(r.parts[0].min, pre("1.2.3-beta"));
+        assert_eq!(r.parts[0].max, Some(Version::new(1, 3, 0)));
+        assert_eq!(r.parts[0].max_op, Some(Op::Lt));
+    }
+
+    #[test]
+    fn parse_gte_prerelease_is_open() {
+        let r = ParsedRange::parse(">=1.2.3-rc.1").expect("parse");
+        assert_eq!(r.parts[0].min, pre("1.2.3-rc.1"));
+        assert_eq!(r.parts[0].min_op, Op::Gte);
+        assert!(r.parts[0].max.is_none());
+    }
+
+    #[test]
+    fn parse_hyphen_prerelease() {
+        let r = ParsedRange::parse("1.2.3-alpha - 2.0.0").expect("parse");
+        assert_eq!(r.parts[0].min, pre("1.2.3-alpha"));
+        assert_eq!(r.parts[0].max, Some(Version::new(2, 0, 0)));
+        assert_eq!(r.parts[0].max_op, Some(Op::Lte));
+    }
+
+    #[test]
+    fn parse_exact_prerelease_is_point_interval() {
+        // node-semver matches only the exact prerelease version, so we emit `>=v <=v`.
+        for input in ["1.2.3-alpha", "=1.2.3-alpha"] {
+            let r = ParsedRange::parse(input).expect("parse");
+            let v = pre("1.2.3-alpha");
+            assert_eq!(r.parts[0].min, v, "{input}");
+            assert_eq!(r.parts[0].min_op, Op::Gte, "{input}");
+            assert_eq!(r.parts[0].max, Some(v), "{input}");
+            assert_eq!(r.parts[0].max_op, Some(Op::Lte), "{input}");
+        }
+    }
+
+    #[test]
+    fn exact_prerelease_excludes_release_and_other_prereleases() {
+        let r = ParsedRange::parse("1.2.3-alpha").expect("parse");
+        assert!(r.satisfies(&pre("1.2.3-alpha")));
+        assert!(!r.satisfies(&Version::new(1, 2, 3)));
+        assert!(!r.satisfies(&pre("1.2.3-beta")));
+        assert!(!r.satisfies(&pre("1.2.3-alpha.1")));
+    }
+
+    #[test]
+    fn loose_prerelease_suffix_is_rejected() {
+        // node-semver loose mode accepts "1.2.3beta" / "^1.2.3beta"; we deliberately
+        // do not implement loose mode, so these must error rather than parse.
+        assert!(ParsedRange::parse("1.2.3beta").is_err());
+        assert!(ParsedRange::parse("^1.2.3beta").is_err());
+        assert!(ParsedRange::parse("~1.2.3beta").is_err());
+    }
 }
