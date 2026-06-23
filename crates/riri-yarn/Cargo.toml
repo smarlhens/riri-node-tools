@@ -7,6 +7,7 @@ license.workspace = true
 
 [features]
 graph = ["riri-common/graph"]
+scan = ["dep:walkdir"]
 
 [dependencies]
 riri-common = { path = "../riri-common", version = "0.1.2" }
@@ -14,7 +15,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 serde-saphyr = { workspace = true }
 thiserror = { workspace = true }
-walkdir = "2.5.0"
+walkdir = { version = "2.5.0", optional = true }
 
 [dev-dependencies]
 insta = { workspace = true }

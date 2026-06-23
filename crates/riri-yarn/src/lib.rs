@@ -6,12 +6,14 @@
 //! - [`YarnLock`] parses `yarn.lock` (v1 Classic and v2+ Berry) and resolves a
 //!   dependency's locked version by `name@range` descriptor — used by
 //!   `riri-npd` for version pinning. No `node_modules` required.
-//! - [`YarnProject`] scans `node_modules/<pkg>/package.json` to extract
+//! - `YarnProject` (feature `scan`) reads `node_modules/<pkg>/package.json` to extract
 //!   `engines` (via [`LockfileEngines`]) — used by `riri-nce`. Yarn lockfiles
 //!   (any version) do **not** store `engines`, so the install tree is the only
 //!   source.
 
-use riri_common::{Engines, LockfileEngines, LockfileVersions};
+use riri_common::LockfileVersions;
+#[cfg(feature = "scan")]
+use riri_common::{Engines, LockfileEngines};
 #[cfg(feature = "graph")]
 use riri_common::{
     GraphError, LockGraph, LockGraphEdge, LockGraphNode, LockGraphRoot, LockfileGraph, PackageJson,
@@ -19,9 +21,11 @@ use riri_common::{
 };
 use serde::Deserialize;
 use std::collections::HashMap;
+#[cfg(feature = "scan")]
 use std::path::Path;
 
 /// Errors that can occur when scanning a yarn project.
+#[cfg(feature = "scan")]
 #[derive(Debug, thiserror::Error)]
 pub enum YarnScanError {
     #[error("node_modules directory not found at {0}")]
@@ -39,6 +43,7 @@ pub enum YarnScanError {
 }
 
 /// Minimal package.json representation for engine + version extraction.
+#[cfg(feature = "scan")]
 #[derive(Debug, Clone, Deserialize)]
 struct NodeModulePackageJson {
     #[serde(default)]
@@ -48,6 +53,7 @@ struct NodeModulePackageJson {
 }
 
 /// One scanned `node_modules/<pkg>/package.json` entry.
+#[cfg(feature = "scan")]
 #[derive(Debug, Clone, Default)]
 struct ScannedPackage {
     version: Option<String>,
@@ -55,11 +61,13 @@ struct ScannedPackage {
 }
 
 /// Scanned yarn project with engine + version data from `node_modules`.
+#[cfg(feature = "scan")]
 #[derive(Debug, Clone)]
 pub struct YarnProject {
     packages: HashMap<String, ScannedPackage>,
 }
 
+#[cfg(feature = "scan")]
 impl YarnProject {
     /// Scan `node_modules/` under the given project directory to extract engine
     /// constraints from each installed package's `package.json`.
@@ -144,6 +152,7 @@ impl YarnProject {
     }
 }
 
+#[cfg(feature = "scan")]
 impl LockfileEngines for YarnProject {
     fn engines_iter(&self) -> Box<dyn Iterator<Item = (&str, &Engines)> + '_> {
         Box::new(
@@ -154,6 +163,7 @@ impl LockfileEngines for YarnProject {
     }
 }
 
+#[cfg(feature = "scan")]
 impl LockfileVersions for YarnProject {
     fn version_for(&self, name: &str) -> Option<&str> {
         self.packages.get(name)?.version.as_deref()
@@ -177,7 +187,7 @@ pub enum YarnParseError {
 /// Resolution mirrors the legacy JS `@smarlhens/npm-pin-dependencies`: a
 /// dependency's locked version is looked up by the descriptor built from its
 /// `package.json` specifier — `name@range` for classic v1, `name@npm:range`
-/// for berry v2+. Unlike [`YarnProject`] this needs no `node_modules`, works
+/// for berry v2+. Unlike `YarnProject` this needs no `node_modules`, works
 /// under `PnP`, and distinguishes multiple ranges of the same package.
 #[derive(Debug, Clone)]
 pub struct YarnLock {
