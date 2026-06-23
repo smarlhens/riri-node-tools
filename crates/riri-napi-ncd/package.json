@@ -1,6 +1,6 @@
 {
   "name": "@smarlhens/npm-check-deprecations",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Find deprecated packages in the lockfile dependency tree and show the chains that pull them in",
   "keywords": [
     "cli",

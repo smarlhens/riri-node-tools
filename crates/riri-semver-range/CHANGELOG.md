@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.2](https://github.com/smarlhens/riri-node-tools/compare/riri-semver-range-v0.1.1...riri-semver-range-v0.1.2) (2026-06-23)
+
+
+### Performance Improvements
+
+* **semver-range:** byte-level parse fast path & exact-prerelease fix ([d126278](https://github.com/smarlhens/riri-node-tools/commit/d126278ec4eb38a6c990171f30d8650a58f2b2a7))
+
+
+### Code Refactoring
+
+* **semver-range:** drop unused public Parts re-export ([aa6e3ed](https://github.com/smarlhens/riri-node-tools/commit/aa6e3ede730bcab9d11752fde61bf10fa9d26665))
+
+
+### Chores
+
+* **deps:** bump nodejs-semver to 5.0.0 ([ba4033b](https://github.com/smarlhens/riri-node-tools/commit/ba4033b18c1ae4c89ef29fd317d99b9a6db24119))
+
 ## [0.1.1](https://github.com/smarlhens/riri-node-tools/compare/riri-semver-range-v0.1.0...riri-semver-range-v0.1.1) (2026-05-28)
 
 

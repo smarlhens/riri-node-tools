@@ -1,6 +1,6 @@
 [package]
 name = "riri-pnpm"
-version = "0.1.2"
+version = "0.1.3"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -10,7 +10,7 @@ graph = ["riri-common/graph"]
 catalog = ["dep:riri-find-up"]
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.1.2" }
+riri-common = { path = "../riri-common", version = "0.1.3" }
 riri-find-up = { path = "../riri-find-up", version = "0.1.1", optional = true }
 serde = { workspace = true }
 serde-saphyr = { workspace = true }

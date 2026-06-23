@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/smarlhens/riri-node-tools/compare/riri-common-v0.1.2...riri-common-v0.1.3) (2026-06-23)
+
+
+### Features
+
+* **ncd:** add npm-check-deprecations tool ([454d943](https://github.com/smarlhens/riri-node-tools/commit/454d94350be8408b2b82e5e0e842772620a19932))
+
 ## [0.1.2](https://github.com/smarlhens/riri-node-tools/compare/riri-common-v0.1.1...riri-common-v0.1.2) (2026-06-09)
 
 
