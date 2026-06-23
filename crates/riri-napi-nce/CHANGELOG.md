@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.3.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.2.4...@smarlhens/npm-check-engines-v1.3.0) (2026-06-23)
+
+
+### Features
+
+* **ncd:** add npm-check-deprecations tool ([454d943](https://github.com/smarlhens/riri-node-tools/commit/454d94350be8408b2b82e5e0e842772620a19932))
+
+
+### Chores
+
+* **deps:** bump npm dependencies ([b05bd66](https://github.com/smarlhens/riri-node-tools/commit/b05bd664b2da4533bb80c16ddf56b4b44f373e91))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.2 to 0.1.3
+    * riri-nce bumped from 0.1.3 to 0.1.4
+    * riri-npm bumped from 0.1.2 to 0.1.3
+    * riri-pnpm bumped from 0.1.2 to 0.1.3
+    * riri-semver-range bumped from 0.1.1 to 0.1.2
+    * riri-yarn bumped from 0.1.2 to 0.1.3
+
 ## [1.2.4](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.2.3...@smarlhens/npm-check-engines-v1.2.4) (2026-06-09)
 
 

@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.3](https://github.com/smarlhens/riri-node-tools/compare/riri-pnpm-v0.1.2...riri-pnpm-v0.1.3) (2026-06-23)
+
+
+### Features
+
+* **ncd:** add npm-check-deprecations tool ([454d943](https://github.com/smarlhens/riri-node-tools/commit/454d94350be8408b2b82e5e0e842772620a19932))
+
+
+### Code Refactoring
+
+* **pnpm:** gate catalog module behind catalog feature ([9b94a46](https://github.com/smarlhens/riri-node-tools/commit/9b94a464f056abaaa21d56ad972a4fc3862df14b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.2 to 0.1.3
+
 ## [0.1.2](https://github.com/smarlhens/riri-node-tools/compare/riri-pnpm-v0.1.1...riri-pnpm-v0.1.2) (2026-06-09)
 
 

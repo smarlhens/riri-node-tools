@@ -1,6 +1,6 @@
 [package]
 name = "riri-napi-ncd"
-version = "0.1.0"
+version = "0.1.1"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-riri-ncd = { path = "../riri-ncd", version = "0.1.0" }
+riri-ncd = { path = "../riri-ncd", version = "0.1.1" }
 
 [build-dependencies]
 napi-build = { workspace = true }

@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.1.4](https://github.com/smarlhens/riri-node-tools/compare/riri-nce-v0.1.3...riri-nce-v0.1.4) (2026-06-23)
+
+
+### Performance Improvements
+
+* **semver-range:** byte-level parse fast path & exact-prerelease fix ([d126278](https://github.com/smarlhens/riri-node-tools/commit/d126278ec4eb38a6c990171f30d8650a58f2b2a7))
+
+
+### Code Refactoring
+
+* **yarn:** gate node_modules scan behind scan feature ([beb4c40](https://github.com/smarlhens/riri-node-tools/commit/beb4c40bbb9cda427be5e595cd82584b41e00d68))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.2 to 0.1.3
+    * riri-node-lifecycle bumped from 0.1.1 to 0.1.2
+    * riri-npm bumped from 0.1.2 to 0.1.3
+    * riri-pnpm bumped from 0.1.2 to 0.1.3
+    * riri-semver-range bumped from 0.1.1 to 0.1.2
+    * riri-yarn bumped from 0.1.2 to 0.1.3
+    * riri-task-runner bumped from 0.1.0 to 0.1.1
+
 ## [0.1.3](https://github.com/smarlhens/riri-node-tools/compare/riri-nce-v0.1.2...riri-nce-v0.1.3) (2026-06-09)
 
 

@@ -1,6 +1,6 @@
 [package]
 name = "xtask"
-version = "0.1.1"
+version = "0.1.2"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -10,7 +10,7 @@ publish = false
 anyhow = { workspace = true }
 chrono = { workspace = true }
 clap = { workspace = true }
-riri-node-lifecycle = { path = "../riri-node-lifecycle", version = "0.1.1", features = ["refresh"] }
+riri-node-lifecycle = { path = "../riri-node-lifecycle", version = "0.1.2", features = ["refresh"] }
 serde_json = { workspace = true }
 similar = "3.1.1"
 tera = { version = "1.20.1", default-features = false }

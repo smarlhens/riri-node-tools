@@ -1,6 +1,6 @@
 [package]
 name = "riri-ncd"
-version = "0.1.0"
+version = "0.1.1"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -16,13 +16,13 @@ name = "npm-check-deprecations"
 path = "src/bin/npm-check-deprecations.rs"
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.1.2", features = ["graph"] }
-riri-npm = { path = "../riri-npm", version = "0.1.2", features = ["graph"] }
-riri-pnpm = { path = "../riri-pnpm", version = "0.1.2", features = ["graph"] }
-riri-semver-range = { path = "../riri-semver-range", version = "0.1.1" }
-riri-task-runner = { path = "../riri-task-runner", version = "0.1.0" }
-riri-workspace = { path = "../riri-workspace", version = "0.1.2" }
-riri-yarn = { path = "../riri-yarn", version = "0.1.2", features = ["graph"] }
+riri-common = { path = "../riri-common", version = "0.1.3", features = ["graph"] }
+riri-npm = { path = "../riri-npm", version = "0.1.3", features = ["graph"] }
+riri-pnpm = { path = "../riri-pnpm", version = "0.1.3", features = ["graph"] }
+riri-semver-range = { path = "../riri-semver-range", version = "0.1.2" }
+riri-task-runner = { path = "../riri-task-runner", version = "0.1.1" }
+riri-workspace = { path = "../riri-workspace", version = "0.1.3" }
+riri-yarn = { path = "../riri-yarn", version = "0.1.3", features = ["graph"] }
 anyhow = { workspace = true }
 clap = { workspace = true }
 console = { workspace = true }
