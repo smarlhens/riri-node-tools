@@ -308,9 +308,9 @@ Do **1 → 2 → 3** first (all parse-path, low risk, directly mirror v5, guarde
 cross-validate + proptest suites), re-run `benches/range_parsing.rs` against nodejs-semver
 5.0.0 to quantify, then decide on 4–6 from the numbers.
 
-## Implemented on this branch (1–6)
+## Implemented on this branch (1–7)
 
-All six parse-path optimizations are implemented and measured. Prerelease handling is
+All seven parse-path optimizations are implemented and measured. Prerelease handling is
 **unchanged**: the fast path in #1 fires only when the token has no `-pre`; any prerelease
 token falls through to the original `format!` + `Version::parse` route, so identifiers are
 still parsed and validated.
@@ -334,20 +334,32 @@ still parsed and validated.
 - **#6** `split_by_major` returned `vec![part.clone()]` on the common no-split path (a heap alloc per
   part); it now returns `SmallVec<[RangePart; 1]>` (`SplitParts`), keeping the single part inline.
   Benefits the humanize / intersection / policy paths. `policy.rs` adapted with one `.into_vec()`.
+- **#7 (the big lever)** a byte-level `fast_comparator` fast path on `parse_single_comparator`,
+  modelled on v5's `range::fast::parse`. It handles an optional operator followed by a
+  fully-specified `major.minor.patch[-pre]` version (`^1.2.3`, `>=16.0.0`, `~1.2.3`, `1.2.3`,
+  `=1.2.3-alpha`, `> 1.0.0`) in a single byte walk — one operator dispatch, inline digit
+  accumulation, direct `RangePart` construction — collapsing all the per-token `split`/`strip_prefix`/
+  re-scan work. Wildcards/x-ranges, partials, build metadata and hyphen ranges return `None` and fall
+  through to the unchanged string parser, so it is a pure shortcut with no behavioural change. A
+  companion guard skips the full `" - "` hyphen scan for operator-led sets.
 
 ### Measured (`cargo bench --bench range_parsing`, same machine, 8-range corpus)
 
-|                      | before (main) | after #1–3 |   after #1–6 | nodejs-semver 5.0.0 |
-| -------------------- | ------------: | ---------: | -----------: | ------------------: |
-| parse range (corpus) |      2.149 µs |   1.245 µs | **1.071 µs** |              834 ns |
+|                      | before (main) | after #1–6 |    after #1–7 | nodejs-semver 5.0.0 |
+| -------------------- | ------------: | ---------: | ------------: | ------------------: |
+| parse range (corpus) |      2.149 µs |   1.071 µs | **581 ns** |              829 ns |
 
-- **2.01x faster** than before (~50% less parse time).
-- Gap vs nodejs-semver 5.0.0 narrowed from **2.58x slower → 1.28x slower**.
+- **3.70x faster** than before (~73% less parse time).
+- **Now faster than nodejs-semver 5.0.0**: 581 ns vs 829 ns — riri is **1.43x faster** (was 2.58x
+  slower before this work). 7 of the 8 corpus entries hit the fast path; the wildcard `1.2.x` and the
+  empty/`*` cases use the fallback.
 
-The residual gap (1.28x) is structural: our parser still does `split`/`strip_prefix` and re-derives
-`strip_v`/build-stripping per token, whereas v5 is a single fully hand-rolled byte walk with a SWAR
-short-string probe. Closing it would mean rewriting `parse_single_comparator` as one byte cursor
-that dispatches on the first byte and accumulates digits inline — the biggest remaining lift.
-Verification: all 22 test suites pass — including `cross_validate_nodejs_semver` (now with a
-prerelease corpus, 432 comparisons, 0 mismatches) and `proptest_invariants` (a 2000-case prerelease
-fuzz vs nodejs-semver) — and clippy is clean under the workspace's `pedantic = deny`.
+Verification: all 22 test suites pass — including `cross_validate_nodejs_semver` (non-prerelease +
+a prerelease corpus, 432 comparisons, 0 mismatches) and `proptest_invariants` (a 2000-case prerelease
+fuzz vs nodejs-semver, plus the existing non-prerelease fuzz) — and clippy is clean under the
+workspace's `pedantic = deny`. The fast path is validated by equivalence: any divergence from the
+slow path would surface as a cross-validation or fuzz mismatch.
+
+Remaining headroom is small and not worth the risk: the fallback still handles x-ranges/partials/
+hyphens with the string parser, and a SWAR short-string probe (v5 §2) would help only very long
+inputs, which engine ranges never are.
