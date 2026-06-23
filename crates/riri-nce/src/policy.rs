@@ -76,7 +76,7 @@ pub fn rewrite_node_range(
         let baseline = if is_wildcard(input_part) {
             Vec::new()
         } else {
-            split_by_major(input_part)
+            split_by_major(input_part).into_vec()
         };
         if contributions != baseline {
             let rewritten_part = humanize_parts(&contributions, ctx.precision);
