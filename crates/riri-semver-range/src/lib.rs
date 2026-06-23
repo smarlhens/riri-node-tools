@@ -6,7 +6,8 @@ pub(crate) mod subset;
 
 pub use helpers::split_by_major;
 pub use intersection::restrictive_range;
-pub use parse::{ParsedRange, Parts};
+pub use parse::ParsedRange;
+pub(crate) use parse::Parts;
 pub use subset::{intersects, is_subset_of};
 
 use semver::Version;
