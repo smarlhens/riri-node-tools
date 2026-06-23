@@ -1,29 +1,30 @@
-use crate::{Op, RangePart};
+use crate::{Op, Parts, RangePart};
 use semver::Version;
+use smallvec::{SmallVec, smallvec};
 
 /// Split a cross-major range part into one part per major version.
 ///
 /// e.g., `>=16.10.0 <18.0.0` → `[^16.10.0, ^17.0.0]`
 /// e.g., `>=0.0.0 <=2.0.0` → `[^0.0.0, ^1.0.0, 2.0.0]`
 #[must_use]
-pub fn split_by_major(part: &RangePart) -> Vec<RangePart> {
+pub fn split_by_major(part: &RangePart) -> Parts {
     let Some(max) = &part.max else {
-        return vec![part.clone()];
+        return smallvec![part.clone()];
     };
 
     // Compute the effective exclusive upper major boundary
     let end_major = match part.max_op {
         Some(Op::Lt) => max.major,
         Some(Op::Lte) => max.major + 1,
-        _ => return vec![part.clone()],
+        _ => return smallvec![part.clone()],
     };
 
     // Only split if the part spans more than one major
     if end_major <= part.min.major + 1 {
-        return vec![part.clone()];
+        return smallvec![part.clone()];
     }
 
-    let mut parts = Vec::new();
+    let mut parts: Parts = SmallVec::new();
     for major in part.min.major..end_major {
         let min = if major == part.min.major {
             part.min.clone()

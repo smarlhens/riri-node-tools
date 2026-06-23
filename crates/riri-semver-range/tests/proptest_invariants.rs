@@ -173,3 +173,63 @@ proptest! {
         );
     }
 }
+
+// --- Prerelease-aware strategies ---
+
+/// A prerelease suffix, possibly empty (e.g. `-alpha`, `-rc.1`, `-alpha.2`).
+fn arb_pre_tag() -> impl Strategy<Value = String> {
+    prop_oneof![
+        Just(String::new()),
+        Just("-alpha".to_string()),
+        Just("-beta".to_string()),
+        Just("-rc.1".to_string()),
+        Just("-pre.2".to_string()),
+        (0_u64..3).prop_map(|n| format!("-alpha.{n}")),
+    ]
+}
+
+/// Generate a version that frequently carries a prerelease tag.
+fn arb_pre_version() -> impl Strategy<Value = Version> {
+    (0_u64..4, 0_u64..4, 0_u64..4, arb_pre_tag()).prop_map(|(ma, mi, pa, tag)| {
+        Version::parse(&format!("{ma}.{mi}.{pa}{tag}")).expect("valid")
+    })
+}
+
+/// Generate range strings whose comparators frequently carry prerelease tags.
+fn arb_pre_range() -> impl Strategy<Value = String> {
+    let core = (0_u64..4, 0_u64..4, 0_u64..4);
+    prop_oneof![
+        (core.clone(), arb_pre_tag()).prop_map(|((a, b, c), t)| format!("^{a}.{b}.{c}{t}")),
+        (core.clone(), arb_pre_tag()).prop_map(|((a, b, c), t)| format!("~{a}.{b}.{c}{t}")),
+        (core.clone(), arb_pre_tag()).prop_map(|((a, b, c), t)| format!(">={a}.{b}.{c}{t}")),
+        (core.clone(), arb_pre_tag()).prop_map(|((a, b, c), t)| format!(">{a}.{b}.{c}{t}")),
+        (core.clone(), arb_pre_tag()).prop_map(|((a, b, c), t)| format!("<{a}.{b}.{c}{t}")),
+        // exact prerelease
+        (core.clone(), arb_pre_tag()).prop_map(|((a, b, c), t)| format!("{a}.{b}.{c}{t}")),
+        // hyphen with prerelease on either end
+        (core.clone(), arb_pre_tag(), core.clone(), arb_pre_tag()).prop_map(
+            |((a, b, c), t1, (d, e, f), t2)| format!("{a}.{b}.{c}{t1} - {d}.{e}.{f}{t2}")
+        ),
+    ]
+}
+
+// --- Invariant: satisfies matches nodejs-semver for prerelease inputs ---
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(2000))]
+    #[test]
+    fn satisfies_matches_nodejs_semver_prerelease(range in arb_pre_range(), v in arb_pre_version()) {
+        let Some(our_range) = try_parse(&range) else { return Ok(()); };
+        let v_str = format!("{v}");
+        let Ok(njs_range) = nodejs_semver::Range::parse(&range) else { return Ok(()); };
+        let Ok(njs_version) = nodejs_semver::Version::parse(&v_str) else { return Ok(()); };
+
+        let ours = our_range.satisfies(&v);
+        let theirs = njs_range.satisfies(&njs_version);
+        prop_assert!(
+            ours == theirs,
+            "prerelease satisfies mismatch for {:?} @ {}: ours={}, nodejs-semver={}",
+            range, v, ours, theirs
+        );
+    }
+}
