@@ -20,7 +20,7 @@ unseparated_literal_suffix = "deny"
 unwrap_used = "deny"
 
 [workspace.dependencies]
-anyhow = "1.0.102"
+anyhow = "1.0.103"
 chrono = { version = "0.4.45", default-features = false, features = ["clock", "std", "serde"] }
 clap = { version = "4.6.1", features = ["derive"] }
 comfy-table = "7.2.2"
@@ -36,8 +36,8 @@ tracing-subscriber = "0.3.23"
 ureq = "3.3.0"
 
 # napi
-napi = { version = "3.9.3", default-features = false, features = ["napi6", "serde-json"] }
-napi-derive = { version = "3.5.6", features = ["type-def"] }
+napi = { version = "3.9.4", default-features = false, features = ["napi6", "serde-json"] }
+napi-derive = { version = "3.5.7", features = ["type-def"] }
 napi-build = "2.3.2"
 
 # test infrastructure
