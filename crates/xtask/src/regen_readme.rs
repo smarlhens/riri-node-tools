@@ -194,7 +194,7 @@ fn regenerate(workspace_root: &Path, tera: &Tera, spec: &CrateSpec) -> anyhow::R
 
 fn build_tera() -> anyhow::Result<Tera> {
     let mut tera = Tera::default();
-    tera.autoescape_on(Vec::new());
+    tera.autoescape_on(Vec::<&str>::new());
     tera.add_raw_templates(vec![
         ("readme-nce", TPL_README_NCE),
         ("readme-ncd", TPL_README_NCD),
