@@ -9,11 +9,22 @@
     ":prImmediately",
   ],
   labels: ["dependencies"],
-  enabledManagers: ["cargo", "github-actions", "npm", "pre-commit"],
+  enabledManagers: ["cargo", "github-actions", "npm", "pre-commit", "custom.regex"],
   ignorePaths: ["fixtures/**"],
   "pre-commit": {
     enabled: true,
   },
+  customManagers: [
+    {
+      customType: "regex",
+      managerFilePatterns: ["/^rust-toolchain\\.toml$/"],
+      matchStrings: ['channel = "(?<currentValue>\\d+\\.\\d+\\.\\d+)"'],
+      depNameTemplate: "rust",
+      packageNameTemplate: "rust-lang/rust",
+      datasourceTemplate: "github-tags",
+      versioningTemplate: "semver",
+    },
+  ],
   packageRules: [
     {
       // Pin 0.x of the TS predecessors used by bench-js — they only exist

@@ -77,7 +77,7 @@ jobs:
           cache-dependency-path: ${{ inputs.crate-dir }}/package-lock.json
 
       - name: Install Rust
-        run: rustup update stable && rustup default stable && rustup target add ${{ matrix.settings.target }}
+        run: rustup toolchain install && rustup target add ${{ matrix.settings.target }}
 
       - name: Rust cache
         if: ${{ !inputs.run-publish }}

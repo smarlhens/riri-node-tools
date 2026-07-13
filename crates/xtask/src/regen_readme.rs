@@ -263,6 +263,29 @@ const RUSTC_URL: &str = "https://www.rust-lang.org/tools/install";
 const PREK_URL: &str = "https://prek.j178.dev/";
 const NODE_URL: &str = "https://nodejs.org/";
 
+/// The Rust version advertised as "tested with" in the root README. Sourced from
+/// the pinned `rust-toolchain.toml` channel when it names an exact `X.Y.Z` release
+/// so the README tracks the pin deterministically (independent of whichever `rustc`
+/// a contributor happens to have active); falls back to the active `rustc --version`
+/// for non-pinned channels such as `stable`.
+fn rust_tested_with(workspace_root: &Path) -> String {
+    std::fs::read_to_string(workspace_root.join("rust-toolchain.toml"))
+        .ok()
+        .and_then(|toml| parse_toolchain_channel(&toml))
+        .filter(|channel| parse_version(channel) == *channel)
+        .unwrap_or_else(|| tool_version("rustc", &["--version"]))
+}
+
+/// Extract the `channel` value from a `rust-toolchain.toml`'s `[toolchain]` table.
+fn parse_toolchain_channel(toml: &str) -> Option<String> {
+    toml.lines()
+        .map(str::trim)
+        .find_map(|line| line.strip_prefix("channel"))
+        .and_then(|rest| rest.trim_start().strip_prefix('='))
+        .map(|value| value.trim().trim_matches('"').to_string())
+        .filter(|channel| !channel.is_empty())
+}
+
 /// Run `cmd args` and parse a version from combined stdout/stderr; `"n/a"` on failure.
 fn tool_version(cmd: &str, args: &[&str]) -> String {
     Command::new(cmd).args(args).output().ok().map_or_else(
@@ -549,7 +572,7 @@ fn render_root(
 fn regenerate_root(workspace_root: &Path, tera: &Tera) -> anyhow::Result<String> {
     let node_constraint = node_constraint(workspace_root)?;
     let prereqs = serde_json::json!([
-        {"name":"rustc","url":RUSTC_URL,"constraint":">=1.85.0 <2.0.0","tested_with":tool_version("rustc",&["--version"])},
+        {"name":"rustc","url":RUSTC_URL,"constraint":">=1.85.0 <2.0.0","tested_with":rust_tested_with(workspace_root)},
         {"name":"prek","url":PREK_URL,"constraint":">=0.3.8","tested_with":tool_version("prek",&["--version"])},
         {"name":"node","url":NODE_URL,"constraint":node_constraint,"tested_with":tool_version("node",&["--version"])},
     ]);
@@ -618,6 +641,20 @@ mod tests {
     #[test]
     fn falls_back_when_absent() {
         assert_eq!(parse_version("command not found"), "n/a");
+    }
+
+    #[test]
+    fn parses_toolchain_channel() {
+        let toml = "[toolchain]\nchannel = \"1.97.0\"\ncomponents = [\"rustfmt\", \"clippy\"]\n";
+        assert_eq!(
+            super::parse_toolchain_channel(toml).as_deref(),
+            Some("1.97.0")
+        );
+    }
+
+    #[test]
+    fn toolchain_channel_absent() {
+        assert_eq!(super::parse_toolchain_channel("[toolchain]\n"), None);
     }
 
     #[test]
