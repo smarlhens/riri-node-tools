@@ -68,7 +68,7 @@ jobs:
           save-if: ${{ inputs.save-rust-cache }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: bench-js/.nvmrc
 
