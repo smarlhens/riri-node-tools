@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.4](https://github.com/smarlhens/riri-node-tools/compare/riri-npd-v0.1.3...riri-npd-v0.1.4) (2026-07-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.3 to 0.1.4
+    * riri-npm bumped from 0.1.3 to 0.1.4
+    * riri-pnpm bumped from 0.1.3 to 0.1.4
+    * riri-task-runner bumped from 0.1.1 to 0.1.2
+    * riri-workspace bumped from 0.1.3 to 0.1.4
+    * riri-yarn bumped from 0.1.3 to 0.1.4
+
 ## [0.1.3](https://github.com/smarlhens/riri-node-tools/compare/riri-npd-v0.1.2...riri-npd-v0.1.3) (2026-06-23)
 
 

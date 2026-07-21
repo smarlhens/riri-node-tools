@@ -1,12 +1,12 @@
 [package]
 name = "riri-workspace"
-version = "0.1.3"
+version = "0.1.4"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.1.3" }
+riri-common = { path = "../riri-common", version = "0.1.4" }
 riri-find-up = { path = "../riri-find-up", version = "0.1.1" }
 serde = { workspace = true }
 serde_json = { workspace = true }
