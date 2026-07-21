@@ -53,7 +53,7 @@ Microbenchmarks (point-in-time, machine-specific) live in [BENCHMARKS.md](BENCHM
 
 ### Prerequisites
 
-- [rustc](https://www.rust-lang.org/tools/install) **>=1.85.0 <2.0.0** (_tested with 1.97.0_)
+- [rustc](https://www.rust-lang.org/tools/install) **>=1.85.0 <2.0.0** (_tested with 1.97.1_)
 - [prek](https://prek.j178.dev/) **>=0.3.8** (_tested with 0.4.9_)
 - [node](https://nodejs.org/) **^22.22.2 || ^24.15.0 || >=26.0.0** (_tested with 22.22.2_)
 
