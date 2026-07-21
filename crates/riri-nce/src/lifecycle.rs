@@ -116,11 +116,14 @@ pub fn check_engines_with_lifecycle(
             bump.target_floor,
             declared
         );
-        if bump.apply {
+        let final_npm = if bump.apply {
             let new_npm = format_npm_floor(&bump.target_floor, cfg.npm_precision);
             debug!(target: "riri_nce::lifecycle", "Bumping engines.npm floor to: {new_npm}");
-            apply_npm_bump(&new_npm, &mut output, input);
-        }
+            new_npm
+        } else {
+            declared.clone().unwrap_or_else(|| "*".to_string())
+        };
+        reconcile_npm_change(&final_npm, &mut output, input);
         lifecycle.npm_bump = Some(bump);
     }
 
@@ -157,16 +160,36 @@ fn format_npm_floor(target: &semver::Version, precision: VersionPrecision) -> St
         .unwrap_or(raw)
 }
 
-fn apply_npm_bump(new_npm: &str, output: &mut CheckEnginesOutput, input: &CheckEnginesInput<'_>) {
-    output
-        .computed_engines
-        .insert(EngineConstraintKey::Npm, new_npm.to_string());
-    upsert_change(
-        &mut output.engines_range_to_set,
-        EngineConstraintKey::Npm,
-        original_from(input, EngineConstraintKey::Npm),
-        new_npm.to_string(),
-    );
+fn reconcile_npm_change(
+    final_npm: &str,
+    output: &mut CheckEnginesOutput,
+    input: &CheckEnginesInput<'_>,
+) {
+    let raw = input
+        .package_engines
+        .and_then(|pkg| pkg.get(&EngineConstraintKey::Npm.to_string()).cloned());
+    let norm = |s: &str| ParsedRange::parse(s).ok().map(|r| r.humanize());
+    let unchanged = raw
+        .as_deref()
+        .is_some_and(|r| norm(r).is_some() && norm(r) == norm(final_npm));
+    if unchanged {
+        output
+            .computed_engines
+            .insert(EngineConstraintKey::Npm, raw.unwrap_or_default());
+        output
+            .engines_range_to_set
+            .retain(|e| e.engine != EngineConstraintKey::Npm);
+    } else {
+        output
+            .computed_engines
+            .insert(EngineConstraintKey::Npm, final_npm.to_string());
+        upsert_change(
+            &mut output.engines_range_to_set,
+            EngineConstraintKey::Npm,
+            raw.unwrap_or_else(|| "*".to_string()),
+            final_npm.to_string(),
+        );
+    }
 }
 
 fn original_from(input: &CheckEnginesInput<'_>, key: EngineConstraintKey) -> String {
@@ -362,6 +385,83 @@ mod tests {
 
         assert!(lifecycle.unsatisfiable);
         assert_eq!(lifecycle.dropped_disjuncts, vec!["^18".to_string()]);
+    }
+
+    #[test]
+    fn lifecycle_npm_bump_is_idempotent_across_precisions() {
+        // #254: main precision Full + npm precision Major.
+        let data = fixture();
+        let cfg = LifecycleConfig {
+            data: &data,
+            policy: Policy::Any,
+            today: NaiveDate::from_ymd_opt(2026, 4, 29).expect("date"),
+            allow_eol: true,
+            bump_npm: true,
+            npm_precision: VersionPrecision::Major,
+        };
+
+        // npm absent → floor for ^18 is 8.5.0 → ">=8.5".
+        let pkg1 = pkg_engines(Some("^18.0.0"), None);
+        let input1 = CheckEnginesInput {
+            lockfile_entries: Vec::new(),
+            package_engines: Some(&pkg1),
+            filter_engines: vec![EngineConstraintKey::Node, EngineConstraintKey::Npm],
+            precision: VersionPrecision::Full,
+        };
+        let (out1, _) = check_engines_with_lifecycle(&input1, &cfg).expect("lifecycle");
+        assert_eq!(out1.computed_engines[&EngineConstraintKey::Npm], ">=8.5");
+
+        let pkg2 = pkg_engines(Some("^18.0.0"), Some(">=8.5"));
+        let input2 = CheckEnginesInput {
+            lockfile_entries: Vec::new(),
+            package_engines: Some(&pkg2),
+            filter_engines: vec![EngineConstraintKey::Node, EngineConstraintKey::Npm],
+            precision: VersionPrecision::Full,
+        };
+        let (out2, _) = check_engines_with_lifecycle(&input2, &cfg).expect("lifecycle");
+        assert_eq!(out2.computed_engines[&EngineConstraintKey::Npm], ">=8.5");
+        assert!(
+            out2.engines_range_to_set
+                .iter()
+                .all(|c| c.engine != EngineConstraintKey::Npm),
+            "npm must be stable on the second run, got: {:?}",
+            out2.engines_range_to_set
+        );
+    }
+
+    #[test]
+    fn lifecycle_npm_non_apply_still_reports_lockfile_narrowing() {
+        let data = fixture();
+        let cfg = LifecycleConfig {
+            data: &data,
+            policy: Policy::Any,
+            today: NaiveDate::from_ymd_opt(2026, 4, 29).expect("date"),
+            allow_eol: true,
+            bump_npm: true,
+            npm_precision: VersionPrecision::Major,
+        };
+        // floor 8.5.0; root declares ">=10.0.0"; dependency requires ">=11.0.0".
+        let pkg = pkg_engines(Some("^18.0.0"), Some(">=10.0.0"));
+        let dep_engines = riri_common::Engines::Object(HashMap::from([(
+            "npm".to_string(),
+            ">=11.0.0".to_string(),
+        )]));
+        let input = CheckEnginesInput {
+            lockfile_entries: vec![("dep", &dep_engines)],
+            package_engines: Some(&pkg),
+            filter_engines: vec![EngineConstraintKey::Node, EngineConstraintKey::Npm],
+            precision: VersionPrecision::Full,
+        };
+        let (out, lifecycle) = check_engines_with_lifecycle(&input, &cfg).expect("lifecycle");
+        assert!(!lifecycle.npm_bump.expect("bump").apply);
+        assert_eq!(out.computed_engines[&EngineConstraintKey::Npm], ">=11.0.0");
+        let npm_change = out
+            .engines_range_to_set
+            .iter()
+            .find(|c| c.engine == EngineConstraintKey::Npm)
+            .expect("npm narrowing reported");
+        assert_eq!(npm_change.range, ">=10.0.0");
+        assert_eq!(npm_change.range_to_set, ">=11.0.0");
     }
 
     #[test]
