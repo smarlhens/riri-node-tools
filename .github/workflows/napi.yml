@@ -70,7 +70,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ${{ inputs.crate-dir }}/.nvmrc
           cache: npm
@@ -151,7 +151,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ${{ inputs.crate-dir }}/.nvmrc
           architecture: ${{ matrix.settings.architecture }}
@@ -238,7 +238,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ${{ inputs.crate-dir }}/.nvmrc
 
