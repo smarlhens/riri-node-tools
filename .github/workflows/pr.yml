@@ -30,7 +30,7 @@ jobs:
         with:
           prefix-key: prek
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
       - name: Run prek hooks
@@ -81,7 +81,7 @@ jobs:
         with:
           prefix-key: readme-drift-${{ matrix.crate.name }}
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: ${{ matrix.crate.dir }}/.nvmrc
           cache: npm
@@ -111,7 +111,7 @@ jobs:
         with:
           prefix-key: readme-drift-root
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
       - name: Install prek
