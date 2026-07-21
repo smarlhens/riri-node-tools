@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.5](https://github.com/smarlhens/riri-node-tools/compare/riri-nce-v0.1.4...riri-nce-v0.1.5) (2026-07-21)
+
+
+### Bug Fixes
+
+* **nce:** make npm engine suggestion idempotent ([29bb7ed](https://github.com/smarlhens/riri-node-tools/commit/29bb7ed0ea7c623da9a13c6940a073570d4c3f54))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.3 to 0.1.4
+    * riri-node-lifecycle bumped from 0.1.2 to 0.1.3
+    * riri-npm bumped from 0.1.3 to 0.1.4
+    * riri-pnpm bumped from 0.1.3 to 0.1.4
+    * riri-yarn bumped from 0.1.3 to 0.1.4
+    * riri-task-runner bumped from 0.1.1 to 0.1.2
+
 ## [0.1.4](https://github.com/smarlhens/riri-node-tools/compare/riri-nce-v0.1.3...riri-nce-v0.1.4) (2026-06-23)
 
 

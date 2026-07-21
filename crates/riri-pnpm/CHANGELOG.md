@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.4](https://github.com/smarlhens/riri-node-tools/compare/riri-pnpm-v0.1.3...riri-pnpm-v0.1.4) (2026-07-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.3 to 0.1.4
+
 ## [0.1.3](https://github.com/smarlhens/riri-node-tools/compare/riri-pnpm-v0.1.2...riri-pnpm-v0.1.3) (2026-06-23)
 
 

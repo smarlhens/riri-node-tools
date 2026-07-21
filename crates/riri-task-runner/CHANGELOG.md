@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/smarlhens/riri-node-tools/compare/riri-task-runner-v0.1.1...riri-task-runner-v0.1.2) (2026-07-21)
+
+
+### Chores
+
+* **deps:** bump cargo dependencies ([6c80946](https://github.com/smarlhens/riri-node-tools/commit/6c80946e9151379c37e008d640f76a94d89db8f7))
+
 ## [0.1.1](https://github.com/smarlhens/riri-node-tools/compare/riri-task-runner-v0.1.0...riri-task-runner-v0.1.1) (2026-06-23)
 
 

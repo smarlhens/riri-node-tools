@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.1.1](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-pin-dependencies-v1.1.0...@smarlhens/npm-pin-dependencies-v1.1.1) (2026-07-21)
+
+
+### Chores
+
+* **deps:** bump npm dependencies ([86e888e](https://github.com/smarlhens/riri-node-tools/commit/86e888e60f9072a02e05d92f417f954edcd9ad4c))
+* **deps:** bump npm dependencies ([36a5e5f](https://github.com/smarlhens/riri-node-tools/commit/36a5e5fa60d57c7ad14f32eb69e41676e6680eca))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.3 to 0.1.4
+    * riri-npd bumped from 0.1.3 to 0.1.4
+    * riri-npm bumped from 0.1.3 to 0.1.4
+    * riri-pnpm bumped from 0.1.3 to 0.1.4
+
 ## [1.1.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-pin-dependencies-v1.0.2...@smarlhens/npm-pin-dependencies-v1.1.0) (2026-06-23)
 
 
