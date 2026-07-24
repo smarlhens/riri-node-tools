@@ -27,7 +27,7 @@ jobs:
           persist-credentials: false
 
       - name: Run zizmor
-        uses: zizmorcore/zizmor-action@v0.6.0
+        uses: zizmorcore/zizmor-action@v0.6.1
         with:
           inputs: |
             .github/workflows/
