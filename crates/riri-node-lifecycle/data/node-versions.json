@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "fetched_at": "2026-08-03T07:13:53.560436986Z",
+  "fetched_at": "2026-08-10T06:33:16.274366300Z",
   "majors": {
     "4": {
       "major": 4,
@@ -3191,9 +3191,9 @@
       "maintenance_start": "2026-10-20",
       "end": "2028-04-30",
       "lowest": "24.0.0",
-      "highest": "24.18.1",
+      "highest": "24.19.0",
       "npm_at_lowest": "11.3.0",
-      "npm_at_highest": "11.16.0",
+      "npm_at_highest": "11.17.0",
       "npm_min_in_major": "11.3.0",
       "releases": [
         {
@@ -3325,6 +3325,11 @@
           "version": "24.18.1",
           "npm": "11.16.0",
           "date": "2026-07-28"
+        },
+        {
+          "version": "24.19.0",
+          "npm": "11.17.0",
+          "date": "2026-08-03"
         }
       ]
     },
@@ -3423,9 +3428,9 @@
       "maintenance_start": "2027-10-20",
       "end": "2029-04-30",
       "lowest": "26.0.0",
-      "highest": "26.5.1",
+      "highest": "26.7.0",
       "npm_at_lowest": "11.12.1",
-      "npm_at_highest": "11.17.0",
+      "npm_at_highest": "11.19.0",
       "npm_min_in_major": "11.12.1",
       "releases": [
         {
@@ -3467,6 +3472,16 @@
           "version": "26.5.1",
           "npm": "11.17.0",
           "date": "2026-07-28"
+        },
+        {
+          "version": "26.6.0",
+          "npm": "11.18.0",
+          "date": "2026-08-03"
+        },
+        {
+          "version": "26.7.0",
+          "npm": "11.19.0",
+          "date": "2026-08-05"
         }
       ]
     }
