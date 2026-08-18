@@ -375,7 +375,7 @@ fn run(args: &Args) -> Result<i32> {
     // Update if requested
     if args.update {
         let task = runner.task("Updating package.json...");
-        apply_engines_update(&mut pkg_file, &output.engines_range_to_set);
+        apply_engines_update(&mut pkg_file.raw, &output.engines_range_to_set);
         if args.sort {
             pkg_file
                 .write_sorted()
