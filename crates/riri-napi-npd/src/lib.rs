@@ -7,8 +7,10 @@
 #![allow(clippy::missing_errors_doc)]
 
 use napi_derive::napi;
-use riri_common::{LockfileVersions, PackageJson};
-use riri_npd::pin_dependencies as npd_pin_dependencies;
+use riri_npd::{
+    PackageJson, PackageManager, ParsedLockfile, parse_lockfile,
+    pin_dependencies as npd_pin_dependencies,
+};
 
 #[napi(object)]
 pub struct DependencyPin {
@@ -33,25 +35,18 @@ pub struct PinDependenciesOptions {
 fn parse_lockfile_versions(
     content: &str,
     lockfile_type: Option<&str>,
-) -> napi::Result<Box<dyn LockfileVersions>> {
-    match lockfile_type.unwrap_or("npm") {
-        "npm" => riri_npm::NpmPackageLock::parse(content)
-            .map(|lock| Box::new(lock) as Box<dyn LockfileVersions>)
-            .map_err(|error| {
-                napi::Error::from_reason(format!("failed to parse npm lockfile: {error}"))
-            }),
-        "pnpm" => riri_pnpm::PnpmLockfile::parse(content)
-            .map(|lock| Box::new(lock) as Box<dyn LockfileVersions>)
-            .map_err(|error| {
-                napi::Error::from_reason(format!("failed to parse pnpm lockfile: {error}"))
-            }),
-        "yarn" => Err(napi::Error::from_reason(
+) -> napi::Result<ParsedLockfile> {
+    let kind = lockfile_type.unwrap_or("npm");
+    let manager = PackageManager::from_str_lowercase(kind)
+        .ok_or_else(|| napi::Error::from_reason(format!("unknown lockfile type: {kind}")))?;
+    if manager == PackageManager::Yarn {
+        return Err(napi::Error::from_reason(
             "yarn lockfile parsing requires a directory path, not string content — use pinDependenciesFromPath instead",
-        )),
-        other => Err(napi::Error::from_reason(format!(
-            "unknown lockfile type: {other}"
-        ))),
+        ));
     }
+    parse_lockfile(manager, content).map_err(|error| {
+        napi::Error::from_reason(format!("failed to parse {kind} lockfile: {error}"))
+    })
 }
 
 /// Run the `npd` CLI in-process. `argv` must include the program name at
@@ -72,7 +67,7 @@ pub fn pin_dependencies(options: PinDependenciesOptions) -> napi::Result<PinDepe
     let lockfile =
         parse_lockfile_versions(&options.lockfile_content, options.lockfile_type.as_deref())?;
 
-    let pins = npd_pin_dependencies(&package_json, lockfile.as_ref())
+    let pins = npd_pin_dependencies(&package_json, lockfile.versions())
         .map_err(|error| napi::Error::from_reason(format!("pin_dependencies failed: {error}")))?
         .into_iter()
         .map(|pin| DependencyPin {

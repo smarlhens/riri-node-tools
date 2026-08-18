@@ -20,6 +20,7 @@ required-features = ["cli"]
 
 [dependencies]
 riri-common = { path = "../riri-common", version = "0.1.4", features = ["graph"] }
+riri-lockfile = { path = "../riri-lockfile", version = "0.1.0", features = ["graph"] }
 riri-npm = { path = "../riri-npm", version = "0.1.4", features = ["graph"] }
 riri-pnpm = { path = "../riri-pnpm", version = "0.1.4", features = ["graph"] }
 riri-semver-range = { path = "../riri-semver-range", version = "0.1.2" }

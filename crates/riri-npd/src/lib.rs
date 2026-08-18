@@ -7,7 +7,8 @@
 #[cfg(feature = "cli")]
 pub mod cli;
 
-pub use riri_common::{LockfileVersions, PackageJson};
+pub use riri_common::{LockfileVersions, PackageJson, PackageManager};
+pub use riri_lockfile::{LockfileParseError, ParsedLockfile, parse_lockfile};
 pub use riri_npm::{NpmPackageLock, NpmParseError};
 pub use riri_pnpm::catalog::{CatalogError, PnpmCatalog};
 pub use riri_pnpm::{PnpmLockfile, PnpmParseError};

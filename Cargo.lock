@@ -1383,6 +1383,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "riri-lockfile"
+version = "0.1.0"
+dependencies = [
+ "riri-common",
+ "riri-npm",
+ "riri-pnpm",
+ "riri-yarn",
+ "rstest",
+ "thiserror",
+]
+
+[[package]]
 name = "riri-napi-ncd"
 version = "0.1.2"
 dependencies = [
@@ -1399,12 +1411,8 @@ dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
- "riri-common",
  "riri-nce",
- "riri-npm",
- "riri-pnpm",
  "riri-semver-range",
- "riri-yarn",
  "semver",
  "serde_json",
 ]
@@ -1416,10 +1424,7 @@ dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
- "riri-common",
  "riri-npd",
- "riri-npm",
- "riri-pnpm",
  "serde_json",
 ]
 
@@ -1432,6 +1437,7 @@ dependencies = [
  "console",
  "criterion",
  "riri-common",
+ "riri-lockfile",
  "riri-npm",
  "riri-pnpm",
  "riri-semver-range",
@@ -1461,6 +1467,7 @@ dependencies = [
  "dhat",
  "insta",
  "riri-common",
+ "riri-lockfile",
  "riri-node-lifecycle",
  "riri-npm",
  "riri-pnpm",
@@ -1500,6 +1507,7 @@ dependencies = [
  "criterion",
  "insta",
  "riri-common",
+ "riri-lockfile",
  "riri-npm",
  "riri-pnpm",
  "riri-task-runner",

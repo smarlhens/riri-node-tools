@@ -18,12 +18,6 @@ pub enum DetectError {
     PackageJsonParse(#[from] serde_json::Error),
 }
 
-const LOCKFILE_NAMES: &[(&str, PackageManager)] = &[
-    ("package-lock.json", PackageManager::Npm),
-    ("yarn.lock", PackageManager::Yarn),
-    ("pnpm-lock.yaml", PackageManager::Pnpm),
-];
-
 /// Detect which lockfile exists by walking up from `start`.
 ///
 /// When multiple lockfiles exist in the same directory, the most recently
@@ -33,7 +27,10 @@ const LOCKFILE_NAMES: &[(&str, PackageManager)] = &[
 ///
 /// Returns [`DetectError::NoLockfile`] if no supported lockfile is found.
 pub fn detect_lockfile(start: &Path) -> Result<LockFileResult, DetectError> {
-    let names: Vec<&str> = LOCKFILE_NAMES.iter().map(|(n, _)| *n).collect();
+    let names: Vec<&str> = PackageManager::ALL
+        .iter()
+        .map(|pm| pm.lockfile_name())
+        .collect();
     let matches = riri_find_up::find_up(start, &names);
 
     if matches.is_empty() {
@@ -47,10 +44,7 @@ pub fn detect_lockfile(start: &Path) -> Result<LockFileResult, DetectError> {
         .and_then(|s| s.to_str())
         .unwrap_or_default();
 
-    let package_manager = LOCKFILE_NAMES
-        .iter()
-        .find(|(n, _)| *n == file_name)
-        .map(|(_, pm)| pm.clone())
+    let package_manager = PackageManager::from_lockfile_name(file_name)
         .ok_or_else(|| DetectError::NoLockfile(start.into()))?;
 
     Ok(LockFileResult {

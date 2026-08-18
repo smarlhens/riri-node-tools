@@ -30,24 +30,18 @@ pub fn check_deprecations_from_content(
     registry: Option<String>,
 ) -> anyhow::Result<analyze::Report> {
     use anyhow::Context as _;
-    use riri_common::{LockfileGraph as _, NpmrcRegistryConfig, PackageJson};
+    use riri_common::{NpmrcRegistryConfig, PackageJson, PackageManager};
 
     let pkg: PackageJson =
         serde_json::from_str(package_json).context("failed to parse package.json")?;
 
-    let graph = match lockfile_type {
-        "npm" => riri_npm::NpmPackageLock::parse(lockfile_content)
-            .context("failed to parse package-lock.json")?
-            .dep_graph(&pkg),
-        "pnpm" => riri_pnpm::PnpmLockfile::parse(lockfile_content)
-            .context("failed to parse pnpm-lock.yaml")?
-            .dep_graph(&pkg),
-        "yarn" => riri_yarn::YarnLock::parse(lockfile_content)
-            .context("failed to parse yarn.lock")?
-            .dep_graph(&pkg),
-        other => anyhow::bail!("unknown lockfile type: {other}"),
-    }
-    .map_err(|e| anyhow::anyhow!("failed to build dependency graph: {e}"))?;
+    let manager = PackageManager::from_str_lowercase(lockfile_type)
+        .ok_or_else(|| anyhow::anyhow!("unknown lockfile type: {lockfile_type}"))?;
+    let graph = riri_lockfile::parse_lockfile(manager, lockfile_content)
+        .with_context(|| format!("failed to parse {}", manager.lockfile_name()))?
+        .graph()
+        .dep_graph(&pkg)
+        .map_err(|e| anyhow::anyhow!("failed to build dependency graph: {e}"))?;
 
     let project_name = pkg.name.clone().unwrap_or_else(|| "project".to_string());
     let client = registry::RegistryClient::new(NpmrcRegistryConfig::default(), registry);

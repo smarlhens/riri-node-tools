@@ -20,6 +20,7 @@ required-features = ["cli"]
 
 [dependencies]
 riri-common = { path = "../riri-common", version = "0.1.4" }
+riri-lockfile = { path = "../riri-lockfile", version = "0.1.0" }
 riri-npm = { path = "../riri-npm", version = "0.1.4" }
 riri-pnpm = { path = "../riri-pnpm", version = "0.1.4", features = ["catalog"] }
 riri-task-runner = { path = "../riri-task-runner", version = "0.1.2", optional = true }
