@@ -56,7 +56,9 @@ riri-npd = { git = "https://github.com/smarlhens/riri-node-tools", rev = "000000
 
 `default-features = false` drops the CLI layer. `refresh`, the HTTP client behind `nce --refresh`, is off by default as well: released binaries enable it, a `cargo install --git` build needs `--features refresh`.
 
-Supported surface and publish plan: [docs/crate-api.md](docs/crate-api.md).
+What is supported is what each crate's rustdoc documents. `pub` alone is not a promise: the `cli` modules exist so the binaries and the NAPI shims can share code and move without notice, and undocumented `pub` items are incidental. Nothing reads the filesystem or opens a socket unless its name says so — `PackageJsonFile::read`, `YarnProject::scan`, the `refresh` feature.
+
+Every crate is `0.1.x`, where cargo treats a minor bump as breaking. A breaking change lands as a `feat!:` commit, which release-please turns into a minor bump; everything else becomes a patch.
 
 ## Benchmarks
 
