@@ -24,12 +24,12 @@ unwrap_used = "deny"
 anyhow = "1.0.104"
 chrono = { version = "0.4.45", default-features = false, features = ["clock", "std", "serde"] }
 clap = { version = "4.6.3", features = ["derive"] }
-comfy-table = "7.2.2"
+comfy-table = "8.0.0"
 console = "0.16.4"
 semver = "1.0.28"
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = { version = "1.0.151", features = ["preserve_order"] }
-serde-saphyr = "0.0.29"
+serde-saphyr = "1.0.0"
 smallvec = "1.15.2"
 tracing = "0.1.44"
 thiserror = "2.0.19"
