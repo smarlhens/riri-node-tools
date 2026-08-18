@@ -36,7 +36,7 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"], optional = true }
-ureq = { workspace = true }
+ureq = { workspace = true, optional = true }
 
 [features]
 default = ["cli"]
@@ -45,7 +45,9 @@ cli = [
     "dep:riri-task-runner",
     "dep:riri-workspace",
     "dep:tracing-subscriber",
+    "http",
 ]
+http = ["dep:ureq"]
 
 [dev-dependencies]
 criterion = { workspace = true }

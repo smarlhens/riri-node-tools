@@ -1,10 +1,10 @@
 //! Registry packument client and parallel fetch.
 
 use crate::{DeprecationSource, Packument, SourceError};
-use riri_common::NpmrcRegistryConfig;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
+#[cfg(feature = "http")]
 const ACCEPT_ABBREVIATED: &str = "application/vnd.npm.install-v1+json";
 const CONCURRENCY: usize = 16;
 
@@ -15,17 +15,22 @@ pub fn packument_url(registry: &str, name: &str) -> String {
     format!("{}/{}", registry.trim_end_matches('/'), encoded)
 }
 
-/// Live registry-backed [`DeprecationSource`].
+/// Live registry-backed [`DeprecationSource`]. Requires the `http` feature.
+#[cfg(feature = "http")]
 pub struct RegistryClient {
     agent: ureq::Agent,
-    config: NpmrcRegistryConfig,
+    config: riri_common::NpmrcRegistryConfig,
     /// Overrides every scope when set (`--registry` flag).
     registry_override: Option<String>,
 }
 
+#[cfg(feature = "http")]
 impl RegistryClient {
     #[must_use]
-    pub fn new(config: NpmrcRegistryConfig, registry_override: Option<String>) -> Self {
+    pub fn new(
+        config: riri_common::NpmrcRegistryConfig,
+        registry_override: Option<String>,
+    ) -> Self {
         Self {
             agent: ureq::Agent::new_with_defaults(),
             config,
@@ -44,6 +49,7 @@ impl RegistryClient {
 /// Read a packument from a `file://` registry directory (`{dir}/{name}.json`).
 /// Offline source used by fixtures and README generation. `Ok(None)` when the
 /// file is absent, mirroring a registry 404.
+#[cfg(feature = "http")]
 fn read_packument_file(dir: &str, name: &str) -> Result<Option<Packument>, SourceError> {
     let path = std::path::Path::new(dir).join(format!("{name}.json"));
     match std::fs::read_to_string(&path) {
@@ -61,6 +67,7 @@ fn read_packument_file(dir: &str, name: &str) -> Result<Option<Packument>, Sourc
     }
 }
 
+#[cfg(feature = "http")]
 impl DeprecationSource for RegistryClient {
     fn packument(&self, name: &str) -> Result<Option<Packument>, SourceError> {
         let registry = self.registry_for(name);
@@ -158,6 +165,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "http")]
     #[test]
     fn file_registry_reads_local_packuments() {
         let dir = tempfile::TempDir::new().unwrap();

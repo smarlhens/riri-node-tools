@@ -54,7 +54,7 @@ jobs:
       - name: Lint
         run: cargo clippy --workspace --all-targets
       - name: Check the library-only configuration
-        run: cargo check -p riri-nce -p riri-npd --no-default-features
+        run: cargo check -p riri-nce -p riri-ncd -p riri-npd --no-default-features
       - name: Lint the refresh path
         run: cargo clippy -p riri-nce --features refresh --all-targets
       - name: Test
