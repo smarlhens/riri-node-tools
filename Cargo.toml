@@ -4,6 +4,7 @@ members = ["crates/*"]
 
 [workspace.package]
 edition = "2024"
+rust-version = "1.88.0"
 authors = ["Samuel MARLHENS <samuel.marlhens@proton.me>"]
 license = "BlueOak-1.0.0"
 repository = "https://github.com/smarlhens/riri-node-tools"

@@ -3,6 +3,7 @@ name = "riri-npm"
 version = "0.1.4"
 description = "npm package-lock.json parser (v1, v2, v3)"
 edition.workspace = true
+rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 

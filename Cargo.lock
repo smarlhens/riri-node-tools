@@ -2458,6 +2458,7 @@ dependencies = [
  "riri-node-lifecycle",
  "serde_json",
  "similar 3.1.1",
+ "tempfile",
  "tera",
 ]
 

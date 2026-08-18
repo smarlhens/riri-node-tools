@@ -3,6 +3,7 @@ name = "riri-nce"
 version = "0.1.5"
 description = "Check & update Node.js engine constraints in package.json from the lockfile dependency tree"
 edition.workspace = true
+rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
