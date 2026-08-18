@@ -114,7 +114,7 @@ for (const { name, kind, from, to } of pins) {
 ## Options
 
 ```text
-Pin range-based dependency specifiers to the exact versions resolved by the lockfile
+Pin dependency ranges in package.json to the versions the lockfile resolved
 
 Usage: npd [OPTIONS]
 

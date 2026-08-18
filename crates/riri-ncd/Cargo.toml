@@ -5,7 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Core logic for npm-check-deprecations"
+description = "Find deprecated packages in the lockfile dependency tree & show the chains that pull them in"
 
 [[bin]]
 name = "ncd"

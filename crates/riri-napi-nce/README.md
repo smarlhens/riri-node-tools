@@ -133,7 +133,7 @@ import {
 ## CLI Options
 
 ```text
-Check and update Node.js engine constraints in package.json based on the dependency tree from the lockfile
+Check & update Node.js engine constraints in package.json from the lockfile dependency tree
 
 Usage: nce [OPTIONS]
 

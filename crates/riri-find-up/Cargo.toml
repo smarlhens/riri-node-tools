@@ -1,6 +1,7 @@
 [package]
 name = "riri-find-up"
 version = "0.1.1"
+description = "Walk up the directory tree to find files"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
