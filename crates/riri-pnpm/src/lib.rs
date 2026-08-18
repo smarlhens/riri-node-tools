@@ -226,7 +226,7 @@ impl LockfileEngines for PnpmLockfile {
         Box::new(
             self.entries()
                 .iter()
-                .filter_map(|(name, entry)| entry.engines.as_ref().map(|e| (name.as_str(), e))),
+                .filter_map(|(key, entry)| entry.engines.as_ref().map(|e| (pkg_key_name(key), e))),
         )
     }
 }
@@ -261,25 +261,37 @@ impl LockfileVersions for PnpmLockfile {
     }
 }
 
-/// Split a `packages`/`snapshots` key into `(name, version-with-peer-suffix)`.
+/// Split a `packages`/`snapshots` key into `(name, version-with-peer-suffix)`,
+/// both slices of `key`. `None` when the key carries no version.
 ///
 /// - v5: `/name/1.2.3`, `/@scope/name/1.2.3`
 /// - v6: `/name@1.2.3(peer)`, `/@scope/name@1.2.3`
 /// - v9: `name@1.2.3(peer)`, `@scope/name@1.2.3`
-#[cfg(feature = "graph")]
-fn parse_pkg_key(key: &str) -> Option<(String, String)> {
+fn split_pkg_key(key: &str) -> Option<(&str, &str)> {
     let k = key.strip_prefix('/').unwrap_or(key);
     if let Some(idx) = find_name_version_at(k) {
-        return Some((k[..idx].to_string(), k[idx + 1..].to_string()));
+        return Some((&k[..idx], &k[idx + 1..]));
     }
     // v5 slash form: version is the segment after the last `/`.
-    let (name, version) = k.rsplit_once('/')?;
-    Some((name.to_string(), version.to_string()))
+    k.rsplit_once('/')
+}
+
+#[cfg(feature = "graph")]
+fn parse_pkg_key(key: &str) -> Option<(String, String)> {
+    split_pkg_key(key).map(|(name, version)| (name.to_string(), version.to_string()))
+}
+
+/// Package name from a `packages`/`snapshots` key, as a slice of the key.
+///
+/// `/typescript@5.4.5` -> `typescript`, `/@scope/pkg/1.2.3` -> `@scope/pkg`,
+/// `foo@1.0.0(react@18.2.0)` -> `foo`.
+fn pkg_key_name(key: &str) -> &str {
+    let k = key.strip_prefix('/').unwrap_or(key);
+    split_pkg_key(key).map_or(k, |(name, _)| name)
 }
 
 /// Index of the `@` separating name from version: ignores a leading scope `@`
 /// and only looks before any `(` peer suffix.
-#[cfg(feature = "graph")]
 fn find_name_version_at(k: &str) -> Option<usize> {
     let stop = k.find('(').unwrap_or(k.len());
     k[..stop].rfind('@').filter(|&i| i > 0)
@@ -701,5 +713,21 @@ packages:
             parse_pkg_key("@scope/name@1.2.0"),
             Some(("@scope/name".into(), "1.2.0".into()))
         );
+    }
+}
+
+#[cfg(test)]
+mod key_tests {
+    use super::pkg_key_name;
+
+    #[test]
+    fn pkg_key_name_handles_all_forms() {
+        assert_eq!(pkg_key_name("/a/1.2.0"), "a");
+        assert_eq!(pkg_key_name("/@scope/name/1.2.0"), "@scope/name");
+        assert_eq!(pkg_key_name("/a@1.2.0"), "a");
+        assert_eq!(pkg_key_name("/a@1.2.0(peer@1.0.0)"), "a");
+        assert_eq!(pkg_key_name("a@1.2.0(peer@1.0.0)"), "a");
+        assert_eq!(pkg_key_name("@scope/name@1.2.0"), "@scope/name");
+        assert_eq!(pkg_key_name("a"), "a");
     }
 }

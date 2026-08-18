@@ -38,13 +38,18 @@ fn parse_pnpm_fixture(#[files("../../fixtures/pnpm-*/pnpm-lock.yaml")] lockfile_
     let lock = PnpmLockfile::parse(&content)
         .unwrap_or_else(|e| panic!("failed to parse {fixture_name}: {e}"));
 
-    // Collect engine entries sorted by name for deterministic snapshots
-    let mut engines: Vec<(&str, &Engines)> = lock.engines_iter().collect();
-    engines.sort_by_key(|(name, _)| *name);
+    // Snapshot the lockfile's own keys, sorted: they are unique, so the order is
+    // total, and they keep the version that `engines_iter` normalizes away.
+    let mut engines: Vec<(&str, &Engines)> = lock
+        .entries()
+        .iter()
+        .filter_map(|(key, entry)| entry.engines.as_ref().map(|e| (key.as_str(), e)))
+        .collect();
+    engines.sort_by_key(|(key, _)| *key);
 
     let snapshot = engines
         .iter()
-        .map(|(name, eng)| format!("{name}: {}", fmt_engines(eng)))
+        .map(|(key, eng)| format!("{key}: {}", fmt_engines(eng)))
         .collect::<Vec<_>>()
         .join("\n");
 

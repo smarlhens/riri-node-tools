@@ -21,17 +21,6 @@ impl LockfileGraph for NpmPackageLock {
     }
 }
 
-const NODE_MODULES: &str = "node_modules/";
-
-/// Package name from a v2/v3 `packages` key — portion after the last
-/// `node_modules/`, or the whole key for workspace entries (no segment).
-fn node_name_from_key(key: &str) -> &str {
-    match key.rfind(NODE_MODULES) {
-        Some(i) => &key[i + NODE_MODULES.len()..],
-        None => key,
-    }
-}
-
 /// Resolve dep `name` required from the package at `from_key` by walking
 /// ancestor `node_modules` scopes, innermost first; follows `link:` entries.
 fn resolve_key(
@@ -94,7 +83,7 @@ fn graph_from_packages(
         };
         let idx = graph.nodes.len();
         graph.nodes.push(LockGraphNode {
-            name: node_name_from_key(key).to_string(),
+            name: riri_common::bare_package_name(key).to_string(),
             version: version.clone(),
             deps: Vec::new(),
         });
