@@ -6,7 +6,13 @@
 
 pub mod cli;
 
-use riri_common::{LockfileVersions, PackageJson, is_local_specifier};
+pub use riri_common::{LockfileVersions, PackageJson};
+pub use riri_npm::{NpmPackageLock, NpmParseError};
+pub use riri_pnpm::catalog::{CatalogError, PnpmCatalog};
+pub use riri_pnpm::{PnpmLockfile, PnpmParseError};
+pub use riri_yarn::{YarnLock, YarnParseError};
+
+use riri_common::is_local_specifier;
 use semver::Version;
 use thiserror::Error;
 use tracing::debug;
@@ -169,7 +175,7 @@ fn is_already_pinned(spec: &str, locked: &str) -> bool {
 ///   - Entries with no matching lockfile entry.
 #[must_use]
 pub fn pin_catalog_entries(
-    catalog: &riri_pnpm::catalog::PnpmCatalog,
+    catalog: &PnpmCatalog,
     lockfile: &dyn LockfileVersions,
 ) -> Vec<CatalogPin> {
     let mut result = Vec::new();

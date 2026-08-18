@@ -10,6 +10,14 @@ mod mutate;
 mod npm_bump;
 mod policy;
 
+pub use chrono::NaiveDate;
+pub use riri_common::{EngineConstraintKey, Engines, LockfileEngines, PackageJson};
+pub use riri_node_lifecycle::{LifecycleData, Policy};
+pub use riri_npm::{NpmPackageLock, NpmParseError};
+pub use riri_pnpm::{PnpmLockfile, PnpmParseError};
+pub use riri_semver_range::VersionPrecision;
+pub use riri_yarn::{YarnProject, YarnScanError};
+
 pub use compute::{
     CheckEnginesInput, CheckEnginesOutput, EngineRangeToSet, check_engines,
     compute_engines_constraint, get_constraint_from_engines,
