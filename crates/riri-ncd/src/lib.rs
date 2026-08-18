@@ -5,6 +5,9 @@ pub mod cli;
 pub mod registry;
 pub mod render;
 
+pub use analyze::Report;
+pub use riri_common::{LockGraph, NpmrcRegistryConfig};
+
 use semver::Version;
 use serde::Deserialize;
 use std::collections::HashMap;
