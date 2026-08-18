@@ -6,10 +6,8 @@ use clap::Parser;
 use comfy_table::{Table, presets};
 use console::style;
 use riri_common::{LockfileVersions, PackageJsonFile, PackageManager, detect_lockfile};
-use riri_npm::NpmPackageLock;
-use riri_pnpm::PnpmLockfile;
+use riri_lockfile::{ParsedLockfile, parse_lockfile};
 use riri_task_runner::{RendererMode, TaskRunner};
-use riri_yarn::YarnLock;
 use std::path::{Path, PathBuf};
 
 use crate::{CatalogPin, DependencyKind, VersionToPin, pin_dependencies};
@@ -83,31 +81,11 @@ fn renderer_mode(args: &Args) -> RendererMode {
     }
 }
 
-fn load_lockfile(
-    manager: &PackageManager,
-    lockfile_path: &Path,
-) -> Result<Box<dyn LockfileVersions>> {
-    match manager {
-        PackageManager::Npm => {
-            let content = std::fs::read_to_string(lockfile_path)
-                .with_context(|| format!("failed to read {}", lockfile_path.display()))?;
-            let lock =
-                NpmPackageLock::parse(&content).context("failed to parse package-lock.json")?;
-            Ok(Box::new(lock))
-        }
-        PackageManager::Pnpm => {
-            let content = std::fs::read_to_string(lockfile_path)
-                .with_context(|| format!("failed to read {}", lockfile_path.display()))?;
-            let lock = PnpmLockfile::parse(&content).context("failed to parse pnpm-lock.yaml")?;
-            Ok(Box::new(lock))
-        }
-        PackageManager::Yarn => {
-            let content = std::fs::read_to_string(lockfile_path)
-                .with_context(|| format!("failed to read {}", lockfile_path.display()))?;
-            let lock = YarnLock::parse(&content).context("failed to parse yarn.lock")?;
-            Ok(Box::new(lock))
-        }
-    }
+fn load_lockfile(manager: PackageManager, lockfile_path: &Path) -> Result<ParsedLockfile> {
+    let content = std::fs::read_to_string(lockfile_path)
+        .with_context(|| format!("failed to read {}", lockfile_path.display()))?;
+    parse_lockfile(manager, &content)
+        .with_context(|| format!("failed to parse {}", manager.lockfile_name()))
 }
 
 #[allow(clippy::too_many_lines)]
@@ -158,7 +136,7 @@ fn run(args: &Args) -> Result<i32> {
     };
 
     let task = runner.task("Parsing lockfile...");
-    let lockfile = match load_lockfile(&lockfile_result.package_manager, &lockfile_result.path) {
+    let lockfile = match load_lockfile(lockfile_result.package_manager, &lockfile_result.path) {
         Ok(lock) => {
             task.complete("Parsed lockfile");
             lock
@@ -170,7 +148,7 @@ fn run(args: &Args) -> Result<i32> {
     };
 
     let task = runner.task("Computing dependency pins...");
-    let pins = pin_dependencies(&pkg_file.parsed, lockfile.as_ref())
+    let pins = pin_dependencies(&pkg_file.parsed, lockfile.versions())
         .map_err(|e| anyhow::anyhow!("pin_dependencies failed: {e}"))?;
     task.complete("Computed dependency pins");
 
@@ -178,7 +156,7 @@ fn run(args: &Args) -> Result<i32> {
         pins: catalog_pins,
         source: catalog_source,
     } = if args.pin_catalog {
-        resolve_catalog_pins(args, &runner, &lockfile_result, &cwd, lockfile.as_ref())?
+        resolve_catalog_pins(args, &runner, &lockfile_result, &cwd, lockfile.versions())?
     } else {
         CatalogPlan {
             pins: Vec::new(),
@@ -495,7 +473,7 @@ fn run_workspace(
     };
 
     let task = runner.task("Parsing lockfile...");
-    let lockfile = match load_lockfile(&lockfile_result.package_manager, &lockfile_result.path) {
+    let lockfile = match load_lockfile(lockfile_result.package_manager, &lockfile_result.path) {
         Ok(lock) => {
             task.complete("Parsed lockfile");
             lock
@@ -516,7 +494,7 @@ fn run_workspace(
     for member in members {
         let mut pkg_file = PackageJsonFile::read(&member.manifest_path)
             .map_err(|e| anyhow::anyhow!("{}: {e}", member.name))?;
-        let pins = pin_dependencies(&pkg_file.parsed, lockfile.as_ref())
+        let pins = pin_dependencies(&pkg_file.parsed, lockfile.versions())
             .map_err(|e| anyhow::anyhow!("{}: pin_dependencies failed: {e}", member.name))?;
         if !pins.is_empty() {
             worst = EXIT_PINS_PENDING;
@@ -543,7 +521,7 @@ fn run_workspace(
             runner,
             &lockfile_result,
             project.root(),
-            lockfile.as_ref(),
+            lockfile.versions(),
         )?;
         if !plan.pins.is_empty() {
             worst = EXIT_PINS_PENDING;

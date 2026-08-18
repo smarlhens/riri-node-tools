@@ -10,9 +10,8 @@ use riri_common::{
     EngineConstraintKey, LockfileEngines, PackageJsonFile, PackageManager, detect_lockfile,
     to_pretty_json_preserving_indent,
 };
+use riri_lockfile::parse_lockfile;
 use riri_node_lifecycle::{LifecycleData, Policy};
-use riri_npm::NpmPackageLock;
-use riri_pnpm::PnpmLockfile;
 use riri_semver_range::VersionPrecision;
 use riri_task_runner::{RendererMode, TaskRunner};
 use riri_yarn::YarnProject;
@@ -229,27 +228,9 @@ fn run(args: &Args) -> Result<i32> {
     let lockfile_content =
         std::fs::read_to_string(&lockfile_result.path).context("failed to read lockfile")?;
 
-    let parsed_lock: Box<dyn LockfileEngines> = match lockfile_result.package_manager {
-        PackageManager::Npm => match NpmPackageLock::parse(&lockfile_content) {
-            Err(e) => {
-                task.fail("Parsing lockfile");
-                return Err(anyhow::anyhow!(e));
-            }
-            Ok(lock) => {
-                task.complete("Parsed lockfile");
-                Box::new(lock)
-            }
-        },
-        PackageManager::Pnpm => match PnpmLockfile::parse(&lockfile_content) {
-            Err(e) => {
-                task.fail("Parsing lockfile");
-                return Err(anyhow::anyhow!(e));
-            }
-            Ok(lock) => {
-                task.complete("Parsed lockfile");
-                Box::new(lock)
-            }
-        },
+    let yarn_project;
+    let parsed_lock;
+    let lockfile_engines: &dyn LockfileEngines = match lockfile_result.package_manager {
         PackageManager::Yarn => {
             let project_dir = lockfile_result
                 .path
@@ -262,15 +243,29 @@ fn run(args: &Args) -> Result<i32> {
                 }
                 Ok(project) => {
                     task.complete("Scanned node_modules");
-                    Box::new(project)
+                    yarn_project = project;
+                    &yarn_project
                 }
             }
         }
+        manager => match parse_lockfile(manager, &lockfile_content) {
+            Err(e) => {
+                task.fail("Parsing lockfile");
+                return Err(anyhow::anyhow!(e));
+            }
+            Ok(lock) => {
+                task.complete("Parsed lockfile");
+                parsed_lock = lock;
+                parsed_lock
+                    .engines()
+                    .context("lockfile format records no engines")?
+            }
+        },
     };
 
     // Compute engine constraints
     let task = runner.task("Computing engine constraints...");
-    let entries: Vec<(&str, &riri_common::Engines)> = parsed_lock.engines_iter().collect();
+    let entries: Vec<(&str, &riri_common::Engines)> = lockfile_engines.engines_iter().collect();
     let filter_engines = parse_engine_filters(&args.engines);
 
     let input = CheckEnginesInput {

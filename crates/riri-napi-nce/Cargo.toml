@@ -6,6 +6,7 @@ edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
+repository.workspace = true
 
 [lib]
 crate-type = ["cdylib"]
@@ -13,13 +14,9 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-riri-common = { path = "../riri-common", version = "0.1.4" }
 riri-nce = { path = "../riri-nce", version = "0.1.5", default-features = false, features = ["cli"] }
-riri-npm = { path = "../riri-npm", version = "0.1.4" }
-riri-pnpm = { path = "../riri-pnpm", version = "0.1.4" }
 riri-semver-range = { path = "../riri-semver-range", version = "0.1.2" }
 semver = { workspace = true }
-riri-yarn = { path = "../riri-yarn", version = "0.1.4" }
 serde_json = { workspace = true }
 
 [build-dependencies]

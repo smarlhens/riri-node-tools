@@ -12,7 +12,8 @@ mod npm_bump;
 mod policy;
 
 pub use chrono::NaiveDate;
-pub use riri_common::{EngineConstraintKey, Engines, LockfileEngines, PackageJson};
+pub use riri_common::{EngineConstraintKey, Engines, LockfileEngines, PackageJson, PackageManager};
+pub use riri_lockfile::{LockfileParseError, ParsedLockfile, parse_lockfile};
 pub use riri_node_lifecycle::{LifecycleData, Policy};
 pub use riri_npm::{NpmPackageLock, NpmParseError};
 pub use riri_pnpm::{PnpmLockfile, PnpmParseError};

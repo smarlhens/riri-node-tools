@@ -14,11 +14,40 @@ use std::fmt;
 use std::path::PathBuf;
 
 /// Package manager kind.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PackageManager {
     Npm,
     Yarn,
     Pnpm,
+}
+
+impl PackageManager {
+    pub const ALL: [Self; 3] = [Self::Npm, Self::Yarn, Self::Pnpm];
+
+    #[must_use]
+    pub const fn lockfile_name(self) -> &'static str {
+        match self {
+            Self::Npm => "package-lock.json",
+            Self::Yarn => "yarn.lock",
+            Self::Pnpm => "pnpm-lock.yaml",
+        }
+    }
+
+    #[must_use]
+    pub fn from_lockfile_name(name: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|pm| pm.lockfile_name() == name)
+    }
+
+    /// Parse from a lowercase name (`"npm"`, `"pnpm"`, `"yarn"`).
+    #[must_use]
+    pub fn from_str_lowercase(name: &str) -> Option<Self> {
+        match name {
+            "npm" => Some(Self::Npm),
+            "pnpm" => Some(Self::Pnpm),
+            "yarn" => Some(Self::Yarn),
+            _ => None,
+        }
+    }
 }
 
 /// Result of discovering a lockfile on disk.
@@ -283,6 +312,22 @@ mod graph_tests {
         assert_eq!(bare_package_name(""), "");
         assert_eq!(bare_package_name("typescript"), "typescript");
         assert_eq!(bare_package_name("packages/app"), "packages/app");
+    }
+
+    #[test]
+    fn package_manager_round_trips_names() {
+        for pm in PackageManager::ALL {
+            assert_eq!(
+                PackageManager::from_lockfile_name(pm.lockfile_name()),
+                Some(pm)
+            );
+        }
+        assert_eq!(
+            PackageManager::from_str_lowercase("pnpm"),
+            Some(PackageManager::Pnpm)
+        );
+        assert!(PackageManager::from_str_lowercase("bun").is_none());
+        assert!(PackageManager::from_lockfile_name("bun.lockb").is_none());
     }
 
     #[test]

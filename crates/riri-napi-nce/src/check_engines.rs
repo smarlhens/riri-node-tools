@@ -1,7 +1,8 @@
 use napi_derive::napi;
-use riri_common::{EngineConstraintKey, Engines, LockfileEngines, PackageJson};
-use riri_nce::{CheckEnginesInput, check_engines as nce_check_engines};
-use riri_semver_range::VersionPrecision;
+use riri_nce::{
+    CheckEnginesInput, EngineConstraintKey, Engines, PackageJson, PackageManager, ParsedLockfile,
+    VersionPrecision, check_engines as nce_check_engines, parse_lockfile,
+};
 use std::collections::HashMap;
 
 #[napi(object)]
@@ -37,25 +38,18 @@ fn parse_precision(input: Option<&str>) -> VersionPrecision {
 fn parse_lockfile_engines(
     content: &str,
     lockfile_type: Option<&str>,
-) -> napi::Result<Box<dyn LockfileEngines>> {
-    match lockfile_type.unwrap_or("npm") {
-        "npm" => riri_npm::NpmPackageLock::parse(content)
-            .map(|lock| Box::new(lock) as Box<dyn LockfileEngines>)
-            .map_err(|error| {
-                napi::Error::from_reason(format!("failed to parse npm lockfile: {error}"))
-            }),
-        "pnpm" => riri_pnpm::PnpmLockfile::parse(content)
-            .map(|lock| Box::new(lock) as Box<dyn LockfileEngines>)
-            .map_err(|error| {
-                napi::Error::from_reason(format!("failed to parse pnpm lockfile: {error}"))
-            }),
-        "yarn" => Err(napi::Error::from_reason(
+) -> napi::Result<ParsedLockfile> {
+    let kind = lockfile_type.unwrap_or("npm");
+    let manager = PackageManager::from_str_lowercase(kind)
+        .ok_or_else(|| napi::Error::from_reason(format!("unknown lockfile type: {kind}")))?;
+    if manager == PackageManager::Yarn {
+        return Err(napi::Error::from_reason(
             "yarn lockfile parsing requires a directory path, not string content — use the CLI instead",
-        )),
-        other => Err(napi::Error::from_reason(format!(
-            "unknown lockfile type: {other}"
-        ))),
+        ));
     }
+    parse_lockfile(manager, content).map_err(|error| {
+        napi::Error::from_reason(format!("failed to parse {kind} lockfile: {error}"))
+    })
 }
 
 #[napi]
@@ -68,7 +62,10 @@ pub fn check_engines(options: CheckEnginesOptions) -> napi::Result<CheckEnginesR
     let lockfile =
         parse_lockfile_engines(&options.lockfile_content, options.lockfile_type.as_deref())?;
 
-    let entries: Vec<(&str, &Engines)> = lockfile.engines_iter().collect();
+    let engines = lockfile.engines().ok_or_else(|| {
+        napi::Error::from_reason("lockfile format records no engines".to_string())
+    })?;
+    let entries: Vec<(&str, &Engines)> = engines.engines_iter().collect();
 
     let filter_engines: Vec<EngineConstraintKey> = options
         .filter_engines

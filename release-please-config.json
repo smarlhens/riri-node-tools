@@ -51,6 +51,11 @@
         { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-common')].version" }
       ]
     },
+    "crates/riri-lockfile": {
+      "extra-files": [
+        { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-lockfile')].version" }
+      ]
+    },
     "crates/riri-find-up": {
       "extra-files": [
         { "type": "toml", "path": "/Cargo.lock", "jsonpath": "$.package[?(@.name.value=='riri-find-up')].version" }

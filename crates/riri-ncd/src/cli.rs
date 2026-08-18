@@ -5,14 +5,11 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use console::style;
 use riri_common::{
-    LockGraph, LockfileGraph, NpmrcRegistryConfig, PackageJson, PackageManager, detect_lockfile,
-    find_package_json,
+    LockGraph, NpmrcRegistryConfig, PackageJson, PackageManager, detect_lockfile, find_package_json,
 };
-use riri_npm::NpmPackageLock;
-use riri_pnpm::PnpmLockfile;
+use riri_lockfile::{ParsedLockfile, parse_lockfile};
 use riri_task_runner::{RendererMode, TaskRunner};
 use riri_workspace::{WorkspaceMember, WorkspaceProject};
-use riri_yarn::YarnLock;
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
@@ -65,24 +62,17 @@ fn renderer_mode(args: &Args) -> RendererMode {
 
 /// Parse the detected lockfile and extract its full dependency graph.
 fn load_graph(
-    manager: &PackageManager,
+    manager: PackageManager,
     lockfile_path: &Path,
     package_json: &PackageJson,
 ) -> Result<LockGraph> {
     let content = std::fs::read_to_string(lockfile_path)
         .with_context(|| format!("failed to read {}", lockfile_path.display()))?;
-    let graph = match manager {
-        PackageManager::Npm => NpmPackageLock::parse(&content)
-            .context("failed to parse package-lock.json")?
-            .dep_graph(package_json),
-        PackageManager::Pnpm => PnpmLockfile::parse(&content)
-            .context("failed to parse pnpm-lock.yaml")?
-            .dep_graph(package_json),
-        PackageManager::Yarn => YarnLock::parse(&content)
-            .context("failed to parse yarn.lock")?
-            .dep_graph(package_json),
-    };
-    graph.map_err(|e| anyhow::anyhow!("failed to build dependency graph: {e}"))
+    parse_lockfile(manager, &content)
+        .with_context(|| format!("failed to parse {}", manager.lockfile_name()))?
+        .graph()
+        .dep_graph(package_json)
+        .map_err(|e| anyhow::anyhow!("failed to build dependency graph: {e}"))
 }
 
 fn project_name(package_json: &PackageJson, cwd: &Path) -> String {
@@ -147,7 +137,7 @@ pub fn run_with_source(args: &Args, cwd: &Path, source: &dyn DeprecationSource) 
 
     let task = runner.task("Building dependency graph...");
     let graph = match load_graph(
-        &lockfile_result.package_manager,
+        lockfile_result.package_manager,
         &lockfile_result.path,
         &package_json,
     ) {
@@ -227,23 +217,11 @@ impl DeprecationSource for MapSource {
 
 /// Parse the detected lockfile once into a graph-capable handle reused across
 /// every workspace member.
-fn parse_lockfile_graph(
-    manager: &PackageManager,
-    lockfile_path: &Path,
-) -> Result<Box<dyn LockfileGraph>> {
+fn parse_lockfile_graph(manager: PackageManager, lockfile_path: &Path) -> Result<ParsedLockfile> {
     let content = std::fs::read_to_string(lockfile_path)
         .with_context(|| format!("failed to read {}", lockfile_path.display()))?;
-    Ok(match manager {
-        PackageManager::Npm => {
-            Box::new(NpmPackageLock::parse(&content).context("failed to parse package-lock.json")?)
-        }
-        PackageManager::Pnpm => {
-            Box::new(PnpmLockfile::parse(&content).context("failed to parse pnpm-lock.yaml")?)
-        }
-        PackageManager::Yarn => {
-            Box::new(YarnLock::parse(&content).context("failed to parse yarn.lock")?)
-        }
-    })
+    parse_lockfile(manager, &content)
+        .with_context(|| format!("failed to parse {}", manager.lockfile_name()))
 }
 
 fn read_member_pkg(member: &WorkspaceMember) -> Result<PackageJson> {
@@ -288,7 +266,7 @@ fn analyze_workspace(
 
     let task = runner.task("Parsing lockfile...");
     let lockfile =
-        match parse_lockfile_graph(&lockfile_result.package_manager, &lockfile_result.path) {
+        match parse_lockfile_graph(lockfile_result.package_manager, &lockfile_result.path) {
             Ok(lock) => {
                 task.complete("Parsed lockfile");
                 lock
@@ -303,7 +281,7 @@ fn analyze_workspace(
     let mut member_graphs: Vec<(WorkspaceMember, LockGraph)> = Vec::new();
     for member in members {
         let pkg = read_member_pkg(&member).map_err(|e| anyhow::anyhow!("{}: {e}", member.name))?;
-        let graph = lockfile.dep_graph(&pkg).map_err(|e| {
+        let graph = lockfile.graph().dep_graph(&pkg).map_err(|e| {
             anyhow::anyhow!("{}: failed to build dependency graph: {e}", member.name)
         })?;
         member_graphs.push((member, graph));
@@ -560,7 +538,7 @@ mod tests {
         let path = fixture(dir);
         let result = detect_lockfile(&path).unwrap();
         let (pkg, _) = find_package_json(&path).unwrap();
-        let graph = load_graph(&result.package_manager, &result.path, &pkg).unwrap();
+        let graph = load_graph(result.package_manager, &result.path, &pkg).unwrap();
         analyze(&graph, "ncd-fixture", source).unwrap()
     }
 
