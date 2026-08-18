@@ -3,6 +3,7 @@ name = "riri-semver-range"
 version = "0.1.2"
 description = "npm-style semver range parsing, narrowing & humanizing"
 edition.workspace = true
+rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 

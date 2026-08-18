@@ -3,6 +3,7 @@ name = "riri-yarn"
 version = "0.1.4"
 description = "yarn.lock parser (classic v1 & berry v2+) with node_modules engine scanning"
 edition.workspace = true
+rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 

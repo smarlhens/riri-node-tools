@@ -3,6 +3,7 @@ name = "riri-pnpm"
 version = "0.1.4"
 description = "pnpm-lock.yaml parser (v5 to v11) with workspace catalog support"
 edition.workspace = true
+rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 

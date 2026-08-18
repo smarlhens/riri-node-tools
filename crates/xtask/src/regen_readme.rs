@@ -276,6 +276,22 @@ fn rust_tested_with(workspace_root: &Path) -> String {
         .unwrap_or_else(|| tool_version("rustc", &["--version"]))
 }
 
+/// The rustc constraint advertised in the root README, read from
+/// `[workspace.package] rust-version` so the two cannot drift.
+fn rust_constraint(workspace_root: &Path) -> anyhow::Result<String> {
+    let manifest = std::fs::read_to_string(workspace_root.join("Cargo.toml"))
+        .context("read workspace Cargo.toml")?;
+    let msrv = manifest
+        .lines()
+        .map(str::trim)
+        .find_map(|line| line.strip_prefix("rust-version"))
+        .and_then(|rest| rest.trim_start().strip_prefix('='))
+        .map(|value| value.trim().trim_matches('"').to_string())
+        .filter(|version| !version.is_empty())
+        .context("no rust-version in [workspace.package]")?;
+    Ok(format!(">={msrv} <2.0.0"))
+}
+
 /// Extract the `channel` value from a `rust-toolchain.toml`'s `[toolchain]` table.
 fn parse_toolchain_channel(toml: &str) -> Option<String> {
     toml.lines()
@@ -284,6 +300,21 @@ fn parse_toolchain_channel(toml: &str) -> Option<String> {
         .and_then(|rest| rest.trim_start().strip_prefix('='))
         .map(|value| value.trim().trim_matches('"').to_string())
         .filter(|channel| !channel.is_empty())
+}
+
+/// The prek version advertised as "tested with", read from the version pinned in
+/// the composite action — the single source of truth across workflows — so the
+/// README does not depend on whichever prek sits on the regenerating machine.
+fn prek_tested_with(workspace_root: &Path) -> anyhow::Result<String> {
+    let action = workspace_root.join(".github/actions/setup-prek/action.yml");
+    let yaml =
+        std::fs::read_to_string(&action).with_context(|| format!("read {}", action.display()))?;
+    yaml.lines()
+        .map(str::trim)
+        .find_map(|line| line.strip_prefix("prek-version:"))
+        .map(|value| value.trim().trim_matches('"').to_string())
+        .filter(|version| !version.is_empty())
+        .context("no prek-version pin in .github/actions/setup-prek/action.yml")
 }
 
 /// Run `cmd args` and parse a version from combined stdout/stderr; `"n/a"` on failure.
@@ -572,8 +603,8 @@ fn render_root(
 fn regenerate_root(workspace_root: &Path, tera: &Tera) -> anyhow::Result<String> {
     let node_constraint = node_constraint(workspace_root)?;
     let prereqs = serde_json::json!([
-        {"name":"rustc","url":RUSTC_URL,"constraint":">=1.85.0 <2.0.0","tested_with":rust_tested_with(workspace_root)},
-        {"name":"prek","url":PREK_URL,"constraint":">=0.3.8","tested_with":tool_version("prek",&["--version"])},
+        {"name":"rustc","url":RUSTC_URL,"constraint":rust_constraint(workspace_root)?,"tested_with":rust_tested_with(workspace_root)},
+        {"name":"prek","url":PREK_URL,"constraint":">=0.3.8","tested_with":prek_tested_with(workspace_root)?},
         {"name":"node","url":NODE_URL,"constraint":node_constraint,"tested_with":tool_version("node",&["--version"])},
     ]);
     let tools = CRATES
@@ -618,7 +649,7 @@ fn parse_version(raw: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{build_tera, parse_version, render_root};
+    use super::{build_tera, parse_version, prek_tested_with, render_root, rust_constraint};
 
     #[test]
     fn parses_rustc() {
@@ -655,6 +686,33 @@ mod tests {
     #[test]
     fn toolchain_channel_absent() {
         assert_eq!(super::parse_toolchain_channel("[toolchain]\n"), None);
+    }
+
+    #[test]
+    fn prek_tested_with_reads_the_action_pin() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let action = dir.path().join(".github/actions/setup-prek");
+        std::fs::create_dir_all(&action).expect("create dirs");
+        std::fs::write(
+            action.join("action.yml"),
+            "runs:\n  steps:\n    - with:\n        prek-version: \"0.4.10\"\n",
+        )
+        .expect("write action");
+        assert_eq!(prek_tested_with(dir.path()).expect("prek"), "0.4.10");
+    }
+
+    #[test]
+    fn rust_constraint_tracks_workspace_rust_version() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        std::fs::write(
+            dir.path().join("Cargo.toml"),
+            "[workspace.package]\nrust-version = \"1.97.1\"\n",
+        )
+        .expect("write manifest");
+        assert_eq!(
+            rust_constraint(dir.path()).expect("constraint"),
+            ">=1.97.1 <2.0.0"
+        );
     }
 
     #[test]

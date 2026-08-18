@@ -3,6 +3,7 @@ name = "riri-common"
 version = "0.1.4"
 description = "Shared package.json, lockfile & detection primitives for the riri Node.js tools"
 edition.workspace = true
+rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 

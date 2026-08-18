@@ -3,6 +3,7 @@ name = "riri-napi-ncd"
 version = "0.1.2"
 description = "Find deprecated packages in the lockfile dependency tree"
 edition.workspace = true
+rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 

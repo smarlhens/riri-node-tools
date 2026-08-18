@@ -3,6 +3,7 @@ name = "riri-workspace"
 version = "0.1.4"
 description = "Workspace detection & member iteration for npm, pnpm & yarn monorepos"
 edition.workspace = true
+rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 

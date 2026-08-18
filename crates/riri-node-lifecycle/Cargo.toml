@@ -3,6 +3,7 @@ name = "riri-node-lifecycle"
 version = "0.1.3"
 description = "Node.js release lifecycle data, EOL status & bundled npm versions"
 edition.workspace = true
+rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 
