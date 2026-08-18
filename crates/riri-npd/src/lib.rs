@@ -4,6 +4,7 @@
 //! `optionalDependencies` against the lockfile and reports any range
 //! specifier (e.g. `^1.2.3`) that should be pinned to the resolved version.
 
+#[cfg(feature = "cli")]
 pub mod cli;
 
 pub use riri_common::{LockfileVersions, PackageJson};

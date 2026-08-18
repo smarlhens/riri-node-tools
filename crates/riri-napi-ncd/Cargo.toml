@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-riri-ncd = { path = "../riri-ncd", version = "0.1.2" }
+riri-ncd = { path = "../riri-ncd", version = "0.1.2", default-features = false, features = ["cli"] }
 
 [build-dependencies]
 napi-build = { workspace = true }

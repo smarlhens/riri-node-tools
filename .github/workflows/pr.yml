@@ -53,6 +53,8 @@ jobs:
         run: cargo check --workspace
       - name: Lint
         run: cargo clippy --workspace --all-targets
+      - name: Check the library-only configuration
+        run: cargo check -p riri-nce -p riri-npd --no-default-features
       - name: Test
         run: cargo test --workspace --verbose
 

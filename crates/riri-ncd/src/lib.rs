@@ -1,6 +1,7 @@
 //! Core logic for `npm-check-deprecations`.
 
 pub mod analyze;
+#[cfg(feature = "cli")]
 pub mod cli;
 pub mod registry;
 pub mod render;
