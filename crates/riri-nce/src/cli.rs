@@ -587,7 +587,7 @@ fn refresh_user_cache(args: &Args) -> Result<()> {
 #[cfg(not(feature = "refresh"))]
 fn refresh_user_cache(_args: &Args) -> Result<()> {
     Err(anyhow::anyhow!(
-        "--refresh requires the `refresh` feature; use the standalone `nce` binary",
+        "--refresh requires the `refresh` feature; use a released `nce` binary or rebuild with `--features refresh`",
     ))
 }
 

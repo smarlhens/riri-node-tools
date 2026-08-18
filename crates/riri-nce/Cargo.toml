@@ -38,7 +38,7 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"], optional = true }
 
 [features]
-default = ["cli", "refresh"]
+default = ["cli"]
 cli = [
     "dep:anyhow",
     "dep:clap",
@@ -49,6 +49,9 @@ cli = [
     "riri-common/sort",
 ]
 refresh = ["riri-node-lifecycle/refresh"]
+
+[package.metadata.dist]
+features = ["refresh"]
 
 [dev-dependencies]
 criterion = { workspace = true }
