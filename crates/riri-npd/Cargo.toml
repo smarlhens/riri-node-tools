@@ -11,30 +11,47 @@ repository.workspace = true
 [[bin]]
 name = "npd"
 path = "src/bin/npd.rs"
+required-features = ["cli"]
 
 [[bin]]
 name = "npm-pin-dependencies"
 path = "src/bin/npm-pin-dependencies.rs"
+required-features = ["cli"]
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.1.4", features = ["sort"] }
+riri-common = { path = "../riri-common", version = "0.1.4" }
 riri-npm = { path = "../riri-npm", version = "0.1.4" }
 riri-pnpm = { path = "../riri-pnpm", version = "0.1.4", features = ["catalog"] }
-riri-task-runner = { path = "../riri-task-runner", version = "0.1.2" }
-riri-workspace = { path = "../riri-workspace", version = "0.1.4" }
+riri-task-runner = { path = "../riri-task-runner", version = "0.1.2", optional = true }
+riri-workspace = { path = "../riri-workspace", version = "0.1.4", optional = true }
 riri-yarn = { path = "../riri-yarn", version = "0.1.4" }
-anyhow = { workspace = true }
-clap = { workspace = true }
-comfy-table = { workspace = true }
-console = { workspace = true }
+anyhow = { workspace = true, optional = true }
+clap = { workspace = true, optional = true }
+comfy-table = { workspace = true, optional = true }
+console = { workspace = true, optional = true }
 semver = { workspace = true }
-serde_json = { workspace = true }
+serde_json = { workspace = true, optional = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
+tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"], optional = true }
+
+[features]
+default = ["cli"]
+cli = [
+    "dep:anyhow",
+    "dep:clap",
+    "dep:comfy-table",
+    "dep:console",
+    "dep:riri-task-runner",
+    "dep:riri-workspace",
+    "dep:serde_json",
+    "dep:tracing-subscriber",
+    "riri-common/sort",
+]
 
 [dev-dependencies]
 criterion = { workspace = true }
+serde_json = { workspace = true }
 insta = { workspace = true }
 rstest = { workspace = true }
 tempfile = { workspace = true }

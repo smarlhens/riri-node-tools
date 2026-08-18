@@ -11,29 +11,40 @@ description = "Find deprecated packages in the lockfile dependency tree & show t
 [[bin]]
 name = "ncd"
 path = "src/bin/ncd.rs"
+required-features = ["cli"]
 
 [[bin]]
 name = "npm-check-deprecations"
 path = "src/bin/npm-check-deprecations.rs"
+required-features = ["cli"]
 
 [dependencies]
 riri-common = { path = "../riri-common", version = "0.1.4", features = ["graph"] }
 riri-npm = { path = "../riri-npm", version = "0.1.4", features = ["graph"] }
 riri-pnpm = { path = "../riri-pnpm", version = "0.1.4", features = ["graph"] }
 riri-semver-range = { path = "../riri-semver-range", version = "0.1.2" }
-riri-task-runner = { path = "../riri-task-runner", version = "0.1.2" }
-riri-workspace = { path = "../riri-workspace", version = "0.1.4" }
+riri-task-runner = { path = "../riri-task-runner", version = "0.1.2", optional = true }
+riri-workspace = { path = "../riri-workspace", version = "0.1.4", optional = true }
 riri-yarn = { path = "../riri-yarn", version = "0.1.4", features = ["graph"] }
 anyhow = { workspace = true }
-clap = { workspace = true }
+clap = { workspace = true, optional = true }
 console = { workspace = true }
 semver = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
+tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"], optional = true }
 ureq = { workspace = true }
+
+[features]
+default = ["cli"]
+cli = [
+    "dep:clap",
+    "dep:riri-task-runner",
+    "dep:riri-workspace",
+    "dep:tracing-subscriber",
+]
 
 [dev-dependencies]
 criterion = { workspace = true }
