@@ -120,6 +120,11 @@ pub struct PackageJson {
 /// Each package manager crate implements this for its own lockfile type.
 pub trait LockfileEngines {
     /// Iterate over `(package_name, engines)` pairs from the lockfile.
+    ///
+    /// `package_name` is the bare package name — `typescript`, `@scope/pkg` —
+    /// never the lockfile's own key. Implementations strip whatever decoration
+    /// their format uses: npm's `node_modules/` path prefixes, pnpm's
+    /// `@version` and peer suffixes. The npm root entry keeps its empty key.
     fn engines_iter(&self) -> Box<dyn Iterator<Item = (&str, &Engines)> + '_>;
 }
 
@@ -222,6 +227,22 @@ pub trait LockfileGraph {
     fn dep_graph(&self, package_json: &PackageJson) -> Result<LockGraph, GraphError>;
 }
 
+/// Bare package name from a `node_modules` path key.
+#[must_use]
+pub fn bare_package_name(key: &str) -> &str {
+    // Not `rfind("node_modules/")`: a multi-byte needle rebuilds a two-way
+    // searcher per call, and this runs once per lockfile entry.
+    let bytes = key.as_bytes();
+    let mut end = bytes.len();
+    while let Some(slash) = bytes[..end].iter().rposition(|&b| b == b'/') {
+        if bytes[..slash].ends_with(b"node_modules") {
+            return &key[slash + 1..];
+        }
+        end = slash;
+    }
+    key
+}
+
 /// Returns `true` if the specifier refers to a local path or workspace alias
 /// rather than a registry package.
 #[must_use]
@@ -247,6 +268,21 @@ mod graph_tests {
             RootDepKind::OptionalDependencies.as_str(),
             "optionalDependencies"
         );
+    }
+
+    #[test]
+    fn bare_package_name_strips_node_modules_segments() {
+        assert_eq!(bare_package_name("node_modules/typescript"), "typescript");
+        assert_eq!(bare_package_name("node_modules/@scope/pkg"), "@scope/pkg");
+        assert_eq!(bare_package_name("node_modules/a/node_modules/b"), "b");
+        assert_eq!(
+            bare_package_name("node_modules/a/node_modules/@scope/b"),
+            "@scope/b"
+        );
+        // Keys that are not node_modules paths pass through untouched.
+        assert_eq!(bare_package_name(""), "");
+        assert_eq!(bare_package_name("typescript"), "typescript");
+        assert_eq!(bare_package_name("packages/app"), "packages/app");
     }
 
     #[test]

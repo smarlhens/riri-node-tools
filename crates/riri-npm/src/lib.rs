@@ -134,11 +134,12 @@ impl NpmPackageLock {
 
 impl LockfileEngines for NpmPackageLock {
     fn engines_iter(&self) -> Box<dyn Iterator<Item = (&str, &Engines)> + '_> {
-        Box::new(
-            self.entries()
-                .iter()
-                .filter_map(|(name, entry)| entry.engines.as_ref().map(|e| (name.as_str(), e))),
-        )
+        Box::new(self.entries().iter().filter_map(|(key, entry)| {
+            entry
+                .engines
+                .as_ref()
+                .map(|e| (riri_common::bare_package_name(key), e))
+        }))
     }
 }
 
