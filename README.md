@@ -11,6 +11,7 @@
 ## Table of Contents
 
 - [Tools][tools]
+- [Using the crates][crates]
 - [Benchmarks][benchmarks]
 - [Development][development]
 - [License][license-section]
@@ -42,6 +43,20 @@ Prebuilt native binaries are published for:
 | Windows | x64                                    |
 
 ---
+
+## Using the crates
+
+The `riri-*` crates are libraries too. They are not on crates.io yet, so depend on them by git, and pin a `rev` rather than a tag: cargo rejects two dependencies on one git URL with different refs, so per-crate tags cannot be combined.
+
+```toml
+[dependencies]
+riri-nce = { git = "https://github.com/smarlhens/riri-node-tools", rev = "0000000", default-features = false }
+riri-npd = { git = "https://github.com/smarlhens/riri-node-tools", rev = "0000000", default-features = false }
+```
+
+`default-features = false` drops the CLI layer. `refresh`, the HTTP client behind `nce --refresh`, is off by default as well: released binaries enable it, a `cargo install --git` build needs `--features refresh`.
+
+Supported surface and publish plan: [docs/crate-api.md](docs/crate-api.md).
 
 ## Benchmarks
 
@@ -90,6 +105,7 @@ Microbenchmarks (point-in-time, machine-specific) live in [BENCHMARKS.md](BENCHM
 [BlueOak Model License 1.0.0](LICENSE.md).
 
 [tools]: #tools
+[crates]: #using-the-crates
 [benchmarks]: #benchmarks
 [development]: #development
 [license-section]: #license
