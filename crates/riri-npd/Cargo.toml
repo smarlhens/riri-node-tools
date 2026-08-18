@@ -1,6 +1,7 @@
 [package]
 name = "riri-npd"
 version = "0.1.4"
+description = "Pin dependency ranges in package.json to the versions the lockfile resolved"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true

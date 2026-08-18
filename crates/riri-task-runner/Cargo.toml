@@ -1,6 +1,7 @@
 [package]
 name = "riri-task-runner"
 version = "0.1.2"
+description = "Task runner with spinner, verbose & silent renderers"
 edition.workspace = true
 authors.workspace = true
 license.workspace = true

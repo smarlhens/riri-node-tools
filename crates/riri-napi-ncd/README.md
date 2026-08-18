@@ -129,7 +129,7 @@ if (tree) {
 ## Options
 
 ```text
-Core logic for npm-check-deprecations
+Find deprecated packages in the lockfile dependency tree & show the chains that pull them in
 
 Usage: ncd [OPTIONS]
 
