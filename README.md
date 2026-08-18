@@ -51,12 +51,13 @@ The `riri-*` crates are libraries too. They are not on crates.io yet, so depend 
 ```toml
 [dependencies]
 riri-nce = { git = "https://github.com/smarlhens/riri-node-tools", rev = "0000000", default-features = false }
+riri-ncd = { git = "https://github.com/smarlhens/riri-node-tools", rev = "0000000", default-features = false }
 riri-npd = { git = "https://github.com/smarlhens/riri-node-tools", rev = "0000000", default-features = false }
 ```
 
-`default-features = false` drops the CLI layer. `refresh`, the HTTP client behind `nce --refresh`, is off by default as well: released binaries enable it, a `cargo install --git` build needs `--features refresh`.
+`default-features = false` drops the CLI layer, and with it every HTTP client. The two that exist are opt-in: `riri-nce`'s `refresh` (behind `nce --refresh`) and `riri-ncd`'s `http` (the registry-backed `DeprecationSource`). Released binaries enable them; a `cargo install --git` build needs `--features refresh`. Without `http`, `riri-ncd` still analyzes a lockfile through `check_deprecations` against a `DeprecationSource` you supply.
 
-What is supported is what each crate's rustdoc documents. `pub` alone is not a promise: the `cli` modules exist so the binaries and the NAPI shims can share code and move without notice, and undocumented `pub` items are incidental. Nothing reads the filesystem or opens a socket unless its name says so — `PackageJsonFile::read`, `YarnProject::scan`, the `refresh` feature.
+What is supported is what each crate's rustdoc documents. `pub` alone is not a promise: the `cli` modules exist so the binaries and the NAPI shims can share code and move without notice, and undocumented `pub` items are incidental. Nothing reads the filesystem or opens a socket unless its name says so — `PackageJsonFile::read`, `YarnProject::scan`, the `refresh` and `http` features.
 
 Every crate is `0.1.x`, where cargo treats a minor bump as breaking. A breaking change lands as a `feat!:` commit, which release-please turns into a minor bump; everything else becomes a patch.
 

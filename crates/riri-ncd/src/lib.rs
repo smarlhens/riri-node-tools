@@ -13,24 +13,21 @@ use semver::Version;
 use serde::Deserialize;
 use std::collections::HashMap;
 
-/// Analyze a project's lockfile (supplied as in-memory content) against the
-/// live npm registry and return the deprecation [`Report`](analyze::Report).
+/// Deprecation [`Report`](analyze::Report) for an in-memory lockfile, against a
+/// caller-supplied [`DeprecationSource`].
 ///
-/// `lockfile_type` is `"npm"`, `"pnpm"`, or `"yarn"`. `registry` overrides the
-/// registry URL (defaults to <https://registry.npmjs.org>). Performs blocking
-/// network requests; `.npmrc` is not consulted (pass `registry` explicitly for
-/// private registries).
+/// `lockfile_type` is `"npm"`, `"pnpm"`, or `"yarn"`.
 ///
 /// # Errors
-/// Parse failures, an unknown `lockfile_type`, or registry/auth failures.
-pub fn check_deprecations_from_content(
+/// Parse failures, an unknown `lockfile_type`, or a `source` failure.
+pub fn check_deprecations(
     package_json: &str,
     lockfile_content: &str,
     lockfile_type: &str,
-    registry: Option<String>,
+    source: &dyn DeprecationSource,
 ) -> anyhow::Result<analyze::Report> {
     use anyhow::Context as _;
-    use riri_common::{NpmrcRegistryConfig, PackageJson, PackageManager};
+    use riri_common::{PackageJson, PackageManager};
 
     let pkg: PackageJson =
         serde_json::from_str(package_json).context("failed to parse package.json")?;
@@ -44,8 +41,25 @@ pub fn check_deprecations_from_content(
         .map_err(|e| anyhow::anyhow!("failed to build dependency graph: {e}"))?;
 
     let project_name = pkg.name.clone().unwrap_or_else(|| "project".to_string());
+    analyze::analyze(&graph, &project_name, source).map_err(|error| anyhow::anyhow!(error))
+}
+
+/// [`check_deprecations`] against the live npm registry.
+///
+/// `registry` defaults to <https://registry.npmjs.org>; `.npmrc` is not
+/// consulted, so private registries need it passed explicitly.
+///
+/// # Errors
+/// Parse failures, an unknown `lockfile_type`, or registry/auth failures.
+#[cfg(feature = "http")]
+pub fn check_deprecations_from_content(
+    package_json: &str,
+    lockfile_content: &str,
+    lockfile_type: &str,
+    registry: Option<String>,
+) -> anyhow::Result<analyze::Report> {
     let client = registry::RegistryClient::new(NpmrcRegistryConfig::default(), registry);
-    analyze::analyze(&graph, &project_name, &client).map_err(|error| anyhow::anyhow!(error))
+    check_deprecations(package_json, lockfile_content, lockfile_type, &client)
 }
 
 /// `deprecated` is a string message in the wild, but some packuments carry a
