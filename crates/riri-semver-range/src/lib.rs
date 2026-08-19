@@ -130,11 +130,18 @@ impl RangePart {
     /// same `[major, minor, patch]` tuple.
     #[must_use]
     pub fn satisfies(&self, version: &Version) -> bool {
-        let min_ok = match self.min_op {
-            Op::Gte => version >= &self.min,
-            Op::Gt => version > &self.min,
-            _ => false,
-        };
+        // A `>=0.0.0` floor is what an upper-bound-only range carries, and
+        // node-semver gives those no floor; the prerelease filter below decides
+        // every `0.0.0-*`.
+        let min_unbounded = self.min_op == Op::Gte
+            && (self.min.major, self.min.minor, self.min.patch) == (0, 0, 0)
+            && self.min.pre.is_empty();
+        let min_ok = min_unbounded
+            || match self.min_op {
+                Op::Gte => version >= &self.min,
+                Op::Gt => version > &self.min,
+                _ => false,
+            };
         let max_ok = match (&self.max, &self.max_op) {
             (Some(max), Some(Op::Lt)) => version < max,
             (Some(max), Some(Op::Lte)) => version <= max,
@@ -158,5 +165,38 @@ impl RangePart {
             }
         }
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn satisfies(range: &str, version: &str) -> bool {
+        ParsedRange::parse(range)
+            .expect("range parses")
+            .satisfies(&Version::parse(version).expect("version parses"))
+    }
+
+    #[test]
+    fn upper_bound_only_range_admits_a_lower_prerelease() {
+        assert!(satisfies("<0.0.0-beta", "0.0.0-alpha"));
+        assert!(satisfies("<=0.0.0-beta", "0.0.0-beta"));
+    }
+
+    #[test]
+    fn a_bare_floor_still_excludes_prereleases() {
+        // Why skipping the floor check is safe when `>=0.0.0` was written by
+        // hand: the prerelease filter, not the floor, rejects these.
+        assert!(!satisfies(">=0.0.0", "0.0.0-alpha"));
+        assert!(!satisfies("*", "0.0.0-alpha"));
+        assert!(!satisfies("<0.0.1", "0.0.0-alpha"));
+    }
+
+    #[test]
+    fn a_real_floor_is_still_enforced() {
+        assert!(!satisfies(">=1.0.0", "0.9.0"));
+        assert!(!satisfies(">1.0.0", "1.0.0"));
+        assert!(satisfies(">=1.0.0", "1.0.0"));
     }
 }
