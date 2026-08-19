@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.4.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.3.1...@smarlhens/npm-check-engines-v1.4.0) (2026-08-19)
+
+
+### Features
+
+* **nce,npd,ncd:** feature-gate the cli module ([7ab07ca](https://github.com/smarlhens/riri-node-tools/commit/7ab07ca085db59a19e14d4c5bfcd127b6780d82a))
+* **nce,npd:** add lockfile-agnostic parse entry point ([c9a1ce3](https://github.com/smarlhens/riri-node-tools/commit/c9a1ce3dac9b47471981f84d188ef1394efad23c))
+
+
+### Chores
+
+* add description to every publishable crate ([4348806](https://github.com/smarlhens/riri-node-tools/commit/4348806dceb058887c016e3eeeefed58280f2a6b))
+* declare rust-version 1.88.0 across the workspace ([fa09fc8](https://github.com/smarlhens/riri-node-tools/commit/fa09fc86413fb202faf48df8364ca30ed87aa396))
+* **deps:** bump napi transitive deps ([ffab478](https://github.com/smarlhens/riri-node-tools/commit/ffab4787813c7a83a6c4d4b7ad51f32693f51b8e))
+* **deps:** bump npm dependencies ([b457fe2](https://github.com/smarlhens/riri-node-tools/commit/b457fe2f7fd1334fb8e8db67a7ebdf2812180a32))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-nce bumped from 0.1.5 to 0.2.0
+    * riri-semver-range bumped from 0.1.2 to 0.1.3
+
 ## [1.3.1](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.3.0...@smarlhens/npm-check-engines-v1.3.1) (2026-07-21)
 
 

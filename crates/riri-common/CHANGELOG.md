@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.2.0](https://github.com/smarlhens/riri-node-tools/compare/riri-common-v0.1.4...riri-common-v0.2.0) (2026-08-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* yield bare package names from engines_iter
+
+### Features
+
+* **nce,npd:** add lockfile-agnostic parse entry point ([c9a1ce3](https://github.com/smarlhens/riri-node-tools/commit/c9a1ce3dac9b47471981f84d188ef1394efad23c))
+* yield bare package names from engines_iter ([5c58d30](https://github.com/smarlhens/riri-node-tools/commit/5c58d30ff40bc989a57e877e7c09756f1b5d5a76))
+
+
+### Documentation
+
+* state the public api policy & publish metadata ([85a0e33](https://github.com/smarlhens/riri-node-tools/commit/85a0e3351be424bdc062e93323bdd39577cc871f))
+
+
+### Chores
+
+* add description to every publishable crate ([4348806](https://github.com/smarlhens/riri-node-tools/commit/4348806dceb058887c016e3eeeefed58280f2a6b))
+* declare rust-version 1.88.0 across the workspace ([fa09fc8](https://github.com/smarlhens/riri-node-tools/commit/fa09fc86413fb202faf48df8364ca30ed87aa396))
+* **deps:** bump sort-package-json to 1.0.0 ([d757767](https://github.com/smarlhens/riri-node-tools/commit/d757767b5b93f0fd972ee2e25fbf9c5d6076ea35))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-find-up bumped from 0.1.1 to 0.1.2
+
 ## [0.1.4](https://github.com/smarlhens/riri-node-tools/compare/riri-common-v0.1.3...riri-common-v0.1.4) (2026-07-21)
 
 

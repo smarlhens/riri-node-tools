@@ -1,6 +1,6 @@
 [package]
 name = "riri-npm"
-version = "0.1.4"
+version = "0.2.0"
 description = "npm package-lock.json parser (v1, v2, v3)"
 edition.workspace = true
 rust-version.workspace = true
@@ -12,7 +12,7 @@ repository.workspace = true
 graph = ["riri-common/graph"]
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.1.4" }
+riri-common = { path = "../riri-common", version = "0.2.0" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

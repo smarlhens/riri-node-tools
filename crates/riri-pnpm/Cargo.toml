@@ -1,6 +1,6 @@
 [package]
 name = "riri-pnpm"
-version = "0.1.4"
+version = "0.2.0"
 description = "pnpm-lock.yaml parser (v5 to v11) with workspace catalog support"
 edition.workspace = true
 rust-version.workspace = true
@@ -13,8 +13,8 @@ graph = ["riri-common/graph"]
 catalog = ["dep:riri-find-up"]
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.1.4" }
-riri-find-up = { path = "../riri-find-up", version = "0.1.1", optional = true }
+riri-common = { path = "../riri-common", version = "0.2.0" }
+riri-find-up = { path = "../riri-find-up", version = "0.1.2", optional = true }
 serde = { workspace = true }
 serde-saphyr = { workspace = true }
 thiserror = { workspace = true }
