@@ -211,16 +211,16 @@ fn run(args: &Args) -> Result<i32> {
     // Read package.json
     let task = runner.task("Reading package.json...");
     let pkg_path = cwd.join("package.json");
-    match PackageJsonFile::read(&pkg_path) {
+    let mut pkg_file = match PackageJsonFile::read(&pkg_path) {
         Err(e) => {
             task.fail("Reading package.json");
             return Err(anyhow::anyhow!(e));
         }
-        Ok(_) => {
+        Ok(file) => {
             task.complete("Read package.json");
+            file
         }
-    }
-    let mut pkg_file = PackageJsonFile::read(&pkg_path)?;
+    };
 
     // Parse lockfile
     let task = runner.task("Parsing lockfile...");
