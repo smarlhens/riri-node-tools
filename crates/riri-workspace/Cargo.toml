@@ -1,6 +1,6 @@
 [package]
 name = "riri-workspace"
-version = "0.1.4"
+version = "0.1.5"
 description = "Workspace detection & member iteration for npm, pnpm & yarn monorepos"
 edition.workspace = true
 rust-version.workspace = true
@@ -9,8 +9,8 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.1.4" }
-riri-find-up = { path = "../riri-find-up", version = "0.1.1" }
+riri-common = { path = "../riri-common", version = "0.2.0" }
+riri-find-up = { path = "../riri-find-up", version = "0.1.2" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde-saphyr = { workspace = true }

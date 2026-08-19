@@ -1,6 +1,6 @@
 [package]
 name = "riri-common"
-version = "0.1.4"
+version = "0.2.0"
 description = "Shared package.json, lockfile & detection primitives for the riri Node.js tools"
 edition.workspace = true
 rust-version.workspace = true
@@ -14,7 +14,7 @@ graph = []
 
 [dependencies]
 detect-indent = "0.1.0"
-riri-find-up = { path = "../riri-find-up", version = "0.1.1" }
+riri-find-up = { path = "../riri-find-up", version = "0.1.2" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 sort-package-json = { version = "1.0.0", optional = true }

@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.1.5](https://github.com/smarlhens/riri-node-tools/compare/riri-npd-v0.1.4...riri-npd-v0.1.5) (2026-08-19)
+
+
+### Features
+
+* **nce,npd,ncd:** feature-gate the cli module ([7ab07ca](https://github.com/smarlhens/riri-node-tools/commit/7ab07ca085db59a19e14d4c5bfcd127b6780d82a))
+* **nce,npd,ncd:** re-export consumer-facing types ([7e5160c](https://github.com/smarlhens/riri-node-tools/commit/7e5160c4a952e839f94bdb7e8ea165791d3da083))
+* **nce,npd:** add lockfile-agnostic parse entry point ([c9a1ce3](https://github.com/smarlhens/riri-node-tools/commit/c9a1ce3dac9b47471981f84d188ef1394efad23c))
+
+
+### Chores
+
+* add description to every publishable crate ([4348806](https://github.com/smarlhens/riri-node-tools/commit/4348806dceb058887c016e3eeeefed58280f2a6b))
+* declare rust-version 1.88.0 across the workspace ([fa09fc8](https://github.com/smarlhens/riri-node-tools/commit/fa09fc86413fb202faf48df8364ca30ed87aa396))
+* **deps:** bump comfy-table to 8.0.0 ([8d8e6f5](https://github.com/smarlhens/riri-node-tools/commit/8d8e6f52a290ac700400fdd170b0c5eb830dfde0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.4 to 0.2.0
+    * riri-lockfile bumped from 0.1.0 to 0.1.1
+    * riri-npm bumped from 0.1.4 to 0.2.0
+    * riri-pnpm bumped from 0.1.4 to 0.2.0
+    * riri-task-runner bumped from 0.1.2 to 0.1.3
+    * riri-workspace bumped from 0.1.4 to 0.1.5
+    * riri-yarn bumped from 0.1.4 to 0.1.5
+
 ## [0.1.4](https://github.com/smarlhens/riri-node-tools/compare/riri-npd-v0.1.3...riri-npd-v0.1.4) (2026-07-21)
 
 

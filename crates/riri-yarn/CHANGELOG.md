@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.1.5](https://github.com/smarlhens/riri-node-tools/compare/riri-yarn-v0.1.4...riri-yarn-v0.1.5) (2026-08-19)
+
+
+### Documentation
+
+* state the public api policy & publish metadata ([85a0e33](https://github.com/smarlhens/riri-node-tools/commit/85a0e3351be424bdc062e93323bdd39577cc871f))
+
+
+### Chores
+
+* add description to every publishable crate ([4348806](https://github.com/smarlhens/riri-node-tools/commit/4348806dceb058887c016e3eeeefed58280f2a6b))
+* declare rust-version 1.88.0 across the workspace ([fa09fc8](https://github.com/smarlhens/riri-node-tools/commit/fa09fc86413fb202faf48df8364ca30ed87aa396))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.1.4 to 0.2.0
+
 ## [0.1.4](https://github.com/smarlhens/riri-node-tools/compare/riri-yarn-v0.1.3...riri-yarn-v0.1.4) (2026-07-21)
 
 

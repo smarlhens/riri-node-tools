@@ -1,6 +1,6 @@
 [package]
 name = "riri-yarn"
-version = "0.1.4"
+version = "0.1.5"
 description = "yarn.lock parser (classic v1 & berry v2+) with node_modules engine scanning"
 edition.workspace = true
 rust-version.workspace = true
@@ -13,7 +13,7 @@ graph = ["riri-common/graph"]
 scan = ["dep:walkdir"]
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.1.4" }
+riri-common = { path = "../riri-common", version = "0.2.0" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde-saphyr = { workspace = true }

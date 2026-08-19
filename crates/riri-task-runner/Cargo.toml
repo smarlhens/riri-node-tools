@@ -1,6 +1,6 @@
 [package]
 name = "riri-task-runner"
-version = "0.1.2"
+version = "0.1.3"
 description = "Task runner with spinner, verbose & silent renderers"
 edition.workspace = true
 rust-version.workspace = true

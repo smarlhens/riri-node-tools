@@ -1,6 +1,6 @@
 [package]
 name = "riri-find-up"
-version = "0.1.1"
+version = "0.1.2"
 description = "Walk up the directory tree to find files"
 edition.workspace = true
 rust-version.workspace = true

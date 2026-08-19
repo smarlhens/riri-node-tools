@@ -1,6 +1,6 @@
 [package]
 name = "riri-lockfile"
-version = "0.1.0"
+version = "0.1.1"
 description = "Parse any supported Node.js lockfile from a string, without touching the filesystem"
 edition.workspace = true
 rust-version.workspace = true
@@ -18,10 +18,10 @@ graph = [
 ]
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.1.4" }
-riri-npm = { path = "../riri-npm", version = "0.1.4" }
-riri-pnpm = { path = "../riri-pnpm", version = "0.1.4" }
-riri-yarn = { path = "../riri-yarn", version = "0.1.4" }
+riri-common = { path = "../riri-common", version = "0.2.0" }
+riri-npm = { path = "../riri-npm", version = "0.2.0" }
+riri-pnpm = { path = "../riri-pnpm", version = "0.2.0" }
+riri-yarn = { path = "../riri-yarn", version = "0.1.5" }
 thiserror = { workspace = true }
 
 [dev-dependencies]
