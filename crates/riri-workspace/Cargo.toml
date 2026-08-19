@@ -14,7 +14,7 @@ riri-find-up = { path = "../riri-find-up", version = "0.1.1" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde-saphyr = { workspace = true }
-globset = "0.4.19"
+globset = "0.4.20"
 thiserror = { workspace = true }
 
 [dev-dependencies]
