@@ -15,7 +15,7 @@ pub fn packument_url(registry: &str, name: &str) -> String {
     format!("{}/{}", registry.trim_end_matches('/'), encoded)
 }
 
-/// Live registry-backed [`DeprecationSource`]. Requires the `http` feature.
+/// Live registry-backed [`DeprecationSource`].
 #[cfg(feature = "http")]
 pub struct RegistryClient {
     agent: ureq::Agent,
@@ -46,24 +46,35 @@ impl RegistryClient {
     }
 }
 
-/// Read a packument from a `file://` registry directory (`{dir}/{name}.json`).
-/// Offline source used by fixtures and README generation. `Ok(None)` when the
-/// file is absent, mirroring a registry 404.
-#[cfg(feature = "http")]
-fn read_packument_file(dir: &str, name: &str) -> Result<Option<Packument>, SourceError> {
-    let path = std::path::Path::new(dir).join(format!("{name}.json"));
-    match std::fs::read_to_string(&path) {
-        Ok(body) => serde_json::from_str(&body)
-            .map(Some)
-            .map_err(|e| SourceError::Request {
+/// Offline [`DeprecationSource`] reading `{dir}/{name}.json`, behind a
+/// `file://` registry URL.
+pub struct FileRegistry {
+    dir: std::path::PathBuf,
+}
+
+impl FileRegistry {
+    #[must_use]
+    pub fn new(dir: impl Into<std::path::PathBuf>) -> Self {
+        Self { dir: dir.into() }
+    }
+}
+
+impl DeprecationSource for FileRegistry {
+    fn packument(&self, name: &str) -> Result<Option<Packument>, SourceError> {
+        let path = self.dir.join(format!("{name}.json"));
+        match std::fs::read_to_string(&path) {
+            Ok(body) => serde_json::from_str(&body)
+                .map(Some)
+                .map_err(|e| SourceError::Request {
+                    name: name.to_string(),
+                    detail: format!("invalid packument: {e}"),
+                }),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+            Err(e) => Err(SourceError::Request {
                 name: name.to_string(),
-                detail: format!("invalid packument: {e}"),
+                detail: e.to_string(),
             }),
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
-        Err(e) => Err(SourceError::Request {
-            name: name.to_string(),
-            detail: e.to_string(),
-        }),
+        }
     }
 }
 
@@ -72,7 +83,7 @@ impl DeprecationSource for RegistryClient {
     fn packument(&self, name: &str) -> Result<Option<Packument>, SourceError> {
         let registry = self.registry_for(name);
         if let Some(dir) = registry.strip_prefix("file://") {
-            return read_packument_file(dir, name);
+            return FileRegistry::new(dir).packument(name);
         }
         let url = packument_url(registry, name);
         let mut req = self.agent.get(&url).header("accept", ACCEPT_ABBREVIATED);
@@ -165,22 +176,58 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "http")]
-    #[test]
-    fn file_registry_reads_local_packuments() {
+    /// Writes `{dir}/foo.json` and `{dir}/@scope/pkg.json`.
+    fn fixture_registry() -> tempfile::TempDir {
         let dir = tempfile::TempDir::new().unwrap();
         std::fs::write(
             dir.path().join("foo.json"),
             r#"{"dist-tags": {"latest": "1.0.0"}, "versions": {"1.0.0": {}}}"#,
         )
         .unwrap();
+        std::fs::create_dir_all(dir.path().join("@scope")).unwrap();
+        std::fs::write(
+            dir.path().join("@scope/pkg.json"),
+            r#"{"dist-tags": {"latest": "2.0.0"}, "versions": {"2.0.0": {}}}"#,
+        )
+        .unwrap();
+        dir
+    }
+
+    #[test]
+    fn file_registry_reads_local_packuments() {
+        let dir = fixture_registry();
+        let source = FileRegistry::new(dir.path());
+        assert_eq!(
+            source.packument("foo").unwrap().unwrap().latest(),
+            Some("1.0.0")
+        );
+        // A scoped name nests instead of percent-encoding.
+        assert_eq!(
+            source.packument("@scope/pkg").unwrap().unwrap().latest(),
+            Some("2.0.0")
+        );
+        // Absent file behaves like a registry 404.
+        assert!(source.packument("missing").unwrap().is_none());
+    }
+
+    #[test]
+    fn file_registry_rejects_invalid_packuments() {
+        let dir = tempfile::TempDir::new().unwrap();
+        std::fs::write(dir.path().join("bad.json"), "not json").unwrap();
+        let error = FileRegistry::new(dir.path()).packument("bad").unwrap_err();
+        assert!(error.to_string().contains("invalid packument"));
+    }
+
+    #[cfg(feature = "http")]
+    #[test]
+    fn file_url_registry_routes_to_the_file_source() {
+        let dir = fixture_registry();
         let client = RegistryClient::new(
             riri_common::NpmrcRegistryConfig::default(),
             Some(format!("file://{}", dir.path().display())),
         );
         let packument = client.packument("foo").unwrap().unwrap();
         assert_eq!(packument.latest(), Some("1.0.0"));
-        // Absent file behaves like a registry 404.
         assert!(client.packument("missing").unwrap().is_none());
     }
 

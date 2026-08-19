@@ -55,7 +55,7 @@ riri-ncd = { git = "https://github.com/smarlhens/riri-node-tools", rev = "000000
 riri-npd = { git = "https://github.com/smarlhens/riri-node-tools", rev = "0000000", default-features = false }
 ```
 
-`default-features = false` drops the CLI layer, and with it every HTTP client. The two that exist are opt-in: `riri-nce`'s `refresh` (behind `nce --refresh`) and `riri-ncd`'s `http` (the registry-backed `DeprecationSource`). Released binaries enable them; a `cargo install --git` build needs `--features refresh`. Without `http`, `riri-ncd` still analyzes a lockfile through `check_deprecations` against a `DeprecationSource` you supply.
+`default-features = false` drops the CLI layer, and with it every HTTP client. Both are opt-in: `riri-nce`'s `refresh` (behind `nce --refresh`) and `riri-ncd`'s `http`, the registry-backed `DeprecationSource`; released binaries enable them, and a `cargo install --git` build needs `--features refresh`. Without `http`, `riri-ncd` still analyzes a lockfile: `check_deprecations` takes any `DeprecationSource`. Bring your own, or use the bundled `registry::FileRegistry`, which reads packuments from a directory.
 
 What is supported is what each crate's rustdoc documents. `pub` alone is not a promise: the `cli` modules exist so the binaries and the NAPI shims can share code and move without notice, and undocumented `pub` items are incidental. Nothing reads the filesystem or opens a socket unless its name says so — `PackageJsonFile::read`, `YarnProject::scan`, the `refresh` and `http` features.
 
