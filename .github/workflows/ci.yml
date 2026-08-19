@@ -102,6 +102,9 @@ jobs:
           skip-github-release: ${{ env.skip_github_release }}
           token: ${{ secrets.PAT }}
 
+  msrv:
+    uses: ./.github/workflows/msrv.yml
+
   bench-baseline:
     needs: changes
     if: needs.changes.outputs.bench == 'true'
