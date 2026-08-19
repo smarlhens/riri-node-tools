@@ -60,6 +60,9 @@ jobs:
       - name: Test
         run: cargo test --workspace --verbose
 
+  msrv:
+    uses: ./.github/workflows/msrv.yml
+
   readme-drift:
     name: readme-drift - ${{ matrix.crate.name }}
     runs-on: ubuntu-24.04

@@ -1,0 +1,32 @@
+name: msrv
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_MSRV: "1.88.0"
+
+jobs:
+  msrv:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the MSRV toolchain
+        run: rustup toolchain install "$RUST_MSRV" --profile minimal
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: msrv
+      - name: Check the floor
+        run: cargo "+$RUST_MSRV" check --locked --workspace --lib --bins
+      - name: Check the floor for the library-only configuration
+        run: cargo "+$RUST_MSRV" check --locked -p riri-nce -p riri-ncd -p riri-npd --no-default-features --lib
+      - name: Check the floor for the refresh path
+        run: cargo "+$RUST_MSRV" check --locked -p riri-nce --features refresh --lib
