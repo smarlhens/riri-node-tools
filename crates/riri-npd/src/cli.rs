@@ -213,7 +213,7 @@ fn run(args: &Args) -> Result<i32> {
 
     if !args.quiet {
         let mut table = Table::new();
-        table.load_preset(presets::NOTHING);
+        table.load_style(presets::NOTHING);
         for pin in &pins {
             table.add_row(vec![
                 pin.name.clone(),
@@ -623,7 +623,7 @@ fn emit_workspace_text(
         any = true;
         eprintln!("\n  {}:", member.name);
         let mut table = Table::new();
-        table.load_preset(presets::NOTHING);
+        table.load_style(presets::NOTHING);
         for pin in pins {
             table.add_row(vec![
                 pin.name.clone(),
@@ -640,7 +640,7 @@ fn emit_workspace_text(
         any = true;
         eprintln!("\n  (catalog):");
         let mut table = Table::new();
-        table.load_preset(presets::NOTHING);
+        table.load_style(presets::NOTHING);
         for cp in catalog_pins {
             let label = match &cp.catalog_name {
                 None => cp.dep_name.clone(),

@@ -337,7 +337,7 @@ fn run(args: &Args) -> Result<i32> {
 
     if !args.quiet {
         let mut table = Table::new();
-        table.load_preset(presets::NOTHING);
+        table.load_style(presets::NOTHING);
         for change in &output.engines_range_to_set {
             table.add_row(vec![
                 change.engine.to_string(),
