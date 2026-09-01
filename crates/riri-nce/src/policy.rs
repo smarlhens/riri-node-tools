@@ -151,11 +151,7 @@ fn filter_split(input_part: &RangePart, allowed: &[u32], policy: Policy) -> Vec<
 
     split_by_major(input_part)
         .into_iter()
-        .filter(|sub| {
-            u32::try_from(sub.min.major)
-                .ok()
-                .is_some_and(|m| allowed.contains(&m))
-        })
+        .filter(|sub| u32::try_from(sub.min.major).is_ok_and(|m| allowed.contains(&m)))
         .collect()
 }
 
