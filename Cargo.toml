@@ -4,7 +4,7 @@ members = ["crates/*"]
 
 [workspace.package]
 edition = "2024"
-rust-version = "1.88.0"
+rust-version = "1.89.0"
 authors = ["Samuel MARLHENS <samuel.marlhens@proton.me>"]
 license = "BlueOak-1.0.0"
 repository = "https://github.com/smarlhens/riri-node-tools"
@@ -29,7 +29,7 @@ console = "0.16.4"
 semver = "1.0.28"
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = { version = "1.0.151", features = ["preserve_order"] }
-serde-saphyr = "1.1.0"
+serde-saphyr = "1.2.0"
 smallvec = "1.15.2"
 tracing = "0.1.44"
 thiserror = "2.0.20"
