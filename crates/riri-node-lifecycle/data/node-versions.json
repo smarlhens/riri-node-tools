@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "fetched_at": "2026-08-31T06:27:16.133268367Z",
+  "fetched_at": "2026-09-14T06:27:56.814866042Z",
   "majors": {
     "4": {
       "major": 4,
@@ -3191,7 +3191,7 @@
       "maintenance_start": "2026-10-20",
       "end": "2028-04-30",
       "lowest": "24.0.0",
-      "highest": "24.20.0",
+      "highest": "24.21.0",
       "npm_at_lowest": "11.3.0",
       "npm_at_highest": "11.19.0",
       "npm_min_in_major": "11.3.0",
@@ -3335,6 +3335,11 @@
           "version": "24.20.0",
           "npm": "11.19.0",
           "date": "2026-08-26"
+        },
+        {
+          "version": "24.21.0",
+          "npm": "11.19.0",
+          "date": "2026-09-07"
         }
       ]
     },
@@ -3433,9 +3438,9 @@
       "maintenance_start": "2027-10-20",
       "end": "2029-04-30",
       "lowest": "26.0.0",
-      "highest": "26.8.1",
+      "highest": "26.8.2",
       "npm_at_lowest": "11.12.1",
-      "npm_at_highest": "11.19.0",
+      "npm_at_highest": "11.19.1",
       "npm_min_in_major": "11.12.1",
       "releases": [
         {
@@ -3497,6 +3502,11 @@
           "version": "26.8.1",
           "npm": "11.19.0",
           "date": "2026-08-26"
+        },
+        {
+          "version": "26.8.2",
+          "npm": "11.19.1",
+          "date": "2026-09-09"
         }
       ]
     }
