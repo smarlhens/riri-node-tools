@@ -24,7 +24,7 @@ concurrency:
 jobs:
   # ── Resolve which benchable crates the diff affects ──────
   changes:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       crates: ${{ steps.affected.outputs.crates }}
     steps:
@@ -48,7 +48,7 @@ jobs:
 
   # ── Check for cached base results ────────────────────────
   check-cache:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       has-cache: ${{ steps.cache.outputs.cache-hit }}
     steps:
@@ -90,7 +90,7 @@ jobs:
   compare:
     needs: [check-cache, changes, bench-pr, bench-base]
     if: always() && needs.bench-pr.result == 'success'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       pull-requests: write
