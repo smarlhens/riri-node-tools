@@ -14,7 +14,7 @@ smallvec = { workspace = true }
 
 [dev-dependencies]
 criterion = { workspace = true }
-nodejs-semver = "5.0.0"
+nodejs-semver = "6.0.0"
 proptest = "1.11.0"
 
 [[bench]]

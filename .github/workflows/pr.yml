@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   prek:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout source code
         uses: actions/checkout@v7
@@ -37,7 +37,7 @@ jobs:
         uses: ./.github/actions/setup-prek
 
   rust:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout source code
         uses: actions/checkout@v7
@@ -65,7 +65,7 @@ jobs:
 
   readme-drift:
     name: readme-drift - ${{ matrix.crate.name }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -105,7 +105,7 @@ jobs:
 
   readme-drift-root:
     name: readme-drift - root
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout source code
         uses: actions/checkout@v7
