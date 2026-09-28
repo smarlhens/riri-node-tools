@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.6](https://github.com/smarlhens/riri-node-tools/compare/riri-node-lifecycle-v0.1.5...riri-node-lifecycle-v0.1.6) (2026-09-28)
+
+
+### Chores
+
+* **node-lifecycle:** refresh bundled data ([40b2134](https://github.com/smarlhens/riri-node-tools/commit/40b2134e0cd5fd6fd497c340fc181498a38f011f))
+* **node-lifecycle:** refresh bundled data ([55d4383](https://github.com/smarlhens/riri-node-tools/commit/55d4383b435d8174bcedce7f66d73191d27152ca))
+* **node-lifecycle:** refresh bundled data ([596df24](https://github.com/smarlhens/riri-node-tools/commit/596df24a031dd208f2516b4ed21dba7523f06373))
+
 ## [0.1.5](https://github.com/smarlhens/riri-node-tools/compare/riri-node-lifecycle-v0.1.4...riri-node-lifecycle-v0.1.5) (2026-09-01)
 
 
