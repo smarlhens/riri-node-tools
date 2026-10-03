@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   trigger:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     if: startsWith(github.event.release.tag_name, 'riri-nce-v') || startsWith(github.event.release.tag_name, 'riri-npd-v') || startsWith(github.event.release.tag_name, 'riri-ncd-v')
     steps:
       - name: Dispatch dist workflow

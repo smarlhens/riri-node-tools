@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   changes:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       bench: ${{ steps.filter.outputs.bench }}
     steps:
@@ -41,7 +41,7 @@ jobs:
               - ".github/workflows/bench-run.yml"
 
   prek:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout source code
         uses: actions/checkout@v7
@@ -61,7 +61,7 @@ jobs:
         uses: ./.github/actions/setup-prek
 
   rust:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout source code
         uses: actions/checkout@v7
@@ -119,7 +119,7 @@ jobs:
   cache-baseline:
     needs: [changes, bench-baseline]
     if: needs.changes.outputs.bench == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Download criterion baselines
         uses: actions/download-artifact@v8
