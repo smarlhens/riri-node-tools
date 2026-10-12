@@ -1,6 +1,6 @@
 [package]
 name = "riri-nce"
-version = "0.2.1"
+version = "0.2.2"
 description = "Check & update Node.js engine constraints in package.json from the lockfile dependency tree"
 edition.workspace = true
 rust-version.workspace = true
@@ -21,7 +21,7 @@ required-features = ["cli"]
 [dependencies]
 riri-common = { path = "../riri-common", version = "0.2.0" }
 riri-lockfile = { path = "../riri-lockfile", version = "0.1.1", features = ["scan"] }
-riri-node-lifecycle = { path = "../riri-node-lifecycle", version = "0.1.5" }
+riri-node-lifecycle = { path = "../riri-node-lifecycle", version = "0.1.6" }
 riri-npm = { path = "../riri-npm", version = "0.2.0" }
 riri-pnpm = { path = "../riri-pnpm", version = "0.2.0" }
 riri-semver-range = { path = "../riri-semver-range", version = "0.1.3" }
