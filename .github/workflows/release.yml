@@ -17,13 +17,13 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Install Rust
         run: rustup toolchain install
       - name: Rust cache
-        uses: Swatinem/rust-cache@v2 # zizmor: ignore[cache-poisoning] release-please-action ships no build artifacts
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2 # zizmor: ignore[cache-poisoning] release-please-action ships no build artifacts
       - name: Check formatting
         run: cargo fmt --all -- --check
       - name: Check errors
@@ -33,7 +33,7 @@ jobs:
       - name: Test
         run: cargo test --workspace --verbose
       - name: Release
-        uses: googleapis/release-please-action@v5
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
           skip-github-pull-request: true
           token: ${{ secrets.PAT }}

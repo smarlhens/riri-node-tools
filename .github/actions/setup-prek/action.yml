@@ -17,7 +17,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: j178/prek-action@v3.0.2
+    - uses: j178/prek-action@af4d4fcb6922b8e6f65c0426947125fcc38794ce # v3.0.2
       with:
         prek-version: "0.5.1"
         install-only: ${{ inputs.install-only }}
