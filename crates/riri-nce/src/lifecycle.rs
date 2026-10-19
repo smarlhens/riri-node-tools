@@ -301,7 +301,7 @@ mod tests {
             output.computed_engines[&EngineConstraintKey::Node],
             "^20 || >=22"
         );
-        assert!(lifecycle.warnings.is_empty());
+        assert_eq!(lifecycle.warnings, [] as [EolWarning; 0]);
         assert_eq!(
             lifecycle.bumped_disjuncts,
             vec![(">=18".to_string(), "^20 || >=22".to_string())]
@@ -479,8 +479,8 @@ mod tests {
                 .expect("lifecycle");
 
         // node ^22 already allowed under Lts → no rewrite. npm ^11 already above floor 10.5.1.
-        assert!(lifecycle.bumped_disjuncts.is_empty());
-        assert!(lifecycle.dropped_disjuncts.is_empty());
+        assert_eq!(lifecycle.bumped_disjuncts, [] as [(String, String); 0]);
+        assert_eq!(lifecycle.dropped_disjuncts, [] as [String; 0]);
         let bump = lifecycle.npm_bump.expect("bump");
         assert!(!bump.apply);
         // engines_range_to_set may still include normalization differences, but the node

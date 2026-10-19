@@ -93,5 +93,5 @@ fn empty_when_no_glob_matches() {
     let tmp = setup(r#"["packages/*"]"#, &[]);
     let project = detect(tmp.path()).unwrap();
     let members = project.members().unwrap();
-    assert!(members.is_empty());
+    assert_eq!(members, [] as [riri_workspace::WorkspaceMember; 0]);
 }

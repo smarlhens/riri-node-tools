@@ -91,7 +91,7 @@ mod tests {
     fn returns_empty_when_not_found() {
         let tmp = TempDir::new().unwrap();
         let result = find_up(tmp.path(), &["nonexistent.txt"]);
-        assert!(result.is_empty());
+        assert_eq!(result, [] as [PathBuf; 0]);
     }
 
     #[test]
