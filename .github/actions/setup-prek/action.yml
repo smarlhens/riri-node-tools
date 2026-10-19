@@ -19,6 +19,6 @@ runs:
   steps:
     - uses: j178/prek-action@af4d4fcb6922b8e6f65c0426947125fcc38794ce # v3.0.2
       with:
-        prek-version: "0.5.1"
+        prek-version: "0.5.6"
         install-only: ${{ inputs.install-only }}
         extra-args: ${{ inputs.extra-args }}
