@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.6](https://github.com/smarlhens/riri-node-tools/compare/riri-yarn-v0.1.5...riri-yarn-v0.1.6) (2026-10-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.2.0 to 0.2.1
+
 ## [0.1.5](https://github.com/smarlhens/riri-node-tools/compare/riri-yarn-v0.1.4...riri-yarn-v0.1.5) (2026-08-19)
 
 
