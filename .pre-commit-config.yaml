@@ -46,20 +46,20 @@ repos:
         name: fmt
         description: Format files with cargo fmt.
         entry: cargo fmt --all -- --check
-        language: rust
+        language: system
         types: [rust]
         pass_filenames: false
       - id: cargo-check
         name: cargo check
         description: Check the package for errors.
         entry: cargo check --workspace
-        language: rust
+        language: system
         types: [rust]
         pass_filenames: false
       - id: clippy
         name: clippy
         entry: cargo clippy --workspace --all-targets
-        language: rust
+        language: system
         args: ["--", "-D", "warnings"]
         types: [rust]
         pass_filenames: false
