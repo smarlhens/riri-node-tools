@@ -15,7 +15,7 @@ smallvec = { workspace = true }
 [dev-dependencies]
 criterion = { workspace = true }
 nodejs-semver = "5.0.0"
-proptest = "1.11.0"
+proptest = "1.12.0"
 
 [[bench]]
 name = "range_parsing"
