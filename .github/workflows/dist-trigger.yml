@@ -22,7 +22,7 @@ jobs:
     if: startsWith(github.event.release.tag_name, 'riri-nce-v') || startsWith(github.event.release.tag_name, 'riri-npd-v') || startsWith(github.event.release.tag_name, 'riri-ncd-v')
     steps:
       - name: Dispatch dist workflow
-        uses: benc-uk/workflow-dispatch@v1
+        uses: benc-uk/workflow-dispatch@d004979be141727c7a17c28f603e2facc40d0855 # v1.3.3
         with:
           workflow: dist.yml
           ref: ${{ github.event.release.tag_name }}
