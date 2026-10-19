@@ -20,11 +20,11 @@
     "markdown-table": "3.0.4"
   },
   "devDependencies": {
-    "@types/node": "22.20.1",
-    "npm-check-updates": "23.1.0",
-    "oxfmt": "0.65.0",
-    "oxlint": "1.80.0",
-    "rolldown": "1.2.6",
+    "@types/node": "22.20.5",
+    "npm-check-updates": "23.1.1",
+    "oxfmt": "0.73.0",
+    "oxlint": "1.88.0",
+    "rolldown": "1.2.14",
     "typescript": "7.0.2"
   },
   "engines": {
