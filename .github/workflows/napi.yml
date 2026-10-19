@@ -30,19 +30,19 @@ jobs:
       fail-fast: false
       matrix:
         settings:
-          - host: ubuntu-24.04
+          - host: ubuntu-26.04
             target: x86_64-unknown-linux-gnu
             build: npx napi build --platform --release --target x86_64-unknown-linux-gnu --use-napi-cross
 
-          - host: ubuntu-24.04
+          - host: ubuntu-26.04
             target: x86_64-unknown-linux-musl
             build: npx napi build --platform --release --target x86_64-unknown-linux-musl -x
 
-          - host: ubuntu-24.04
+          - host: ubuntu-26.04
             target: aarch64-unknown-linux-gnu
             build: npx napi build --platform --release --target aarch64-unknown-linux-gnu --use-napi-cross
 
-          - host: ubuntu-24.04
+          - host: ubuntu-26.04
             target: aarch64-unknown-linux-musl
             build: npx napi build --platform --release --target aarch64-unknown-linux-musl -x
 
@@ -178,7 +178,7 @@ jobs:
           - aarch64-unknown-linux-gnu
           - aarch64-unknown-linux-musl
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -227,7 +227,7 @@ jobs:
     if: ${{ inputs.run-publish }}
     name: publish
     needs: build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: ${{ inputs.crate-dir }}
