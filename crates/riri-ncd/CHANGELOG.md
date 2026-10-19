@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.1](https://github.com/smarlhens/riri-node-tools/compare/riri-ncd-v0.2.0...riri-ncd-v0.2.1) (2026-10-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.2.0 to 0.2.1
+    * riri-lockfile bumped from 0.1.1 to 0.1.2
+    * riri-npm bumped from 0.2.0 to 0.2.1
+    * riri-pnpm bumped from 0.2.0 to 0.2.1
+    * riri-semver-range bumped from 0.1.3 to 0.1.4
+    * riri-workspace bumped from 0.1.5 to 0.1.6
+    * riri-yarn bumped from 0.1.5 to 0.1.6
+
 ## [0.2.0](https://github.com/smarlhens/riri-node-tools/compare/riri-ncd-v0.1.2...riri-ncd-v0.2.0) (2026-08-19)
 
 

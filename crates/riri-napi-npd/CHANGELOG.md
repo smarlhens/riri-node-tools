@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.1](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-pin-dependencies-v1.2.0...@smarlhens/npm-pin-dependencies-v1.2.1) (2026-10-19)
+
+
+### Chores
+
+* **deps:** bump & dedupe napi transitive deps ([e89702c](https://github.com/smarlhens/riri-node-tools/commit/e89702cb900c8295edda517dafde3808d0a03023))
+* **deps:** bump napi-rs cli to 3.10.8 ([6cffa6f](https://github.com/smarlhens/riri-node-tools/commit/6cffa6fa9500f3deba1396efb964a1b9286d781c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-npd bumped from 0.1.5 to 0.1.6
+
 ## [1.2.0](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-pin-dependencies-v1.1.1...@smarlhens/npm-pin-dependencies-v1.2.0) (2026-08-19)
 
 

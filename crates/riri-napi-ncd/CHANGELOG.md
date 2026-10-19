@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.4](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-deprecations-v0.1.3...@smarlhens/npm-check-deprecations-v0.1.4) (2026-10-19)
+
+
+### Chores
+
+* **deps:** bump & dedupe napi transitive deps ([e89702c](https://github.com/smarlhens/riri-node-tools/commit/e89702cb900c8295edda517dafde3808d0a03023))
+* **deps:** bump napi-rs cli to 3.10.8 ([6cffa6f](https://github.com/smarlhens/riri-node-tools/commit/6cffa6fa9500f3deba1396efb964a1b9286d781c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-ncd bumped from 0.2.0 to 0.2.1
+
 ## [0.1.3](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-deprecations-v0.1.2...@smarlhens/npm-check-deprecations-v0.1.3) (2026-08-19)
 
 
