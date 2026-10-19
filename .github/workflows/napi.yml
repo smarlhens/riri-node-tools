@@ -46,11 +46,11 @@ jobs:
             target: aarch64-unknown-linux-musl
             build: npx napi build --platform --release --target aarch64-unknown-linux-musl -x
 
-          - host: macos-15
+          - host: macos-26
             target: x86_64-apple-darwin
             build: npx napi build --platform --release --target x86_64-apple-darwin
 
-          - host: macos-15
+          - host: macos-26
             target: aarch64-apple-darwin
             build: npx napi build --platform --release --target aarch64-apple-darwin
 
@@ -128,11 +128,11 @@ jobs:
       fail-fast: false
       matrix:
         settings:
-          - host: macos-15
+          - host: macos-26
             target: x86_64-apple-darwin
             architecture: x64
 
-          - host: macos-15
+          - host: macos-26
             target: aarch64-apple-darwin
             architecture: arm64
 
