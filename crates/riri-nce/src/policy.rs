@@ -313,12 +313,12 @@ mod tests {
             rewrite_node_range("^20.19.0 || ^22.12.0 || >=23.0.0", &ctx(&data, Policy::Lts))
                 .expect("rewrite");
         assert_eq!(result.rewritten.as_deref(), Some("^20.19 || ^22.12 || ^24"));
-        assert!(result.dropped_disjuncts.is_empty());
+        assert_eq!(result.dropped_disjuncts, [] as [String; 0]);
         assert_eq!(result.bumped_disjuncts.len(), 1);
         assert_eq!(result.bumped_disjuncts[0].0, ">=23");
         assert_eq!(result.bumped_disjuncts[0].1, "^24");
         assert!(!result.unsatisfiable);
-        assert!(result.eol_warnings.is_empty());
+        assert_eq!(result.eol_warnings, [] as [EolWarning; 0]);
     }
 
     #[test]
@@ -351,7 +351,7 @@ mod tests {
         c.allow_eol = true;
         let result = rewrite_node_range("^18.0.0", &c).expect("rewrite");
         assert_eq!(result.rewritten.as_deref(), Some("^18"));
-        assert!(result.eol_warnings.is_empty());
+        assert_eq!(result.eol_warnings, [] as [EolWarning; 0]);
     }
 
     #[test]
@@ -373,7 +373,7 @@ mod tests {
         // Input spans 20 (Maintenance, allowed) and 21 (no data → not allowed).
         // Result keeps only the 20 sub-clause.
         assert_eq!(result.rewritten.as_deref(), Some("^20"));
-        assert!(result.dropped_disjuncts.is_empty());
+        assert_eq!(result.dropped_disjuncts, [] as [String; 0]);
         // Humanizer always splits cross-major ranges, so the "from" side reflects
         // the per-major decomposition rather than the literal input.
         assert_eq!(

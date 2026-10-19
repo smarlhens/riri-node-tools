@@ -284,7 +284,10 @@ mod tests {
     fn skips_dependency_already_pinned_to_lockfile_version() {
         let pkg = pkg(&[("foo", "1.2.5")]);
         let lock = locked(&[("foo", "1.2.5")]);
-        assert!(pin_dependencies(&pkg, &lock).expect("ok").is_empty());
+        assert_eq!(
+            pin_dependencies(&pkg, &lock).expect("ok"),
+            [] as [VersionToPin; 0]
+        );
     }
 
     #[test]
@@ -304,21 +307,30 @@ mod tests {
             ("ws", "workspace:*"),
         ]);
         let lock = locked(&[("local", "1.0.0"), ("linked", "1.0.0"), ("ws", "1.0.0")]);
-        assert!(pin_dependencies(&pkg, &lock).expect("ok").is_empty());
+        assert_eq!(
+            pin_dependencies(&pkg, &lock).expect("ok"),
+            [] as [VersionToPin; 0]
+        );
     }
 
     #[test]
     fn skips_catalog_specifiers() {
         let pkg = pkg(&[("react", "catalog:"), ("vue", "catalog:vue3")]);
         let lock = locked(&[("react", "18.2.0"), ("vue", "3.4.21")]);
-        assert!(pin_dependencies(&pkg, &lock).expect("ok").is_empty());
+        assert_eq!(
+            pin_dependencies(&pkg, &lock).expect("ok"),
+            [] as [VersionToPin; 0]
+        );
     }
 
     #[test]
     fn skips_dependency_absent_from_lockfile() {
         let pkg = pkg(&[("missing", "^1.0.0")]);
         let lock = locked(&[]);
-        assert!(pin_dependencies(&pkg, &lock).expect("ok").is_empty());
+        assert_eq!(
+            pin_dependencies(&pkg, &lock).expect("ok"),
+            [] as [VersionToPin; 0]
+        );
     }
 
     #[test]
@@ -372,7 +384,7 @@ mod tests {
         let yaml = "catalog:\n  react: 18.2.0\n";
         let catalog = PnpmCatalog::parse(yaml).expect("parse");
         let lock = locked(&[("react", "18.2.0")]);
-        assert!(pin_catalog_entries(&catalog, &lock).is_empty());
+        assert_eq!(pin_catalog_entries(&catalog, &lock), [] as [CatalogPin; 0]);
     }
 
     #[test]
@@ -395,7 +407,7 @@ mod tests {
         let yaml = "catalog:\n  react: ^18.0.0\n";
         let catalog = PnpmCatalog::parse(yaml).expect("parse");
         let lock = locked(&[]);
-        assert!(pin_catalog_entries(&catalog, &lock).is_empty());
+        assert_eq!(pin_catalog_entries(&catalog, &lock), [] as [CatalogPin; 0]);
     }
 
     #[test]

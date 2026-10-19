@@ -52,7 +52,7 @@ fn run_in_fixture(fixture: &str, extra_args: &[&str]) -> (String, String, i32) {
 fn cli_npm_or_ranges_node_only_verbose() {
     let (stdout, stderr, code) = run_in_fixture("npm-v3-or-ranges-node-only", &["-v"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("npm_or_ranges_node_only_verbose_stderr", stderr);
 }
 
@@ -61,7 +61,7 @@ fn cli_npm_or_ranges_node_npm_yarn_verbose() {
     let (stdout, stderr, code) = run_in_fixture("npm-v3-or-ranges-node-npm-yarn", &["-v"]);
     assert_eq!(code, 1);
     insta::assert_snapshot!("npm_or_ranges_node_npm_yarn_verbose_stderr", stderr);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
 }
 
 #[test]
@@ -72,7 +72,7 @@ fn cli_npm_up_to_date_verbose() {
     );
     assert_eq!(code, 0);
     insta::assert_snapshot!("npm_up_to_date_verbose_stderr", stderr);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
 }
 
 #[test]
@@ -93,15 +93,15 @@ fn cli_npm_engine_filter_verbose() {
         run_in_fixture("npm-v3-or-ranges-node-npm-yarn", &["-v", "-e", "node"]);
     assert_eq!(code, 1);
     insta::assert_snapshot!("npm_engine_filter_verbose_stderr", stderr);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
 }
 
 #[test]
 fn cli_npm_quiet_mode() {
     let (stdout, stderr, code) = run_in_fixture("npm-v3-or-ranges-node-only", &["-q"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
-    assert!(stderr.is_empty());
+    assert_eq!(stdout, "");
+    assert_eq!(stderr, "");
 }
 
 #[test]
@@ -133,7 +133,7 @@ fn cli_help() {
 fn cli_pnpm_or_ranges_node_only_verbose() {
     let (stdout, stderr, code) = run_in_fixture("pnpm-v9-or-ranges-node-only", &["-v"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("pnpm_or_ranges_node_only_verbose_stderr", stderr);
 }
 
@@ -141,7 +141,7 @@ fn cli_pnpm_or_ranges_node_only_verbose() {
 fn cli_pnpm_or_ranges_node_npm_yarn_verbose() {
     let (stdout, stderr, code) = run_in_fixture("pnpm-v9-or-ranges-node-npm-yarn", &["-v"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("pnpm_or_ranges_node_npm_yarn_verbose_stderr", stderr);
 }
 
@@ -160,7 +160,7 @@ fn cli_pnpm_json_output() {
 fn cli_yarn_or_ranges_node_only_verbose() {
     let (stdout, stderr, code) = run_in_fixture("yarn-v1-or-ranges-node-only", &["-v"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("yarn_or_ranges_node_only_verbose_stderr", stderr);
 }
 
@@ -168,7 +168,7 @@ fn cli_yarn_or_ranges_node_only_verbose() {
 fn cli_yarn_or_ranges_node_npm_yarn_verbose() {
     let (stdout, stderr, code) = run_in_fixture("yarn-v4-or-ranges-node-npm-yarn", &["-v"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("yarn_or_ranges_node_npm_yarn_verbose_stderr", stderr);
 }
 
@@ -191,14 +191,14 @@ fn cli_yarn_up_to_date_verbose() {
     );
     assert_eq!(code, 0);
     insta::assert_snapshot!("yarn_up_to_date_verbose_stderr", stderr);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
 }
 
 #[test]
 fn cli_policy_supported_eol_bump() {
     let (stdout, stderr, code) = run_in_fixture("nce-policy-supported-eol-bump", &["-v"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("policy_supported_eol_bump_stderr", stderr);
 }
 
@@ -207,7 +207,7 @@ fn cli_policy_lts_eol_bump() {
     let (stdout, stderr, code) =
         run_in_fixture("nce-policy-lts-eol-bump", &["-v", "--node-policy=lts"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("policy_lts_eol_bump_stderr", stderr);
 }
 
@@ -218,7 +218,7 @@ fn cli_policy_eol_warning_under_any() {
         &["-v", "--node-policy=any", "--no-bump-npm"],
     );
     assert_eq!(code, 0);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     assert!(stderr.contains("warning:"), "stderr: {stderr}");
     assert!(stderr.contains("end-of-life"), "stderr: {stderr}");
     insta::assert_snapshot!("policy_eol_warning_under_any_stderr", stderr);
@@ -231,7 +231,7 @@ fn cli_policy_allow_eol_suppresses_warning() {
         &["-v", "--node-policy=any", "--allow-eol", "--no-bump-npm"],
     );
     assert_eq!(code, 0);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     assert!(!stderr.contains("warning:"), "stderr: {stderr}");
     insta::assert_snapshot!("policy_allow_eol_suppresses_warning_stderr", stderr);
 }
@@ -240,7 +240,7 @@ fn cli_policy_allow_eol_suppresses_warning() {
 fn cli_npm_bump_floor() {
     let (stdout, stderr, code) = run_in_fixture("nce-npm-bump-floor", &["-v"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("npm_bump_floor_stderr", stderr);
 }
 
@@ -251,7 +251,7 @@ fn cli_no_bump_npm_flag() {
         &["-v", "--node-policy=any", "--no-bump-npm"],
     );
     assert_eq!(code, 0);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("no_bump_npm_flag_stderr", stderr);
 }
 
@@ -260,7 +260,7 @@ fn cli_npm_precision_minor() {
     let (stdout, stderr, code) =
         run_in_fixture("nce-npm-precision-minor", &["-v", "--npm-precision=minor"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("npm_precision_minor_stderr", stderr);
 }
 
@@ -271,7 +271,7 @@ fn cli_policy_stable_keeps_eol_with_warning() {
         &["-v", "--node-policy=stable", "--no-bump-npm"],
     );
     assert_eq!(code, 0);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     assert!(stderr.contains("warning:"), "stderr: {stderr}");
     insta::assert_snapshot!("policy_stable_keeps_eol_with_warning_stderr", stderr);
 }
@@ -283,7 +283,7 @@ fn cli_policy_maintenance_drops_active() {
         &["-v", "--node-policy=maintenance", "--no-bump-npm"],
     );
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("policy_maintenance_drops_active_stderr", stderr);
 }
 
@@ -292,7 +292,7 @@ fn cli_policy_supported_keeps_current_caret() {
     let (stdout, stderr, code) =
         run_in_fixture("nce-policy-supported-keeps-current-caret", &["-v"]);
     assert_eq!(code, 0);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("policy_supported_keeps_current_caret_stderr", stderr);
 }
 
@@ -300,7 +300,7 @@ fn cli_policy_supported_keeps_current_caret() {
 fn cli_policy_supported_narrows_compound_bounded() {
     let (stdout, stderr, code) = run_in_fixture("nce-policy-supported-narrows-compound", &["-v"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("policy_supported_narrows_compound_stderr", stderr);
 }
 
@@ -311,7 +311,7 @@ fn cli_policy_lts_expands_wildcard() {
         &["-v", "--node-policy=lts", "--no-bump-npm"],
     );
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("policy_lts_expands_wildcard_stderr", stderr);
 }
 
@@ -320,7 +320,7 @@ fn cli_npm_precision_patch_explicit() {
     let (stdout, stderr, code) =
         run_in_fixture("nce-npm-precision-minor", &["-v", "--npm-precision=patch"]);
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("npm_precision_patch_explicit_stderr", stderr);
 }
 
@@ -331,7 +331,7 @@ fn cli_bump_npm_overrides_no_bump() {
         &["-v", "--no-bump-npm", "--bump-npm"],
     );
     assert_eq!(code, 1);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     insta::assert_snapshot!("bump_npm_overrides_no_bump_stderr", stderr);
 }
 
@@ -397,7 +397,7 @@ fn cli_policy_unsatisfiable() {
         &["-v", "--node-policy=maintenance"],
     );
     assert_eq!(code, 3);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     assert!(stderr.contains("unsatisfiable"), "stderr: {stderr}");
     insta::assert_snapshot!("policy_unsatisfiable_stderr", stderr);
 }
@@ -510,7 +510,7 @@ fn cli_cache_override_takes_precedence_over_bundled() {
 fn cli_yarn_no_node_modules() {
     let (stdout, stderr, code) = run_in_fixture("yarn-v1-no-node-modules", &["-v"]);
     assert_eq!(code, 2);
-    assert!(stdout.is_empty());
+    assert_eq!(stdout, "");
     assert!(
         stderr.contains("node_modules"),
         "error should mention node_modules: {stderr}"
