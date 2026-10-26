@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4](https://github.com/smarlhens/riri-node-tools/compare/riri-semver-range-v0.1.3...riri-semver-range-v0.1.4) (2026-10-26)
+
+
+### Chores
+
+* **deps:** bump nodejs-semver to 7.0.0 ([2d7731e](https://github.com/smarlhens/riri-node-tools/commit/2d7731e0a83e5c54a8b822fe1953f784cfbf03a9))
+* **deps:** bump rust dependencies ([cb574d3](https://github.com/smarlhens/riri-node-tools/commit/cb574d3650495004d914c0efc9873acf86312f65))
+
 ## [0.1.3](https://github.com/smarlhens/riri-node-tools/compare/riri-semver-range-v0.1.2...riri-semver-range-v0.1.3) (2026-08-19)
 
 

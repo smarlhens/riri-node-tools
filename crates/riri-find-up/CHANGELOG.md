@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/smarlhens/riri-node-tools/compare/riri-find-up-v0.1.2...riri-find-up-v0.1.3) (2026-10-26)
+
+
+### Tests
+
+* use assert_eq for empty checks per clippy assert_is_empty ([f91f66d](https://github.com/smarlhens/riri-node-tools/commit/f91f66d56483a1a375d182407fc2649502d1dec8))
+
 ## [0.1.2](https://github.com/smarlhens/riri-node-tools/compare/riri-find-up-v0.1.1...riri-find-up-v0.1.2) (2026-08-19)
 
 

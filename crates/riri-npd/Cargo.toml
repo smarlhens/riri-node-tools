@@ -1,6 +1,6 @@
 [package]
 name = "riri-npd"
-version = "0.1.5"
+version = "0.1.6"
 description = "Pin dependency ranges in package.json to the versions the lockfile resolved"
 edition.workspace = true
 rust-version.workspace = true
@@ -19,13 +19,13 @@ path = "src/bin/npm-pin-dependencies.rs"
 required-features = ["cli"]
 
 [dependencies]
-riri-common = { path = "../riri-common", version = "0.2.0" }
-riri-lockfile = { path = "../riri-lockfile", version = "0.1.1" }
-riri-npm = { path = "../riri-npm", version = "0.2.0" }
-riri-pnpm = { path = "../riri-pnpm", version = "0.2.0", features = ["catalog"] }
+riri-common = { path = "../riri-common", version = "0.2.1" }
+riri-lockfile = { path = "../riri-lockfile", version = "0.1.2" }
+riri-npm = { path = "../riri-npm", version = "0.2.1" }
+riri-pnpm = { path = "../riri-pnpm", version = "0.2.1", features = ["catalog"] }
 riri-task-runner = { path = "../riri-task-runner", version = "0.1.3", optional = true }
-riri-workspace = { path = "../riri-workspace", version = "0.1.5", optional = true }
-riri-yarn = { path = "../riri-yarn", version = "0.1.5" }
+riri-workspace = { path = "../riri-workspace", version = "0.1.6", optional = true }
+riri-yarn = { path = "../riri-yarn", version = "0.1.6" }
 anyhow = { workspace = true, optional = true }
 clap = { workspace = true, optional = true }
 comfy-table = { workspace = true, optional = true }
