@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.1](https://github.com/smarlhens/riri-node-tools/compare/riri-npm-v0.2.0...riri-npm-v0.2.1) (2026-10-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.2.0 to 0.2.1
+
 ## [0.2.0](https://github.com/smarlhens/riri-node-tools/compare/riri-npm-v0.1.4...riri-npm-v0.2.0) (2026-08-19)
 
 

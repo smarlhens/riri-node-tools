@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.6](https://github.com/smarlhens/riri-node-tools/compare/riri-workspace-v0.1.5...riri-workspace-v0.1.6) (2026-10-26)
+
+
+### Tests
+
+* use assert_eq for empty checks per clippy assert_is_empty ([f91f66d](https://github.com/smarlhens/riri-node-tools/commit/f91f66d56483a1a375d182407fc2649502d1dec8))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.2.0 to 0.2.1
+    * riri-find-up bumped from 0.1.2 to 0.1.3
+
 ## [0.1.5](https://github.com/smarlhens/riri-node-tools/compare/riri-workspace-v0.1.4...riri-workspace-v0.1.5) (2026-08-19)
 
 

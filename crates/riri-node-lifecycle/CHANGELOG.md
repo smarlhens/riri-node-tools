@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.6](https://github.com/smarlhens/riri-node-tools/compare/riri-node-lifecycle-v0.1.5...riri-node-lifecycle-v0.1.6) (2026-10-26)
+
+
+### Chores
+
+* **deps:** bump rust dependencies ([cb574d3](https://github.com/smarlhens/riri-node-tools/commit/cb574d3650495004d914c0efc9873acf86312f65))
+* **node-lifecycle:** refresh bundled data ([30e3240](https://github.com/smarlhens/riri-node-tools/commit/30e3240b851c5482ee3251a6fc694a9249f327c3))
+* **node-lifecycle:** refresh bundled data ([c76486d](https://github.com/smarlhens/riri-node-tools/commit/c76486dcde15fd4ea6f35065c8433225098eabdb))
+* **node-lifecycle:** refresh bundled data ([428f310](https://github.com/smarlhens/riri-node-tools/commit/428f310dd6faa3d52af0017f421f03acba3efddb))
+* **node-lifecycle:** refresh bundled data ([40b2134](https://github.com/smarlhens/riri-node-tools/commit/40b2134e0cd5fd6fd497c340fc181498a38f011f))
+* **node-lifecycle:** refresh bundled data ([55d4383](https://github.com/smarlhens/riri-node-tools/commit/55d4383b435d8174bcedce7f66d73191d27152ca))
+* **node-lifecycle:** refresh bundled data ([596df24](https://github.com/smarlhens/riri-node-tools/commit/596df24a031dd208f2516b4ed21dba7523f06373))
+
 ## [0.1.5](https://github.com/smarlhens/riri-node-tools/compare/riri-node-lifecycle-v0.1.4...riri-node-lifecycle-v0.1.5) (2026-09-01)
 
 
