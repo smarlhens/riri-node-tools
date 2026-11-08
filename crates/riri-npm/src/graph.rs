@@ -1,6 +1,6 @@
 //! `LockfileGraph` for npm lockfiles.
 
-use crate::{NpmEntryDeps, NpmLockEntry, NpmPackageLock};
+use crate::{NpmEntryDeps, NpmLockEntry, NpmPackageLock, top_level_entry};
 use riri_common::{
     GraphError, LockGraph, LockGraphEdge, LockGraphNode, LockGraphRoot, LockfileGraph, PackageJson,
     RootDepKind, is_local_specifier,
@@ -30,12 +30,13 @@ fn resolve_key(
 ) -> Option<String> {
     let mut scope = from_key.to_string();
     loop {
-        let candidate = if scope.is_empty() {
-            format!("node_modules/{name}")
+        let found = if scope.is_empty() {
+            top_level_entry(packages, name).map(|entry| (format!("node_modules/{name}"), entry))
         } else {
-            format!("{scope}/node_modules/{name}")
+            let candidate = format!("{scope}/node_modules/{name}");
+            packages.get(&candidate).map(|entry| (candidate, entry))
         };
-        if let Some(entry) = packages.get(&candidate) {
+        if let Some((candidate, entry)) = found {
             if entry.link == Some(true) {
                 if let Some(target) = entry
                     .resolved

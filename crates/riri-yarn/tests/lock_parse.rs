@@ -111,6 +111,19 @@ fn berry_skips_metadata_block() {
     assert_eq!(lock.resolved_version("__metadata", "8"), None);
 }
 
+#[test]
+fn berry_workspace_packages_resolve_to_none() {
+    let lock = YarnLock::parse(concat!(
+        "__metadata:\n  version: 8\n\n",
+        "\"app@workspace:.\":\n  version: 0.0.0-use.local\n  resolution: \"app@workspace:.\"\n\n",
+        "\"lib@npm:^1.0.0, lib@workspace:packages/lib\":\n  version: 0.0.0-use.local\n  resolution: \"lib@workspace:packages/lib\"\n",
+    ))
+    .unwrap();
+    assert_eq!(lock.resolved_version("lib", "^1.0.0"), None);
+    assert_eq!(lock.version_for("lib"), None);
+    assert_eq!(lock.version_for("app"), None);
+}
+
 /// Build a berry lock for a given `__metadata.version`, reproducing the format
 /// each real version emits. md4-8 use bare checksums; md9+ prefix them with the
 /// cache key (`10/…`), quote nested protocols (`"npm:…"`), and can carry

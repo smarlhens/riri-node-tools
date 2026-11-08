@@ -210,6 +210,10 @@ impl PnpmLockfile {
         self.importers().get(".")
     }
 
+    fn is_v5(&self) -> bool {
+        matches!(self, Self::V5 { .. })
+    }
+
     /// All importers (root `.` plus workspace members).
     #[must_use]
     pub fn importers(&self) -> &HashMap<String, PnpmImporter> {
@@ -223,11 +227,12 @@ impl PnpmLockfile {
 
 impl LockfileEngines for PnpmLockfile {
     fn engines_iter(&self) -> Box<dyn Iterator<Item = (&str, &Engines)> + '_> {
-        Box::new(
-            self.entries()
-                .iter()
-                .filter_map(|(key, entry)| entry.engines.as_ref().map(|e| (pkg_key_name(key), e))),
-        )
+        Box::new(self.entries().iter().filter_map(|(key, entry)| {
+            entry
+                .engines
+                .as_ref()
+                .map(|e| (pkg_key_name(key, self.is_v5()), e))
+        }))
     }
 }
 
@@ -264,30 +269,31 @@ impl LockfileVersions for PnpmLockfile {
 /// Split a `packages`/`snapshots` key into `(name, version-with-peer-suffix)`,
 /// both slices of `key`. `None` when the key carries no version.
 ///
-/// - v5: `/name/1.2.3`, `/@scope/name/1.2.3`
+/// - v5: `/name/1.2.3`, `/@scope/name/1.2.3`, `/name/1.2.3_peer@1.0.0`
 /// - v6: `/name@1.2.3(peer)`, `/@scope/name@1.2.3`
 /// - v9: `name@1.2.3(peer)`, `@scope/name@1.2.3`
-fn split_pkg_key(key: &str) -> Option<(&str, &str)> {
+fn split_pkg_key(key: &str, v5: bool) -> Option<(&str, &str)> {
     let k = key.strip_prefix('/').unwrap_or(key);
-    if let Some(idx) = find_name_version_at(k) {
+    if !v5 && let Some(idx) = find_name_version_at(k) {
         return Some((&k[..idx], &k[idx + 1..]));
     }
-    // v5 slash form: version is the segment after the last `/`.
+    // v5 slash form: version is the segment after the last `/` (a v5 peer
+    // suffix spells `/` as `+`).
     k.rsplit_once('/')
 }
 
 #[cfg(feature = "graph")]
-fn parse_pkg_key(key: &str) -> Option<(String, String)> {
-    split_pkg_key(key).map(|(name, version)| (name.to_string(), version.to_string()))
+fn parse_pkg_key(key: &str, v5: bool) -> Option<(String, String)> {
+    split_pkg_key(key, v5).map(|(name, version)| (name.to_string(), version.to_string()))
 }
 
 /// Package name from a `packages`/`snapshots` key, as a slice of the key.
 ///
 /// `/typescript@5.4.5` -> `typescript`, `/@scope/pkg/1.2.3` -> `@scope/pkg`,
 /// `foo@1.0.0(react@18.2.0)` -> `foo`.
-fn pkg_key_name(key: &str) -> &str {
+fn pkg_key_name(key: &str, v5: bool) -> &str {
     let k = key.strip_prefix('/').unwrap_or(key);
-    split_pkg_key(key).map_or(k, |(name, _)| name)
+    split_pkg_key(key, v5).map_or(k, |(name, _)| name)
 }
 
 /// Index of the `@` separating name from version: ignores a leading scope `@`
@@ -297,9 +303,20 @@ fn find_name_version_at(k: &str) -> Option<usize> {
     k[..stop].rfind('@').filter(|&i| i > 0)
 }
 
-/// Strip the pnpm peer-context suffix: `1.2.3(react@18.2.0)` → `1.2.3`.
+/// Strip the pnpm peer-context suffix: `1.2.3(react@18.2.0)` → `1.2.3`, and the
+/// v5 form `17.0.2_react@17.0.2` → `17.0.2`. A `link:` path or a URL holding a
+/// `_` is kept whole.
 fn strip_peer_suffix(v: &str) -> &str {
-    v.split_once('(').map_or(v, |(s, _)| s)
+    let v = v.split_once('(').map_or(v, |(s, _)| s);
+    match v.split_once('_') {
+        Some((version, _))
+            if version.starts_with(|c: char| c.is_ascii_digit())
+                && !version.contains([':', '/']) =>
+        {
+            version
+        }
+        _ => v,
+    }
 }
 
 /// A node-source entry: `(key, dependencies, optionalDependencies)`.
@@ -368,7 +385,7 @@ impl LockfileGraph for PnpmLockfile {
 
         // Phase 1: one node per parseable key.
         for (key, _, _) in &entries {
-            if let Some((name, raw_version)) = parse_pkg_key(key) {
+            if let Some((name, raw_version)) = parse_pkg_key(key, self.is_v5()) {
                 let idx = graph.nodes.len();
                 graph.nodes.push(LockGraphNode {
                     name,
@@ -497,6 +514,31 @@ packages: {}
 ";
         let lock = PnpmLockfile::parse(v5).expect("parse");
         assert_eq!(lock.version_for("foo"), Some("4.17.21"));
+    }
+
+    #[test]
+    fn version_for_strips_v5_peer_suffix() {
+        let v5 = "
+lockfileVersion: 5.4
+importers:
+  .:
+    dependencies:
+      react-dom: 17.0.2_react@17.0.2
+      styled: 5.3.0_3h3iyzpcmxfjzlxn5dwkhprxpu
+packages: {}
+";
+        let lock = PnpmLockfile::parse(v5).expect("parse");
+        assert_eq!(lock.version_for("react-dom"), Some("17.0.2"));
+        assert_eq!(lock.version_for("styled"), Some("5.3.0"));
+    }
+
+    #[test]
+    fn strip_peer_suffix_keeps_paths_and_urls_whole() {
+        assert_eq!(strip_peer_suffix("link:../my_lib"), "link:../my_lib");
+        assert_eq!(
+            strip_peer_suffix("https://example.com/my_pkg-1.0.0.tgz"),
+            "https://example.com/my_pkg-1.0.0.tgz"
+        );
     }
 }
 
@@ -696,21 +738,51 @@ packages:
     }
 
     #[test]
+    fn v5_peer_suffixed_keys_and_values() {
+        let lock = PnpmLockfile::parse(
+            "
+lockfileVersion: 5.4
+importers:
+  .:
+    dependencies:
+      react-dom: 17.0.2_react@17.0.2
+packages:
+  /react-dom/17.0.2_react@17.0.2:
+    dependencies:
+      react: 17.0.2
+  /react/17.0.2: {}
+",
+        )
+        .unwrap();
+        let graph = lock.dep_graph(&empty_pkg()).unwrap();
+        let root = &graph.nodes[graph.roots[0].node];
+        assert_eq!(
+            (root.name.as_str(), root.version.as_str()),
+            ("react-dom", "17.0.2")
+        );
+        let react = &graph.nodes[root.deps[0].node];
+        assert_eq!(
+            (react.name.as_str(), react.version.as_str()),
+            ("react", "17.0.2")
+        );
+    }
+
+    #[test]
     fn parse_pkg_key_handles_all_forms() {
         assert_eq!(
-            parse_pkg_key("/a/1.2.0"),
+            parse_pkg_key("/a/1.2.0", true),
             Some(("a".into(), "1.2.0".into()))
         );
         assert_eq!(
-            parse_pkg_key("/@scope/name/1.2.0"),
-            Some(("@scope/name".into(), "1.2.0".into()))
+            parse_pkg_key("/@scope/name/1.2.0_@babel+core@7.0.0", true),
+            Some(("@scope/name".into(), "1.2.0_@babel+core@7.0.0".into()))
         );
         assert_eq!(
-            parse_pkg_key("/a@1.2.0(peer@1.0.0)"),
+            parse_pkg_key("/a@1.2.0(peer@1.0.0)", false),
             Some(("a".into(), "1.2.0(peer@1.0.0)".into()))
         );
         assert_eq!(
-            parse_pkg_key("@scope/name@1.2.0"),
+            parse_pkg_key("@scope/name@1.2.0", false),
             Some(("@scope/name".into(), "1.2.0".into()))
         );
     }
@@ -722,12 +794,16 @@ mod key_tests {
 
     #[test]
     fn pkg_key_name_handles_all_forms() {
-        assert_eq!(pkg_key_name("/a/1.2.0"), "a");
-        assert_eq!(pkg_key_name("/@scope/name/1.2.0"), "@scope/name");
-        assert_eq!(pkg_key_name("/a@1.2.0"), "a");
-        assert_eq!(pkg_key_name("/a@1.2.0(peer@1.0.0)"), "a");
-        assert_eq!(pkg_key_name("a@1.2.0(peer@1.0.0)"), "a");
-        assert_eq!(pkg_key_name("@scope/name@1.2.0"), "@scope/name");
-        assert_eq!(pkg_key_name("a"), "a");
+        assert_eq!(pkg_key_name("/a/1.2.0", true), "a");
+        assert_eq!(pkg_key_name("/@scope/name/1.2.0", true), "@scope/name");
+        assert_eq!(
+            pkg_key_name("/react-dom/17.0.2_react@17.0.2", true),
+            "react-dom"
+        );
+        assert_eq!(pkg_key_name("/a@1.2.0", false), "a");
+        assert_eq!(pkg_key_name("/a@1.2.0(peer@1.0.0)", false), "a");
+        assert_eq!(pkg_key_name("a@1.2.0(peer@1.0.0)", false), "a");
+        assert_eq!(pkg_key_name("@scope/name@1.2.0", false), "@scope/name");
+        assert_eq!(pkg_key_name("a", false), "a");
     }
 }
