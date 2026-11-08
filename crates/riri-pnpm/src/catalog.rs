@@ -228,12 +228,12 @@ impl PnpmCatalog {
     ///
     /// Returns [`CatalogError::Yaml`] if the YAML is invalid.
     pub fn parse(yaml: &str) -> Result<Self, CatalogError> {
+        // Hand-written YAML often leaves a key blank (`catalog:`), which is
+        // null, not an empty map; serde-saphyr rejects null for map targets.
         #[derive(Debug, serde::Deserialize, Default)]
         struct Root {
-            #[serde(default)]
-            catalog: BTreeMap<String, String>,
-            #[serde(default)]
-            catalogs: BTreeMap<String, BTreeMap<String, String>>,
+            catalog: Option<BTreeMap<String, String>>,
+            catalogs: Option<BTreeMap<String, Option<BTreeMap<String, String>>>>,
         }
 
         if yaml.trim().is_empty() {
@@ -246,8 +246,13 @@ impl PnpmCatalog {
 
         let root: Root = serde_saphyr::from_str(yaml)?;
         Ok(Self {
-            default: root.catalog,
-            named: root.catalogs,
+            default: root.catalog.unwrap_or_default(),
+            named: root
+                .catalogs
+                .unwrap_or_default()
+                .into_iter()
+                .map(|(name, entries)| (name, entries.unwrap_or_default()))
+                .collect(),
             raw: yaml.to_string(),
         })
     }
@@ -449,6 +454,17 @@ catalogs:
         assert_eq!(catalog.find_entry("vue", Some("vue3")), Some("^3.4.0"));
         assert_eq!(catalog.find_entry("missing", None), None);
         assert_eq!(catalog.find_entry("react", Some("vue3")), None);
+    }
+
+    #[test]
+    fn blank_catalog_keys_parse_as_empty() {
+        let yaml = "packages:\n  - a\ncatalog:\ncatalogs:\n  react18:\n";
+        let catalog = PnpmCatalog::parse(yaml).expect("parse");
+        assert!(catalog.default.is_empty());
+        assert!(catalog.named["react18"].is_empty());
+
+        let catalog = PnpmCatalog::parse("catalogs:\n").expect("parse");
+        assert!(catalog.named.is_empty());
     }
 
     #[test]
