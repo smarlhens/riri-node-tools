@@ -1,5 +1,15 @@
 lockfileVersion: '9.0'
 
+catalogs:
+  default:
+    fizz:
+      specifier: ^18.0.0
+      version: 18.2.0
+  set1:
+    quux:
+      specifier: ^3.4.0
+      version: 3.4.21
+
 importers:
 
   .:
@@ -8,10 +18,10 @@ importers:
         specifier: ^1.0.0
         version: 1.0.5
       fizz:
-        specifier: ^18.0.0
+        specifier: 'catalog:'
         version: 18.2.0
       quux:
-        specifier: ^3.4.0
+        specifier: catalog:set1
         version: 3.4.21
       buzz:
         specifier: 4.17.21

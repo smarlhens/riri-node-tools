@@ -203,7 +203,7 @@ pub fn pin_catalog_entries(
     let mut result = Vec::new();
 
     for (dep_name, from) in &catalog.default {
-        if let Some(to) = resolved_pin(lockfile, dep_name, from) {
+        if let Some(to) = resolved_pin(lockfile, None, dep_name, from) {
             result.push(CatalogPin {
                 dep_name: dep_name.clone(),
                 catalog_name: None,
@@ -215,7 +215,7 @@ pub fn pin_catalog_entries(
 
     for (name, entries) in &catalog.named {
         for (dep_name, from) in entries {
-            if let Some(to) = resolved_pin(lockfile, dep_name, from) {
+            if let Some(to) = resolved_pin(lockfile, Some(name.as_str()), dep_name, from) {
                 result.push(CatalogPin {
                     dep_name: dep_name.clone(),
                     catalog_name: Some(name.clone()),
@@ -236,11 +236,16 @@ pub fn pin_catalog_entries(
     result
 }
 
-fn resolved_pin(lockfile: &dyn LockfileVersions, dep_name: &str, from: &str) -> Option<String> {
+fn resolved_pin(
+    lockfile: &dyn LockfileVersions,
+    catalog: Option<&str>,
+    dep_name: &str,
+    from: &str,
+) -> Option<String> {
     if !is_registry_specifier(from) {
         return None;
     }
-    let locked = lockfile.version_for(dep_name)?;
+    let locked = lockfile.catalog_version(catalog, dep_name)?;
     if is_already_pinned(from, locked) || !is_version(locked) {
         return None;
     }
@@ -463,6 +468,33 @@ mod tests {
         assert_eq!(pins[0].catalog_name.as_deref(), Some("vue3"));
         assert_eq!(pins[0].from, "^3.4.0");
         assert_eq!(pins[0].to, "3.4.21");
+    }
+
+    #[test]
+    fn pin_catalog_entries_resolves_each_named_catalog() {
+        use riri_pnpm::catalog::PnpmCatalog;
+        let yaml = "catalogs:\n  react17:\n    react: ^17.0.0\n  react18:\n    react: ^18.0.0\n";
+        let catalog = PnpmCatalog::parse(yaml).expect("parse");
+        let lock = PnpmLockfile::parse(concat!(
+            "lockfileVersion: '9.0'\n",
+            "catalogs:\n",
+            "  react17:\n    react:\n      specifier: ^17.0.0\n      version: 17.0.2\n",
+            "  react18:\n    react:\n      specifier: ^18.0.0\n      version: 18.2.0\n",
+            "importers:\n  .:\n    dependencies:\n",
+            "      react:\n        specifier: catalog:react18\n        version: 18.2.0\n",
+        ))
+        .expect("parse lockfile");
+        let pins: Vec<_> = pin_catalog_entries(&catalog, &lock)
+            .into_iter()
+            .map(|p| (p.catalog_name.unwrap_or_default(), p.to))
+            .collect();
+        assert_eq!(
+            pins,
+            [
+                ("react17".to_string(), "17.0.2".to_string()),
+                ("react18".to_string(), "18.2.0".to_string()),
+            ]
+        );
     }
 
     #[test]

@@ -68,9 +68,12 @@ pub enum PnpmLockfile {
     /// v9 format (lockfileVersion 9.x — pnpm v9/v10/v11).
     /// Engines in `packages` (keyed `name@version`, no leading `/`).
     /// `snapshots` holds per-peer-context resolved deps (the graph source).
+    /// `catalogs` holds each catalog's resolutions (the default one as `default`).
     V9 {
         packages: HashMap<String, PnpmPackageEntry>,
         importers: HashMap<String, PnpmImporter>,
+        #[cfg(feature = "catalog")]
+        catalogs: HashMap<String, HashMap<String, ImporterDep>>,
         #[cfg(feature = "graph")]
         snapshots: HashMap<String, PnpmSnapshotEntry>,
     },
@@ -185,6 +188,8 @@ impl PnpmLockfile {
                 Ok(Self::V9 {
                     packages: lock.packages,
                     importers: lock.importers,
+                    #[cfg(feature = "catalog")]
+                    catalogs: lock.catalogs,
                     #[cfg(feature = "graph")]
                     snapshots: lock.snapshots,
                 })
@@ -263,6 +268,19 @@ impl LockfileVersions for PnpmLockfile {
                     .or_else(|| importer.optional_dependencies.get(name))
                     .map(ImporterDep::version)
             })
+    }
+
+    /// pnpm only records the catalog entries an importer uses, so a missing one
+    /// has no resolution. v5/v6 lockfiles predate catalogs.
+    #[cfg(feature = "catalog")]
+    fn catalog_version(&self, catalog: Option<&str>, name: &str) -> Option<&str> {
+        match self {
+            Self::V9 { catalogs, .. } => catalogs
+                .get(catalog.unwrap_or("default"))?
+                .get(name)
+                .map(ImporterDep::version),
+            Self::V5 { .. } | Self::V6 { .. } => self.version_for(name),
+        }
     }
 }
 
@@ -540,6 +558,79 @@ packages: {}
             "https://example.com/my_pkg-1.0.0.tgz"
         );
     }
+
+    #[cfg(feature = "catalog")]
+    #[test]
+    fn catalog_version_reads_named_catalogs() {
+        let v9 = "
+lockfileVersion: '9.0'
+catalogs:
+  default:
+    lodash:
+      specifier: ^4.17.0
+      version: 4.17.21
+  react17:
+    react:
+      specifier: ^17.0.0
+      version: 17.0.2
+  react18:
+    react:
+      specifier: ^18.0.0
+      version: 18.2.0
+    react-dom:
+      specifier: ^18.0.0
+      version: 18.2.0(react@18.2.0)
+importers:
+  .:
+    dependencies:
+      lodash:
+        specifier: 'catalog:'
+        version: 4.17.21
+      react:
+        specifier: catalog:react18
+        version: 18.2.0
+  packages/legacy:
+    dependencies:
+      react:
+        specifier: catalog:react17
+        version: 17.0.2
+packages: {}
+";
+        let lock = PnpmLockfile::parse(v9).expect("parse");
+        assert_eq!(lock.catalog_version(None, "lodash"), Some("4.17.21"));
+        assert_eq!(
+            lock.catalog_version(Some("react17"), "react"),
+            Some("17.0.2")
+        );
+        assert_eq!(
+            lock.catalog_version(Some("react18"), "react"),
+            Some("18.2.0")
+        );
+        assert_eq!(
+            lock.catalog_version(Some("react18"), "react-dom"),
+            Some("18.2.0")
+        );
+        assert_eq!(lock.catalog_version(Some("react17"), "lodash"), None);
+        assert_eq!(lock.catalog_version(Some("missing"), "react"), None);
+    }
+
+    #[cfg(feature = "catalog")]
+    #[test]
+    fn catalog_version_without_catalogs_section() {
+        let importers = "
+importers:
+  .:
+    dependencies:
+      react:
+        specifier: ^18.0.0
+        version: 18.2.0
+packages: {}
+";
+        let v9 = PnpmLockfile::parse(&format!("lockfileVersion: '9.0'{importers}")).expect("parse");
+        assert_eq!(v9.catalog_version(Some("react17"), "react"), None);
+        let v6 = PnpmLockfile::parse(&format!("lockfileVersion: '6.0'{importers}")).expect("parse");
+        assert_eq!(v6.catalog_version(None, "react"), Some("18.2.0"));
+    }
 }
 
 /// Extract the integer major version from a version string like `"5.4"` or `"9.0"`.
@@ -574,6 +665,9 @@ struct PnpmLockPackages {
     packages: HashMap<String, PnpmPackageEntry>,
     #[serde(default)]
     importers: HashMap<String, PnpmImporter>,
+    #[cfg(feature = "catalog")]
+    #[serde(default)]
+    catalogs: HashMap<String, HashMap<String, ImporterDep>>,
     #[cfg(feature = "graph")]
     #[serde(default)]
     snapshots: HashMap<String, PnpmSnapshotEntry>,
