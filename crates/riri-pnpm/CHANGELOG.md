@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.0](https://github.com/smarlhens/riri-node-tools/compare/riri-pnpm-v0.2.1...riri-pnpm-v0.3.0) (2026-11-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* **pnpm:** resolve named catalogs from the lockfile
+
+### Features
+
+* **pnpm:** resolve named catalogs from the lockfile ([1e8408a](https://github.com/smarlhens/riri-node-tools/commit/1e8408a13aae209f1acb8dcf187a54f25463c5e6))
+
+
+### Bug Fixes
+
+* **npd:** pin registry versions, ranges & tags only ([bece621](https://github.com/smarlhens/riri-node-tools/commit/bece62113c6f2f68d4f8f3b24927ff3a88c29609))
+* **pnpm:** parse blank catalog keys as empty ([95f230f](https://github.com/smarlhens/riri-node-tools/commit/95f230fa03b157797c186bcb3b140f5ff1c46e0a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.2.1 to 0.3.0
+
 ## [0.2.1](https://github.com/smarlhens/riri-node-tools/compare/riri-pnpm-v0.2.0...riri-pnpm-v0.2.1) (2026-11-02)
 
 
