@@ -23,9 +23,9 @@
   },
   "dependencies": {
     "@smarlhens/npm-check-engines-v0": "npm:@smarlhens/npm-check-engines@0.14.4",
-    "@smarlhens/npm-check-engines-v1": "npm:@smarlhens/npm-check-engines@1.4.1",
+    "@smarlhens/npm-check-engines-v1": "npm:@smarlhens/npm-check-engines@1.4.2",
     "@smarlhens/npm-pin-dependencies-v0": "npm:@smarlhens/npm-pin-dependencies@0.11.1",
-    "@smarlhens/npm-pin-dependencies-v1": "npm:@smarlhens/npm-pin-dependencies@1.2.0",
+    "@smarlhens/npm-pin-dependencies-v1": "npm:@smarlhens/npm-pin-dependencies@1.2.1",
     "markdown-table": "3.1.0",
     "pretty-bytes": "7.2.0",
     "tinybench": "6.2.3"
