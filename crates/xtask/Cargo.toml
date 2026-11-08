@@ -14,7 +14,7 @@ chrono = { workspace = true }
 clap = { workspace = true }
 riri-node-lifecycle = { path = "../riri-node-lifecycle", version = "0.1.6", features = ["refresh"] }
 serde_json = { workspace = true }
-similar = "3.2.0"
+similar = "3.2.1"
 tera = { version = "2.4.0", default-features = false }
 
 [dev-dependencies]
