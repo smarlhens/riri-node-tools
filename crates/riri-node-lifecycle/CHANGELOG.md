@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/smarlhens/riri-node-tools/compare/riri-node-lifecycle-v0.1.6...riri-node-lifecycle-v0.1.7) (2026-11-08)
+
+
+### Chores
+
+* **deps:** bump rust dependencies ([0a8416b](https://github.com/smarlhens/riri-node-tools/commit/0a8416bdb8ef7ce071d93c8b547da218341a1a85))
+
 ## [0.1.6](https://github.com/smarlhens/riri-node-tools/compare/riri-node-lifecycle-v0.1.5...riri-node-lifecycle-v0.1.6) (2026-11-02)
 
 

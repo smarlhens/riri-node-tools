@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.3](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.4.2...@smarlhens/npm-check-engines-v1.4.3) (2026-11-08)
+
+
+### Chores
+
+* **deps:** bump & dedupe napi transitive deps ([cc84fc9](https://github.com/smarlhens/riri-node-tools/commit/cc84fc99767c86f74c68ab06e47d025256bd629e))
+* **deps:** bump napi-rs cli to 3.10.12 ([680c81a](https://github.com/smarlhens/riri-node-tools/commit/680c81adad154b274b2df4ef79d1ebc58ec6c734))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-nce bumped from 0.2.2 to 0.2.3
+
 ## [1.4.2](https://github.com/smarlhens/riri-node-tools/compare/@smarlhens/npm-check-engines-v1.4.1...@smarlhens/npm-check-engines-v1.4.2) (2026-11-02)
 
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.2](https://github.com/smarlhens/riri-node-tools/compare/riri-npm-v0.2.1...riri-npm-v0.2.2) (2026-11-08)
+
+
+### Bug Fixes
+
+* **npd:** pin registry versions, ranges & tags only ([bece621](https://github.com/smarlhens/riri-node-tools/commit/bece62113c6f2f68d4f8f3b24927ff3a88c29609))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.2.1 to 0.3.0
+
 ## [0.2.1](https://github.com/smarlhens/riri-node-tools/compare/riri-npm-v0.2.0...riri-npm-v0.2.1) (2026-11-02)
 
 

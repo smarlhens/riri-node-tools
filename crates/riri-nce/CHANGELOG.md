@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.3](https://github.com/smarlhens/riri-node-tools/compare/riri-nce-v0.2.2...riri-nce-v0.2.3) (2026-11-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.2.1 to 0.3.0
+    * riri-lockfile bumped from 0.1.2 to 0.1.3
+    * riri-node-lifecycle bumped from 0.1.6 to 0.1.7
+    * riri-npm bumped from 0.2.1 to 0.2.2
+    * riri-pnpm bumped from 0.2.1 to 0.3.0
+    * riri-yarn bumped from 0.1.6 to 0.1.7
+
 ## [0.2.2](https://github.com/smarlhens/riri-node-tools/compare/riri-nce-v0.2.1...riri-nce-v0.2.2) (2026-11-02)
 
 

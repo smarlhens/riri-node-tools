@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.7](https://github.com/smarlhens/riri-node-tools/compare/riri-yarn-v0.1.6...riri-yarn-v0.1.7) (2026-11-08)
+
+
+### Bug Fixes
+
+* **npd:** pin registry versions, ranges & tags only ([bece621](https://github.com/smarlhens/riri-node-tools/commit/bece62113c6f2f68d4f8f3b24927ff3a88c29609))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.2.1 to 0.3.0
+
 ## [0.1.6](https://github.com/smarlhens/riri-node-tools/compare/riri-yarn-v0.1.5...riri-yarn-v0.1.6) (2026-11-02)
 
 

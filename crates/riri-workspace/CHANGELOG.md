@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.7](https://github.com/smarlhens/riri-node-tools/compare/riri-workspace-v0.1.6...riri-workspace-v0.1.7) (2026-11-08)
+
+
+### Chores
+
+* **deps:** bump rust dependencies ([0a8416b](https://github.com/smarlhens/riri-node-tools/commit/0a8416bdb8ef7ce071d93c8b547da218341a1a85))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * riri-common bumped from 0.2.1 to 0.3.0
+
 ## [0.1.6](https://github.com/smarlhens/riri-node-tools/compare/riri-workspace-v0.1.5...riri-workspace-v0.1.6) (2026-11-02)
 
 
