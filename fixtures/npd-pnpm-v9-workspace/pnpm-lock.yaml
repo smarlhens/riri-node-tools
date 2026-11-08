@@ -1,5 +1,11 @@
 lockfileVersion: '9.0'
 
+catalogs:
+  default:
+    fake-baz:
+      specifier: ^3.0.0
+      version: 3.1.0
+
 importers:
   .:
     dependencies: {}

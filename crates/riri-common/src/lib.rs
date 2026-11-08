@@ -175,6 +175,12 @@ pub trait LockfileVersions {
     fn resolved_version(&self, name: &str, _range: &str) -> Option<&str> {
         self.version_for(name)
     }
+
+    /// Resolves the locked version of a pnpm catalog entry: `catalog` is
+    /// `None` for the default catalog, `Some(name)` for a named one.
+    fn catalog_version(&self, _catalog: Option<&str>, name: &str) -> Option<&str> {
+        self.version_for(name)
+    }
 }
 
 /// Which section of `package.json` a root dependency comes from.
