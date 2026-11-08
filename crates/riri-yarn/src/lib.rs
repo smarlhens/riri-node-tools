@@ -436,6 +436,10 @@ fn parse_berry(content: &str) -> Result<(Vec<YarnEntry>, HashMap<String, usize>)
     Ok((entries, index))
 }
 
+/// The version berry records for a workspace, `portal:` or `link:` package: no
+/// pin, so lookups resolving to it give `None`.
+const BERRY_LOCAL_VERSION: &str = "0.0.0-use.local";
+
 impl LockfileVersions for YarnLock {
     /// Best-effort name-only lookup (no range); prefer [`Self::resolved_version`].
     fn version_for(&self, name: &str) -> Option<&str> {
@@ -443,13 +447,14 @@ impl LockfileVersions for YarnLock {
             .iter()
             .find(|e| e.name == name)
             .map(|e| e.version.as_str())
+            .filter(|v| *v != BERRY_LOCAL_VERSION)
     }
 
     fn resolved_version(&self, name: &str, range: &str) -> Option<&str> {
         let idx = self
             .descriptor_index
             .get(&self.descriptor_for(name, range))?;
-        Some(self.entries[*idx].version.as_str())
+        Some(self.entries[*idx].version.as_str()).filter(|v| *v != BERRY_LOCAL_VERSION)
     }
 }
 

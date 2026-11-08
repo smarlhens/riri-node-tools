@@ -14,7 +14,7 @@ pub use riri_pnpm::catalog::{CatalogError, PnpmCatalog};
 pub use riri_pnpm::{PnpmLockfile, PnpmParseError};
 pub use riri_yarn::{YarnLock, YarnParseError};
 
-use riri_common::is_local_specifier;
+use riri_common::is_registry_specifier;
 use semver::Version;
 use thiserror::Error;
 use tracing::debug;
@@ -79,10 +79,14 @@ pub enum PinError {}
 /// version.
 ///
 /// Skip rules:
-///   - Dependencies prefixed with `file:`, `link:`, or `workspace:` (local).
-///   - Dependencies whose specifier already parses as a [`Version`] AND
-///     equals the lockfile's resolved version.
+///   - Dependencies not taken from the registry: only a version, a range or a
+///     dist-tag is (npm's `registry` specifier types). Local ones (`file:`,
+///     `link:`, `workspace:`, `catalog:`) and URL, git, alias or other protocol
+///     specs lock to a value that is no pin for them.
 ///   - Dependencies absent from the lockfile (treated as unresolved, ignored).
+///   - Dependencies whose specifier is already the lockfile's version (`=` and
+///     `v` prefixes and surrounding spaces allowed).
+///   - Dependencies whose lockfile value is not a semver version.
 ///
 /// # Errors
 ///
@@ -110,13 +114,13 @@ pub fn pin_dependencies(
         let mut entries: Vec<(&String, &String)> = deps.iter().collect();
         entries.sort_by(|a, b| a.0.cmp(b.0));
         for (name, current_range) in entries {
-            if is_local_specifier(current_range) {
+            if !is_registry_specifier(current_range) {
                 debug!(
                     target: "riri_npd::pin",
                     bucket = kind.as_str(),
                     package = %name,
                     spec = %current_range,
-                    "Skipped local specifier (file:/link:/workspace:)"
+                    "Skipped: not a registry version, range or tag"
                 );
                 continue;
             }
@@ -138,6 +142,17 @@ pub fn pin_dependencies(
                     spec = %current_range,
                     locked = %locked,
                     "Skipped — already pinned to lockfile version"
+                );
+                continue;
+            }
+            if !is_version(locked) {
+                debug!(
+                    target: "riri_npd::pin",
+                    bucket = kind.as_str(),
+                    package = %name,
+                    spec = %current_range,
+                    locked = %locked,
+                    "Skipped: lockfile value is not a version"
                 );
                 continue;
             }
@@ -165,16 +180,21 @@ pub fn pin_dependencies(
     Ok(result)
 }
 
+fn is_version(locked: &str) -> bool {
+    Version::parse(locked).is_ok()
+}
+
+/// `=1.2.3`, `v1.2.3`, `=v1.2.3` and ` 1.2.3 ` are the exact version `1.2.3` to npm.
 fn is_already_pinned(spec: &str, locked: &str) -> bool {
-    Version::parse(spec).is_ok_and(|parsed| parsed.to_string() == locked)
+    let spec = spec.trim_ascii();
+    let spec = spec.strip_prefix('=').unwrap_or(spec);
+    spec.strip_prefix('v').unwrap_or(spec) == locked
 }
 
 /// Compute catalog pins by iterating both the default and named catalogs
 /// and resolving each entry against the lockfile.
 ///
-/// Skip rules:
-///   - Entries already at the lockfile version.
-///   - Entries with no matching lockfile entry.
+/// Skip rules: the same as [`pin_dependencies`].
 #[must_use]
 pub fn pin_catalog_entries(
     catalog: &PnpmCatalog,
@@ -217,8 +237,11 @@ pub fn pin_catalog_entries(
 }
 
 fn resolved_pin(lockfile: &dyn LockfileVersions, dep_name: &str, from: &str) -> Option<String> {
+    if !is_registry_specifier(from) {
+        return None;
+    }
     let locked = lockfile.version_for(dep_name)?;
-    if is_already_pinned(from, locked) {
+    if is_already_pinned(from, locked) || !is_version(locked) {
         return None;
     }
     Some(locked.to_string())
@@ -314,6 +337,32 @@ mod tests {
     }
 
     #[test]
+    fn already_pinned_allows_npm_exact_version_prefixes() {
+        for spec in ["1.2.3", "=1.2.3", "v1.2.3", "=v1.2.3", " 1.2.3 "] {
+            assert!(is_already_pinned(spec, "1.2.3"), "{spec}");
+        }
+        for spec in ["^1.2.3", "=1.2.4", "==1.2.3", "vv1.2.3", "v=1.2.3"] {
+            assert!(!is_already_pinned(spec, "1.2.3"), "{spec}");
+        }
+    }
+
+    #[test]
+    fn skips_sources_whose_lockfile_entry_is_no_pin() {
+        let pkg = pkg(&[
+            (
+                "xlsx",
+                "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+            ),
+            ("shared", "^1.0.0"),
+        ]);
+        let lock = locked(&[("xlsx", "0.20.3"), ("shared", "link:../shared")]);
+        assert_eq!(
+            pin_dependencies(&pkg, &lock).expect("ok"),
+            [] as [VersionToPin; 0]
+        );
+    }
+
+    #[test]
     fn skips_catalog_specifiers() {
         let pkg = pkg(&[("react", "catalog:"), ("vue", "catalog:vue3")]);
         let lock = locked(&[("react", "18.2.0"), ("vue", "3.4.21")]);
@@ -384,6 +433,21 @@ mod tests {
         let yaml = "catalog:\n  react: 18.2.0\n";
         let catalog = PnpmCatalog::parse(yaml).expect("parse");
         let lock = locked(&[("react", "18.2.0")]);
+        assert_eq!(pin_catalog_entries(&catalog, &lock), [] as [CatalogPin; 0]);
+    }
+
+    #[test]
+    fn pin_catalog_entries_skips_sources_whose_lockfile_entry_is_no_pin() {
+        use riri_pnpm::catalog::PnpmCatalog;
+        let yaml = "catalog:\n  xlsx: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz\n  shared: ^1.0.0\n";
+        let catalog = PnpmCatalog::parse(yaml).expect("parse");
+        let lock = locked(&[
+            (
+                "xlsx",
+                "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+            ),
+            ("shared", "link:../shared"),
+        ]);
         assert_eq!(pin_catalog_entries(&catalog, &lock), [] as [CatalogPin; 0]);
     }
 

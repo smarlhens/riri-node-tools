@@ -157,11 +157,30 @@ impl LockfileVersions for NpmPackageLock {
                 packages: Some(packages),
                 ..
             }
-            | Self::V3 { packages } => packages
-                .get(&format!("node_modules/{name}"))
-                .and_then(|entry| entry.version.as_deref()),
+            | Self::V3 { packages } => {
+                top_level_entry(packages, name).and_then(|entry| entry.version.as_deref())
+            }
         }
     }
+}
+
+/// `packages["node_modules/{name}"]`, with the key built on the stack: npd looks
+/// up every dependency, and a heap allocation per lookup shows on its benches.
+pub(crate) fn top_level_entry<'a>(
+    packages: &'a HashMap<String, NpmLockEntry>,
+    name: &str,
+) -> Option<&'a NpmLockEntry> {
+    const PREFIX: &[u8] = b"node_modules/";
+    // npm caps package names at 214 bytes.
+    let mut buf = [0_u8; 256];
+    let len = PREFIX.len() + name.len();
+    if len > buf.len() {
+        return packages.get(&format!("node_modules/{name}"));
+    }
+    buf[..PREFIX.len()].copy_from_slice(PREFIX);
+    buf[PREFIX.len()..len].copy_from_slice(name.as_bytes());
+    // Two `str`s joined are UTF-8, so this borrows and never replaces.
+    packages.get(&*String::from_utf8_lossy(&buf[..len]))
 }
 
 // --- Internal raw serde types ---
@@ -193,4 +212,28 @@ struct NpmLockV3Raw {
     lockfile_version: u64,
     #[serde(default)]
     packages: HashMap<String, NpmLockEntry>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn version_for_reads_top_level_packages_of_any_name_length() {
+        let long = "x".repeat(300);
+        let lock = NpmPackageLock::parse(&format!(
+            r#"{{"lockfileVersion": 3, "packages": {{
+                "": {{"name": "root"}},
+                "node_modules/foo": {{"version": "1.2.3"}},
+                "node_modules/@scope/bar": {{"version": "2.0.0"}},
+                "node_modules/foo/node_modules/baz": {{"version": "3.0.0"}},
+                "node_modules/{long}": {{"version": "4.0.0"}}
+            }}}}"#
+        ))
+        .expect("parse");
+        assert_eq!(lock.version_for("foo"), Some("1.2.3"));
+        assert_eq!(lock.version_for("@scope/bar"), Some("2.0.0"));
+        assert_eq!(lock.version_for("baz"), None);
+        assert_eq!(lock.version_for(&long), Some("4.0.0"));
+    }
 }

@@ -283,6 +283,61 @@ pub fn is_local_specifier(spec: &str) -> bool {
         || spec == "catalog"
 }
 
+/// Returns `true` if npm resolves the specifier from the registry: a version, a
+/// range or a dist-tag (npm-package-arg's `registry` types). These only use
+/// [`is_registry_byte`]s, so a URL, git spec, alias, path or protocol (`:`, `/`,
+/// `@`, `#`) is rejected without being listed.
+#[must_use]
+pub fn is_registry_specifier(spec: &str) -> bool {
+    spec.bytes().all(is_registry_byte)
+        && (!spec.bytes().any(|b| b == b' ' || b == b'\t') || starts_like_range(spec))
+        && !spec.starts_with('.')
+        && !is_tarball_name(spec.as_bytes())
+        && spec != "catalog"
+}
+
+/// Range syntax, plus the bytes a dist-tag may use (URI-safe ones).
+const fn is_registry_byte(b: u8) -> bool {
+    b.is_ascii_alphanumeric()
+        || matches!(
+            b,
+            b'.' | b'_'
+                | b'-'
+                | b'*'
+                | b'^'
+                | b'~'
+                | b'<'
+                | b'>'
+                | b'='
+                | b'|'
+                | b'+'
+                | b'!'
+                | b'\''
+                | b'('
+                | b')'
+                | b' '
+                | b'\t'
+        )
+}
+
+/// Whitespace only belongs inside a range, never in a dist-tag.
+fn starts_like_range(spec: &str) -> bool {
+    matches!(
+        spec.trim_ascii_start().as_bytes().first(),
+        Some(b'0'..=b'9' | b'v' | b'=' | b'<' | b'>' | b'~' | b'^' | b'*' | b'x' | b'X')
+    )
+}
+
+/// npm-package-arg's `/[.](?:tgz|tar.gz|tar)$/i`, which makes the spec a file
+/// path. Its unescaped `.` in `tar.gz` matches any byte.
+fn is_tarball_name(spec: &[u8]) -> bool {
+    let tail = |n: usize| spec.len().checked_sub(n).map(|start| &spec[start..]);
+    tail(4).is_some_and(|t| t.eq_ignore_ascii_case(b".tgz") || t.eq_ignore_ascii_case(b".tar"))
+        || tail(7).is_some_and(|t| {
+            t[..4].eq_ignore_ascii_case(b".tar") && t[5..].eq_ignore_ascii_case(b"gz")
+        })
+}
+
 #[cfg(test)]
 #[allow(clippy::unwrap_used)]
 mod graph_tests {
@@ -340,6 +395,36 @@ mod graph_tests {
         assert!(!is_local_specifier("^1.2.3"));
         assert!(!is_local_specifier("1.2.3"));
         assert!(!is_local_specifier("latest"));
+    }
+
+    #[test]
+    fn registry_specifiers_are_versions_ranges_and_tags_only() {
+        for spec in [
+            "1.2.3",
+            "^1.2.3",
+            ">=1 <2 || ^3",
+            "1.x",
+            "latest",
+            "my_tag!(v2)'",
+        ] {
+            assert!(is_registry_specifier(spec), "{spec}");
+        }
+        for spec in [
+            "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+            "github:user/repo#v2",
+            "user/repo",
+            "npm:bar@^1.0.0",
+            "workspace:*",
+            "catalog",
+            "..",
+            "pkg.TGZ",
+            "pkg.tar",
+            "pkg.tar_gz",
+            "foo bar",
+            "latest\tnext",
+        ] {
+            assert!(!is_registry_specifier(spec), "{spec}");
+        }
     }
 }
 
