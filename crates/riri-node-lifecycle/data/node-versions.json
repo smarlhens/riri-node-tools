@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "fetched_at": "2026-11-02T06:18:16.481546884Z",
+  "fetched_at": "2026-11-16T06:20:48.643962338Z",
   "majors": {
     "4": {
       "major": 4,
@@ -2914,7 +2914,7 @@
       "maintenance_start": "2025-10-21",
       "end": "2027-04-30",
       "lowest": "22.0.0",
-      "highest": "22.23.4",
+      "highest": "22.23.5",
       "npm_at_lowest": "10.5.1",
       "npm_at_highest": "10.9.9",
       "npm_min_in_major": "10.5.1",
@@ -3103,6 +3103,11 @@
           "version": "22.23.4",
           "npm": "10.9.9",
           "date": "2026-10-20"
+        },
+        {
+          "version": "22.23.5",
+          "npm": "10.9.9",
+          "date": "2026-11-11"
         }
       ]
     },
@@ -3201,7 +3206,7 @@
       "maintenance_start": "2026-10-20",
       "end": "2028-04-30",
       "lowest": "24.0.0",
-      "highest": "24.22.2",
+      "highest": "24.22.3",
       "npm_at_lowest": "11.3.0",
       "npm_at_highest": "11.19.1",
       "npm_min_in_major": "11.3.0",
@@ -3365,6 +3370,11 @@
           "version": "24.22.2",
           "npm": "11.19.1",
           "date": "2026-10-27"
+        },
+        {
+          "version": "24.22.3",
+          "npm": "11.19.1",
+          "date": "2026-11-10"
         }
       ]
     },
@@ -3463,7 +3473,7 @@
       "maintenance_start": "2027-10-20",
       "end": "2029-04-30",
       "lowest": "26.0.0",
-      "highest": "26.13.0",
+      "highest": "26.13.1",
       "npm_at_lowest": "11.12.1",
       "npm_at_highest": "11.20.0",
       "npm_min_in_major": "11.12.1",
@@ -3567,6 +3577,11 @@
           "version": "26.13.0",
           "npm": "11.20.0",
           "date": "2026-10-28"
+        },
+        {
+          "version": "26.13.1",
+          "npm": "11.20.0",
+          "date": "2026-11-10"
         }
       ]
     },
@@ -3579,15 +3594,20 @@
       "maintenance_start": null,
       "end": "2030-04-30",
       "lowest": "27.0.0-alpha.0.0.0",
-      "highest": "27.0.0-alpha.0.0.0",
+      "highest": "27.0.0-alpha.0.1.0",
       "npm_at_lowest": "12.1.0",
-      "npm_at_highest": "12.1.0",
+      "npm_at_highest": "12.2.2",
       "npm_min_in_major": "12.1.0",
       "releases": [
         {
           "version": "27.0.0-alpha.0.0.0",
           "npm": "12.1.0",
           "date": "2026-10-29"
+        },
+        {
+          "version": "27.0.0-alpha.0.1.0",
+          "npm": "12.2.2",
+          "date": "2026-11-12"
         }
       ]
     }
