@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "fetched_at": "2026-11-16T06:20:48.643962338Z",
+  "fetched_at": "2026-11-23T06:19:20.780033142Z",
   "majors": {
     "4": {
       "major": 4,
@@ -3594,7 +3594,7 @@
       "maintenance_start": null,
       "end": "2030-04-30",
       "lowest": "27.0.0-alpha.0.0.0",
-      "highest": "27.0.0-alpha.0.1.0",
+      "highest": "27.0.0-alpha.0.1.1",
       "npm_at_lowest": "12.1.0",
       "npm_at_highest": "12.2.2",
       "npm_min_in_major": "12.1.0",
@@ -3608,6 +3608,11 @@
           "version": "27.0.0-alpha.0.1.0",
           "npm": "12.2.2",
           "date": "2026-11-12"
+        },
+        {
+          "version": "27.0.0-alpha.0.1.1",
+          "npm": "12.2.2",
+          "date": "2026-11-16"
         }
       ]
     }
