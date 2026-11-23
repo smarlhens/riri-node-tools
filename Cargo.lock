@@ -1402,7 +1402,7 @@ dependencies = [
 
 [[package]]
 name = "riri-napi-nce"
-version = "1.4.3"
+version = "1.4.4"
 dependencies = [
  "napi",
  "napi-build",
@@ -1452,7 +1452,7 @@ dependencies = [
 
 [[package]]
 name = "riri-nce"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1480,7 +1480,7 @@ dependencies = [
 
 [[package]]
 name = "riri-node-lifecycle"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2423,7 +2423,7 @@ dependencies = [
 
 [[package]]
 name = "xtask"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "anyhow",
  "chrono",
